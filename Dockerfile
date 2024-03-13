@@ -23,7 +23,7 @@ FROM nginx:alpine
 COPY --from=build /app/build /usr/share/nginx/html
 
 # Mở cổng 8081
-EXPOSE 8081
+EXPOSE 80
 
 # Khởi động nginx
 CMD ["nginx", "-g", "daemon off;"]

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Jenkins Pipeline Overview</title>
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      table,
+      th,
+      td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: left;
+      }
+
+      th {
+        background-color: #f2f2f2;
+      }
+
+      tr:hover {
+        background-color: #f5f5f5;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Jenkins Pipeline Overview</h1>
+    <table>
+      <tr>
+        <th>Job Name</th>
+        <th>Pipeline Status</th>
+      </tr>
+      <iframe id="pipelineOverview"></iframe>
+    </table>
+
+    <script>
+      async function setIframeSrcWithHeaders(iframeElement, url, headers) {
+        const response = await fetch(url, {
+          method: "GET",
+          headers: headers,
+        });
+        const blob = await response.blob();
+        const objectURL = URL.createObjectURL(blob);
+        iframeElement.src = objectURL;
+      }
+
+      // Sử dụng hàm này để đặt src cho iframe của bạn
+      const iframe = document.getElementById("pipelineOverview");
+      const url =
+        "http://35.213.159.13:8080/blue/organizations/jenkins/Demo%2FBE-ToolsDeploy/detail/main/64/pipeline";
+      const headers = {
+        Authorization:
+          "Basic cXVhbmdoMDQwOToxMTY5MThhNzMwYWMyYTVlMTg5NjBmOTI2NGJiNTJkMjgw", // Thay thế với header thực tế bạn cần truyền
+      };
+
+      setIframeSrcWithHeaders(iframe, url, headers);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,64 @@
+#editor {
+  min-height: 660px;
+  padding: 0px;
+  color: rgb(0, 0, 0);
+  font-size: 12px;
+  font-family: monospace;
+  /* counter-reset: lineNumber; */
+  white-space: pre-wrap;
+}
+
+#editor::before {
+  /* content: counter(lineNumber); */
+  /* counter-increment: lineNumber; */
+  display: inline-block;
+  width: 0px; /* Adjust the width as needed */
+  text-align: right; /* Align line numbers to the right */
+  margin-right: 10px; /* Spacing between line numbers and text */
+}
+.statement {
+    color: green;
+    font-weight: bold;
+}
+
+body{
+  margin:0;
+}
+.code-editor-container{
+  overflow: hidden;
+  width: 50vw;
+  height: 50vh;
+  position:relative;
+}
+
+.code-editor{
+  box-sizing: border-box;
+  height: 50%;
+  width: 500%;
+  position: absolute;
+  top: 0;
+  padding: 10px;
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  font-size: 1.5rem;
+  padding: 30px;
+  border: none;
+  outline: none;
+  line-break: anywhere;
+  white-space: pre-wrap;
+  
+}
+.code-editor-background{
+  resize: none;
+  background-color:rgb(254, 253, 253);
+  caret-color:rgb(1, 1, 1);
+  color: black;
+}
+
+.code-editor-background::selection {
+  color: black;
+  background: #239123;
+}
+.code-editor-foreground{
+  pointer-events: none; left:1px;top:1px
+}

@@ -4,7 +4,7 @@ import Footer from "../Footer";
 
 export default function BaseLayout(props) {
   return (
-    <div className="flex flex-col min-h-[100vh]">
+    <div className="flex flex-col min-h-[100vh] h-screen">
       <Header />
       <hr></hr>
       {props.children}

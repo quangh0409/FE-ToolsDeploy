@@ -11,7 +11,6 @@ import {
 
 export default function Header() {
   const uri = useLocation();
-  console.log(uri);
 
   const nodeRight = () => {
     if (uri.pathname === "/") {

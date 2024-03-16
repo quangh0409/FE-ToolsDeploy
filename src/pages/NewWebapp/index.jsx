@@ -173,14 +173,29 @@ export default function Newwebapp() {
                   }
                 />
                 <Modal
-                  title="Basic Modal"
                   open={isModalOpen}
                   footer={false}
                   onCancel={() => setIsModalOpen(false)}
                   width={1000}
+                  closeIcon={false}
                 >
                   <TemplateDetailPage />
-                  <Button onClick={() => setIsModalOpen(false)}>Submit</Button>
+                  <div className="flex justify-between mt-5">
+                    <div className="flex ">
+                      <Button
+                        className="mr-3"
+                        onClick={() => setIsModalOpen(false)}
+                      >
+                        Scan
+                      </Button>
+                      <Button onClick={() => setIsModalOpen(false)}>
+                        Save
+                      </Button>
+                    </div>
+                    <Button onClick={() => setIsModalOpen(false)}>
+                      Cancel
+                    </Button>
+                  </div>
                 </Modal>
               </div>
             </div>

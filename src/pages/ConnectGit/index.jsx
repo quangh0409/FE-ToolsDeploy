@@ -44,7 +44,7 @@ export default function ConnectGit() {
               URL.
             </h2>
           </div>
-          <div className="border border-solid border-gray-400 rounded-lg h-3/5 mt-14 ">
+          <div className="p-2 border border-solid border-gray-400 rounded-lg h-fit mt-14 ">
             <div>
               <div>
                 <h2 className="text-2xl mb-3">Connect a repository</h2>
@@ -70,7 +70,7 @@ export default function ConnectGit() {
                 }
               />
             </div>
-            <div className="border-solid border-gray-400 rounded-lg max-h-96 scroll-mx-2">
+            <div className="border-solid mt-2 border-gray-400 rounded-lg max-h-96 scroll-mx-2 overflow-auto">
               {repos.map((repo) => {
                 return (
                   <>

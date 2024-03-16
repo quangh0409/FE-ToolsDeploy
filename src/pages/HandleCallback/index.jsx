@@ -14,7 +14,7 @@ export default function HandleCallback() {
       const token = await getAccessToken(auth);
       console.log("🚀 ~ fetchAccessToken ~ token:", token)
       localStorage.setItem("access-token-git",token)
-      navigate("/connectGithub");
+      navigate("/dashboard");
     };
 
     fetchAccessToken();

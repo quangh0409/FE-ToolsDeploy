@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Button } from "antd";
+import { Button, Table } from "antd";
 import "./style.css";
 import Editor from "./textCustomer";
 
@@ -39,12 +39,106 @@ export default function TemplateDetailPage() {
       URL.revokeObjectURL(url);
     }, 0);
   };
+  const columns = [
+    {
+      title: "Code",
+      dataIndex: "code",
+      key: "code",
+      width: 70,
+    },
+    {
+      title: "Level",
+      dataIndex: "level",
+      key: "level",
+      render: (text) => (
+        <p
+          className={`${
+            text === "info"
+              ? "text-blue-400"
+              : text === "error"
+              ? "text-red-500"
+              : "text-yellow-400"
+          }`}
+        >
+          {text}
+        </p>
+      ),
+      
+    },
+    {
+      title: "Line",
+      dataIndex: "line",
+      key: "line",
+    },
+    {
+      title: "Message",
+      dataIndex: "message",
+      key: "message",
+    },
+  ];
+  const dataTable =
+    data?.length &&
+    data?.map((val) => {
+      return {
+        ...val,
+      };
+    });
+  const dataSource = [
+    {
+      code: "1",
+      level: "error",
+      line: 32,
+      message: "10 Downing Street",
+    },
+    {
+      code: "2",
+      level: "John",
+      line: 42,
+      message: "10 Downing Street",
+    },
+    {
+      code: "2",
+      level: "John",
+      line: 42,
+      message: "10 Downing Street",
+    },
+    {
+      code: "2",
+      level: "John",
+      line: 42,
+      message: "10 Downing Street",
+    },
+    {
+      code: "2",
+      level: "John",
+      line: 42,
+      message: "10 Downing Street",
+    },
+    {
+      code: "2",
+      level: "John",
+      line: 42,
+      message: "10 Downing Street",
+    },
+    {
+      code: "2",
+      level: "John",
+      line: 42,
+      message: "10 Downing Street",
+    },
+    {
+      code: "2",
+      level: "John",
+      line: 42,
+      message: "10 Downing Street",
+    },
+  ];
   return (
-    <div className=" px-6 mx-auto pt-10 w-full">
+    <div className="  w-full">
       <div className="flex justify-between mb-6">
-        <Button size="large" className="border rounded-xl ">
+        <p className="border rounded-xl  p-4">
           {name === "pipeline" ? "Dockerfile" : "ci.yaml"}
-        </Button>
+        </p>
         <Button
           size="large"
           className="bg-[#39AC6D]  text-white"
@@ -53,12 +147,12 @@ export default function TemplateDetailPage() {
           Download
         </Button>
       </div>
-      <div className="rounded-lg border p-4">
+      <div className="">
         <div>
           {/* <button className="text-white px-5 py-2 border rounded-lg bg-black">
             Edit
           </button> */}
-          <button
+          {/* <button
             className="ml-5 px-5 py-2 border rounded-lg"
             onClick={async () => {
               const editor = document.getElementById("editor");
@@ -68,10 +162,10 @@ export default function TemplateDetailPage() {
             }}
           >
             Preview
-          </button>
+          </button> */}
         </div>
-        <div className="grid grid-cols-3 mt-3  gap-7  h-[662px]">
-          <div className="col-span-2 border rounded-lg overflow-y-auto h-full">
+        <div className="grid grid-cols-3 mt-3  gap-7  h-[500px]">
+          <div className="col-span-2 border rounded-lg overflow-auto h-full">
             {/* <div
               id="editor"
               ref={editorRef}
@@ -87,8 +181,8 @@ export default function TemplateDetailPage() {
             ></div> */}
             <Editor />
           </div>
-          <div className="col-span-1 border rounded-lg h-full overflow-y-auto">
-            {data.map((d) => {
+          <div className="col-span-1 border rounded-lg h-full overflow-auto">
+            {/* {data.map((d) => {
               return (
                 <>
                   <div
@@ -107,7 +201,13 @@ export default function TemplateDetailPage() {
                   </div>
                 </>
               );
-            })}
+            })} */}
+            <Table
+              pagination={false}
+              dataSource={dataSource}
+              columns={columns}
+              scroll={{ y: 421 }}
+            />
           </div>
         </div>
       </div>

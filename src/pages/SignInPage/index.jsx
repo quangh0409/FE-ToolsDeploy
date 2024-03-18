@@ -1,9 +1,17 @@
 import { Input, Radio } from "antd";
 import React, { useState } from "react";
+import useEffectOnce from "../../hook/useEffectOnce";
+import { useNavigate } from "react-router-dom";
 
 export default function SignInPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  useEffectOnce(() => {
+    if (localStorage.getItem("accessToken")) {
+      navigate("/dashboard");
+    }
+  });
 
   const handleLoginWithGithub = () => {
     window.location.assign(
@@ -22,15 +30,15 @@ export default function SignInPage() {
               className="col-span-2 grid grid-cols-3 items-center justify-center border-black border-solid border hover:bg-slate-500 m-3"
               onClick={handleLoginWithGithub}
             >
-              <img className="col-span-1" src="/images/github.png"  alt="logo" />
+              <img className="col-span-1" src="/images/github.png" alt="logo" />
               <div className="col-span-2 text-center ">Github</div>
             </div>
             <div className="col-span-2 grid grid-cols-3 items-center justify-center border-black border-solid border hover:bg-slate-500 m-3">
-              <img className="col-span-1" src="/images/gitlab.png"  alt="logo"/>
+              <img className="col-span-1" src="/images/gitlab.png" alt="logo" />
               <div className="col-span-2 text-center ">Gitlab</div>
             </div>
             <div className="col-span-2 grid grid-cols-3 items-center justify-center border-black border-solid border hover:bg-slate-500 m-3">
-              <img className="col-span-1" src="/images/google.png"  alt="logo"/>
+              <img className="col-span-1" src="/images/google.png" alt="logo" />
               <div className="col-span-2 text-center ">Google</div>
             </div>
           </div>

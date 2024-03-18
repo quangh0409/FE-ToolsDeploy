@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import MenuCustom, { getItem } from "../MenuCustom";
 import {
   GlobalOutlined,
@@ -11,7 +11,7 @@ import {
 
 export default function Header() {
   const uri = useLocation();
-
+  const navigate = useNavigate();
   const nodeRight = () => {
     if (uri.pathname === "/") {
       return (
@@ -51,10 +51,26 @@ export default function Header() {
     return (
       <>
         <div className="col-span-2 border-black border-solid border rounded-lg ">
-          <MenuCustom items={NewItems} width={90} className={"rounded-lg"} />
+          <MenuCustom
+            items={NewItems}
+            width={90}
+            className={"rounded-lg"}
+            onClick={() => {
+              navigate("/connectGithub");
+            }}
+          />
         </div>
         <div className="col-span-4 flex  justify-center">
-          <MenuCustom items={items} width={"w-48"} />
+          <MenuCustom
+            items={items}
+            width={"w-48"}
+            onClick={(e) => {
+              if (e.key === "Logout") {
+                localStorage.clear();
+                navigate("/");
+              }
+            }}
+          />
         </div>
       </>
     );
@@ -64,13 +80,13 @@ export default function Header() {
     getItem("Vũ Trọng Quảng", "sub4", <UserOutlined />, [
       getItem("Vũ Trọng Quảng", "9", <UserOutlined />),
       getItem("Account Settings", "10", <SettingOutlined />),
-      getItem("Logout", "11", <LogoutOutlined />),
+      getItem("Logout", "Logout", <LogoutOutlined />),
     ]),
   ];
 
   const NewItems = [
     getItem("New", "sub1", <PlusOutlined />, [
-      getItem("Webapp", "9", <GlobalOutlined />),
+      getItem("Webapp", "Webapp", <GlobalOutlined />),
     ]),
   ];
 

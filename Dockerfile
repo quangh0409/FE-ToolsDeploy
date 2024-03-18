@@ -22,7 +22,7 @@ FROM nginx:alpine
 # Copy các file từ builder stage (build) vào thư mục của nginx
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Mở cổng 8081
+# Mở cổng 80
 EXPOSE 80
 
 # Khởi động nginx

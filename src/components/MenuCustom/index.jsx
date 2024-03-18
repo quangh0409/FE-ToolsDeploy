@@ -11,16 +11,10 @@ export function getItem(label, key, icon, children, type) {
 }
 
 export default function MenuCustom(props) {
-  const onClick = (e) => {
-    console.log("click ", e);
-  };
   return (
     <Menu
       className={props.className + " " + props.width +" " + props.className + "z-1000"} 
-      onClick={onClick}
-      // style={{
-      //   width: props.width,
-      // }}
+      onClick={props.onClick}
       mode={props.mode || "horizontal"}
       items={props.items}
     />

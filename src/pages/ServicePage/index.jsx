@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { TYPE } from "../../constants/router";
+import { Route, useLocation, useNavigate } from "react-router-dom";
+import { ROUTE, TYPE } from "../../constants/router";
 import {
   CopyOutlined,
   GlobalOutlined,
@@ -16,6 +16,7 @@ export default function ServicePage(props) {
   console.log("🚀 ~ ServicePage ~ service_type:", TYPE[service_type]);
   const navigate = useNavigate();
   const [url, setUrl] = useState("quangh0409/Decision_help_system");
+
   return (
     <>
       <div>
@@ -68,7 +69,7 @@ export default function ServicePage(props) {
             </div>
           </div>
           <div className="col-span-5 border-solid border border-cyan-300">
-            menu
+           
           </div>
         </div>
       </div>

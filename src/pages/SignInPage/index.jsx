@@ -15,7 +15,7 @@ export default function SignInPage() {
 
   const handleLoginWithGithub = () => {
     window.location.assign(
-      "https://github.com/login/oauth/authorize?client_id=d07893f17582c895aefd"
+      "https://github.com/login/oauth/authorize?client_id=66602684d99f3683ebe0"
     );
   };
   return (

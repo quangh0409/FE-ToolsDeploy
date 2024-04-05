@@ -7,7 +7,10 @@ import HandleCallback from "../pages/HandleCallback";
 import Dashboard from "../pages/Dashboard";
 import ConnectGit from "../pages/ConnectGit";
 import Newwebapp from "../pages/NewWebapp";
-import ServicePage from "../pages/ServicePage";
+import ServicePageDetail from "../pages/ServicePageDetail";
+import ConnectVM from "../pages/ConnectVM";
+import OceanPage from "../pages/OceanPage";
+import ServicePage from "../pages/ServicesPage";
 
 export default function AppRouter() {
   const routes = [
@@ -16,7 +19,10 @@ export default function AppRouter() {
     { path: ROUTE.DASHBOARD, element: Dashboard },
     { path: ROUTE.CONNECTGITHUB, element: ConnectGit },
     { path: ROUTE.NEWWEBAPP, element: Newwebapp },
+    { path: ROUTE.SERVICEDETAIL, element: ServicePageDetail },
     { path: ROUTE.SERVICE, element: ServicePage },
+    { path: ROUTE.CONNECTVM, element: ConnectVM },
+    { path: ROUTE.OCEAN, element: OceanPage },
   ];
 
   return (

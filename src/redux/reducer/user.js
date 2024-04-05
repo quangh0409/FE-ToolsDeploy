@@ -5,6 +5,18 @@ const initialState = {
   fullname: "",
   user_git: "",
   avatar: "",
+  ticket: {
+    id: "",
+    vms_ids: [],
+  },
+  service: {
+    name: "",
+    architectura: "",
+    language: "",
+    repo: "",
+    source: "",
+    environment: [],
+  },
 };
 
 export const user = createSlice({
@@ -12,25 +24,33 @@ export const user = createSlice({
   initialState,
   reducers: {
     addFullname: (state, action) => {
-      const { fullname = "" } = action.payload;
-      state.fullname = fullname || state.fullname;
+      state.fullname = action.payload;
     },
     addAccessTokenGit: (state, action) => {
-      const { access_token_git = "" } = action.payload;
-      state.access_token_git = access_token_git || state.access_token_git;
+      state.access_token_git = action.payload;
     },
     addUserGit: (state, action) => {
-      const { user_git = "" } = action.payload;
-      state.user_git = user_git || state.user_git;
+      state.user_git = action.payload;
     },
     addAvatar: (state, action) => {
-      const { avatar = "" } = action.payload;
-      state.avatar = avatar || state.avatar;
+      state.avatar = action.payload;
+    },
+    addTicket: (state, action) => {
+      state.ticket = action.payload;
+    },
+    addService: (state, action) => {
+      state.service = action.payload;
     },
   },
 });
 
-export const { addFullname, addAccessTokenGit, addUserGit, addAvatar } =
-user.actions;
+export const {
+  addFullname,
+  addAccessTokenGit,
+  addUserGit,
+  addAvatar,
+  addTicket,
+  addService,
+} = user.actions;
 
 export default user.reducer;

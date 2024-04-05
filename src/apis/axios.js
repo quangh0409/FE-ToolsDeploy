@@ -1,8 +1,8 @@
 import axios from "axios";
 
-const axiosServer = (port) => {
+const axiosServer = () => {
   const axiosTemp = axios.create({
-    baseURL: "http://35.213.147.74:8000/api/v1/",
+    baseURL: "http://35.213.167.216:8000/api/v1/",
     // baseURL: `http://localhost:${port}/api/v1/`,
   });
 

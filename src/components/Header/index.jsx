@@ -8,10 +8,15 @@ import {
   SettingOutlined,
   UserOutlined,
 } from "@ant-design/icons";
+import { useSelector } from "react-redux";
+import useEffectOnce from "../../hook/useEffectOnce";
+import { getTicketDetail } from "../../apis";
 
 export default function Header() {
   const uri = useLocation();
   const navigate = useNavigate();
+  const fullname = useSelector((state) => state.user.fullname);
+
   const nodeRight = () => {
     if (uri.pathname === "/") {
       return (
@@ -30,7 +35,12 @@ export default function Header() {
       <>
         <img className="col-span-2" src="/images/logo-bg-w.png" alt="logo" />
         <div className="col-span-2 grid grid-cols-6">
-          <div className="col-span-4 text-2xl ml-3 text-center border-black border-solid border-r">
+          <div
+            className="col-span-4 text-2xl ml-3 text-center border-black border-solid border-r"
+            onClick={() => {
+              navigate("/dashboard");
+            }}
+          >
             Dashboard
           </div>
           <div className="col-span-2 text-2xl text-left ">Docs</div>
@@ -44,7 +54,13 @@ export default function Header() {
       return (
         <>
           <div className="col-span-4"></div>
-          <div>Dashboard</div>
+          <div
+            onClick={() => {
+              navigate("/dashboard");
+            }}
+          >
+            Dashboard
+          </div>
         </>
       );
     }
@@ -56,7 +72,12 @@ export default function Header() {
             width={90}
             className={"rounded-lg"}
             onClick={() => {
-              navigate("/connectGithub");
+              const path = uri.pathname.split("/")[1];
+              if (path === "dashboard") {
+                navigate("/dashboard/VM-connect");
+              } else {
+                navigate("/connectGithub");
+              }
             }}
           />
         </div>
@@ -77,8 +98,8 @@ export default function Header() {
   };
 
   const items = [
-    getItem("Vũ Trọng Quảng", "sub4", <UserOutlined />, [
-      getItem("Vũ Trọng Quảng", "9", <UserOutlined />),
+    getItem(`${fullname}`, "sub4", <UserOutlined />, [
+      getItem(`${fullname}`, "9", <UserOutlined />),
       getItem("Account Settings", "10", <SettingOutlined />),
       getItem("Logout", "Logout", <LogoutOutlined />),
     ]),

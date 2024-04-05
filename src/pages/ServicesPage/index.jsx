@@ -1,55 +1,33 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button, Input, Table } from "antd";
 import {
   CheckCircleTwoTone,
   GlobalOutlined,
   SearchOutlined,
-  SettingOutlined,
 } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { getVmsByIds } from "../../apis/vms.api";
 
-export default function Dashboard() {
+export default function ServicePage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [vms, setVms] = useState([]);
-  const vms_ids = useSelector((state) => state.user.ticket.vms_ids);
-  useEffect(() => {
-    if (vms_ids.length > 0) {
-      const fetch = async () => {
-        const res = await getVmsByIds(vms_ids);
-        console.log("🚀 ~ fetch ~ res:", res);
-        setVms(res);
-      };
-      fetch();
-    }
-  }, [vms_ids]);
 
   const columns = [
     {
-      title: `HOST`,
+      title: `SERVICE NAME`,
       sorter: (a, b) => a.service_name.length - b.service_name.length,
-      dataIndex: "host",
-      key: "host",
+      dataIndex: "service_name",
+      key: "service_name",
       render: (text) => (
-        <div
-          onClick={() => {
-            const vm = vms.find((vm) => {
-              return vm.host === text;
-            });
-            navigate(`/service?vm=${vm.id}`);
-          }}
-        >
+        <div>
           <GlobalOutlined />
           {text}
         </div>
       ),
     },
     {
-      title: "USER",
-      dataIndex: "user",
-      key: "user",
+      title: "TYPE",
+      dataIndex: "type",
+      key: "type",
     },
     {
       title: "STATUS",
@@ -58,7 +36,7 @@ export default function Dashboard() {
       render: (text) => (
         <div>
           {`${text} `}
-          {text === "CONNECTED" ? (
+          {text === "active" ? (
             <CheckCircleTwoTone twoToneColor="#52c41a" />
           ) : (
             <CheckCircleTwoTone twoToneColor="#EE9494" />
@@ -67,37 +45,20 @@ export default function Dashboard() {
       ),
     },
     {
-      title: "LAST CONNECT",
-      dataIndex: "last_connect",
-      key: "last_connect",
-    },
-    {
-      width: 100,
-      title: "Setting",
-      key: "last_connect",
-      render: (record, index) => {
-        return (
-          <SettingOutlined
-            onClick={() => {
-              const vm = vms.find((vm) => {
-                return vm.host === record.host;
-              });
-              navigate(`/dashboard/VM-connect?vm=${vm.id}`);
-            }}
-          />
-        );
-      },
+      title: "LAST DEPLOY",
+      dataIndex: "last_deploy",
+      key: "last_deploy",
     },
   ];
 
-  const data = vms.map((vm) => {
-    return {
-      host: vm.host,
-      user: vm.user,
-      status: vm.status,
-      last_connect: vm.last_connect,
-    };
-  });
+  const data = [
+    {
+      service_name: "1",
+      type: "WEBAPP",
+      status: "stoped",
+      last_deploy: "10 Downing Street",
+    },
+  ];
   const dataTable =
     data?.length &&
     data?.map((val) => {
@@ -109,7 +70,9 @@ export default function Dashboard() {
   return (
     <>
       <div className="ml-24 mr-24 h-full">
-        <div className="text-3xl font-medium">VM Instances</div>
+        <div className="border-solid border border-cyan-300 text-3xl font-medium">
+          Overview
+        </div>
         <div className="mt-9">
           <Input
             placeholder="Enter your username"
@@ -138,6 +101,15 @@ export default function Dashboard() {
               dataSource={dataTable}
               columns={columns}
               scroll={{ y: 421 }}
+              onRow={(record, rowIndex) => {
+                return {
+                  onClick: () => {
+                    navigate(
+                      `/service/detail?host=${record.service_name}&name=${record.type}`
+                    );
+                  },
+                };
+              }}
             />
           </div>
         </div>

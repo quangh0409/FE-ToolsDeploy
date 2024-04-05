@@ -1,30 +1,32 @@
-import {
-  InfoCircleOutlined,
-  SearchOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
-import { Button, Input, Tooltip } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
+import { Button, Input } from "antd";
 import React, { useEffect, useState } from "react";
 import useEffectOnce from "../../hook/useEffectOnce";
-import { GetReposGitByAccessToken } from "../../apis/github.api";
+import {
+  GetInfoUserGitByAccesToken,
+  GetReposGitByAccessToken,
+} from "../../apis/github.api";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 export default function ConnectGit() {
   const [repos, setRepos] = useState([]);
   const [repoName, setRepoName] = useState();
+  const [userGit, setUseGit] = useState();
+  const [tokenStatus, setTokenStatus] = useState(true);
   const navigate = useNavigate();
-  useEffectOnce(() => {
+
+  useEffect(() => {
     const fecth = async () => {
-      const response = await GetReposGitByAccessToken(
-        "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",""
-      );
-      setRepos(response.data);
+      const response = await GetInfoUserGitByAccesToken();
+      setUseGit(response.login);
+      const repositorys = await GetReposGitByAccessToken();
+      setRepos(repositorys);
+      // }
     };
-
     fecth();
-  }, [true]);
-
-  console.log(repos);
+  }, []);
+  // setTokenStatus(false);
 
   const handleInputChange = (e) => {
     setRepoName(e.target.value);
@@ -88,8 +90,9 @@ export default function ConnectGit() {
                       <Button
                         className=" pointer-events-auto text-blue-500"
                         onClick={() => {
-                            localStorage.setItem("repo",repo.name)
-                            navigate(`/new-webapp?repo=${repo.html_url}`)
+                          navigate(
+                            `/new-webapp?repo=${repo.name}&user=${repo.owner.login}&clone_url=${repo.clone_url}`
+                          );
                         }}
                       >
                         connect

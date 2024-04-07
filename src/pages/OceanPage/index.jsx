@@ -6,6 +6,7 @@ import { LoadingOutlined } from "@ant-design/icons";
 
 export default function OceanPage() {
   const [current, setCurrent] = useState(0);
+
   const onChange = (value) => {
     console.log("🚀 ~ onChange ~ value:", value);
     setCurrent(value);
@@ -16,7 +17,6 @@ export default function OceanPage() {
   const [stepLog, setStepLog] = useState([]);
   const [logClone, setLogClone] = useState([]);
   const [logScanSyntax, setLogScanSyntax] = useState([]);
-  // const [logClone, setLogSsh] = useState([]);
 
   useEffectOnce(() => {
     socket.connect();
@@ -30,64 +30,59 @@ export default function OceanPage() {
       }
     });
 
-    socket.on("clone", (data) => {
-      logClone.push(data);
-      setLogClone([...logClone]);
+    // socket.on("clone", (data) => {
+    //   logClone.push(data);
+    //   setLogClone([...logClone]);
 
-      if (data.status === "start") {
-        stepLog.push(data);
-        setStepLog([...stepLog]);
-        // setTimeout(() => {
-        stepLog[1].status = data.status;
-        setStepLog([...stepLog]);
-        // }, 2000);
-      }
-      if (data.status === "inProcess") {
-        // setTimeout(() => {
-        stepLog[1].status = data.status;
-        setStepLog([...stepLog]);
-        // }, 2000);
-      }
-      //   setLogClone([...logClone, data]);
-      if (data.status === "end" || data.status === "error") {
-        // setTimeout(() => {
-        stepLog[1].status = data.status;
-        setStepLog([...stepLog]);
-        // }, 5000);
-      }
-    });
+    //   if (data.status === "start") {
+    //     stepLog.push(data);
+    //     setStepLog([...stepLog]);
+    //     // setTimeout(() => {
+    //     stepLog[1].status = data.status;
+    //     setStepLog([...stepLog]);
+    //     // }, 2000);
+    //   }
+    //   if (data.status === "inProcess") {
+    //     // setTimeout(() => {
+    //     stepLog[1].status = data.status;
+    //     setStepLog([...stepLog]);
+    //     // }, 2000);
+    //   }
+    //   //   setLogClone([...logClone, data]);
+    //   if (data.status === "end" || data.status === "error") {
+    //     // setTimeout(() => {
+    //     stepLog[1].status = data.status;
+    //     setStepLog([...stepLog]);
+    //     // }, 5000);
+    //   }
+    // });
 
-    socket.on("ScanSyntax", (data) => {
-      logScanSyntax.push(data);
-      setLogScanSyntax([...logScanSyntax]);
+    // socket.on("ScanSyntax", (data) => {
+    //   logScanSyntax.push(data);
+    //   setLogScanSyntax([...logScanSyntax]);
 
-      if (data.status === "start") {
-        stepLog.push(data);
-        setStepLog([...stepLog]);
-        // setTimeout(() => {
-        stepLog[2].status = data.status;
-        setStepLog([...stepLog]);
-        // }, 2000);
-      }
-      if (data.status === "inProcess") {
-        // setTimeout(() => {
-        stepLog[2].status = data.status;
-        setStepLog([...stepLog]);
-        // }, 8000);
-      }
-      if (data.status === "end" || data.status === "error") {
-        // setTimeout(() => {
-        stepLog[2].status = data.status;
-        setStepLog([...stepLog]);
-        // }, 10000);
-      }
-    });
+    //   if (data.status === "start") {
+    //     stepLog.push(data);
+    //     setStepLog([...stepLog]);
+    //     // setTimeout(() => {
+    //     stepLog[2].status = data.status;
+    //     setStepLog([...stepLog]);
+    //     // }, 2000);
+    //   }
+    //   if (data.status === "inProcess") {
+    //     // setTimeout(() => {
+    //     stepLog[2].status = data.status;
+    //     setStepLog([...stepLog]);
+    //     // }, 8000);
+    //   }
+    //   if (data.status === "end" || data.status === "error") {
+    //     // setTimeout(() => {
+    //     stepLog[2].status = data.status;
+    //     setStepLog([...stepLog]);
+    //     // }, 10000);
+    //   }
+    // });
   });
-
-  console.log("🚀 ~ OceanPage ~ logSsh:", logSsh);
-  console.log("🚀 ~ OceanPage ~ logClone:", logClone);
-  console.log("🚀 ~ OceanPage ~ logScanSyntax:", logScanSyntax);
-  console.log("🚀 ~ OceanPage ~ stepLog:", stepLog);
   const text = `
   A dog is a type of domesticated animal.
   Known for its loyalty and faithfulness,

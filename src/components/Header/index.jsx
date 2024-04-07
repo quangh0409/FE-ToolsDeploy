@@ -16,6 +16,7 @@ export default function Header() {
   const uri = useLocation();
   const navigate = useNavigate();
   const fullname = useSelector((state) => state.user.fullname);
+  const vm = useSelector((state) => state.user.vm);
 
   const nodeRight = () => {
     if (uri.pathname === "/") {
@@ -76,7 +77,7 @@ export default function Header() {
               if (path === "dashboard") {
                 navigate("/dashboard/VM-connect");
               } else {
-                navigate("/connectGithub");
+                navigate(`/connectGithub?vm=${vm}`);
               }
             }}
           />

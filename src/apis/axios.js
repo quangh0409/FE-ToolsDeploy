@@ -11,6 +11,41 @@ const axiosServer = () => {
       localStorage.getItem("accessToken");
   }
 
+  // axiosTemp.interceptors.request.use(async (config) => {
+  //   const token = localStorage.getItem("accessToken");
+
+  //   if (token) {
+  //     config.headers["token"] = token;
+  //   }
+
+  //   return config;
+  // });
+
+  axiosTemp.interceptors.response.use(
+    (response) => {
+      if (response && response.data) {
+        return response;
+      }
+      return response;
+    },
+
+    (error) => {
+      if (!error.response) {
+        console.error("Unknown error:", error.message);
+        return;
+      }
+
+      const { status, data } = error.response;
+      if (data.code === "TOKEN_EXPIRED" && status === 401) {
+        // TODO: Show server error message
+        // } else if (400 <= status && status < 500) {
+        //   // throw new CustomError(data);
+        // message.error("Hết phiên đăng nhập");
+        localStorage.clear();
+      }
+    }
+  );
+
   return axiosTemp;
 };
 

@@ -1,33 +1,57 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Input, Table } from "antd";
 import {
   CheckCircleTwoTone,
   GlobalOutlined,
   SearchOutlined,
+  SettingOutlined,
+  CaretLeftOutlined,
 } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
+import useEffectOnce from "../../hook/useEffectOnce";
+import { getAllServiceByVMId } from "../../apis";
 
 export default function ServicePage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const vm = params.get("vm");
+  const [services, setServices] = useState([]);
+
+  useEffectOnce(() => {
+    const fetch = async () => {
+      const res = await getAllServiceByVMId(vm);
+      setServices(res);
+    };
+    fetch();
+  }, [vm]);
 
   const columns = [
     {
       title: `SERVICE NAME`,
       sorter: (a, b) => a.service_name.length - b.service_name.length,
-      dataIndex: "service_name",
       key: "service_name",
-      render: (text) => (
-        <div>
+      render: (record, index) => (
+        <div
+          onClick={() => {
+            console.log(record);
+            navigate(`/service/detail?id=${record.id}`);
+          }}
+        >
           <GlobalOutlined />
-          {text}
+          {record.service_name}
         </div>
       ),
     },
     {
-      title: "TYPE",
-      dataIndex: "type",
-      key: "type",
+      title: "ARCHITECTURA",
+      dataIndex: "architectura",
+      key: "architectura",
+    },
+    {
+      title: "LANGUAGE",
+      dataIndex: "language",
+      key: "language",
     },
     {
       title: "STATUS",
@@ -49,23 +73,38 @@ export default function ServicePage() {
       dataIndex: "last_deploy",
       key: "last_deploy",
     },
-  ];
-
-  const data = [
     {
-      service_name: "1",
-      type: "WEBAPP",
-      status: "stoped",
-      last_deploy: "10 Downing Street",
+      width: 100,
+      title: "Setting",
+      key: "setting",
+      render: (record, index) => {
+        return (
+          <SettingOutlined
+            onClick={() => {
+              navigate(`/dashboard/VM-connect?vm=${vm.id}`);
+            }}
+          />
+        );
+      },
+    },
+    {
+      width: 100,
+      title: "Re Build",
+      key: "re_build",
+      render: (record, index) => {
+        return (
+          <CaretLeftOutlined
+            onClick={() => {
+              // const vm = vms.find((vm) => {
+              //   return vm.host === record.host;
+              // });
+              // navigate(`/dashboard/VM-connect?vm=${vm.id}`);
+            }}
+          />
+        );
+      },
     },
   ];
-  const dataTable =
-    data?.length &&
-    data?.map((val) => {
-      return {
-        ...val,
-      };
-    });
 
   return (
     <>
@@ -98,18 +137,31 @@ export default function ServicePage() {
           <div className="mt-11 col-span-1 border rounded-lg h-full overflow-auto">
             <Table
               pagination={false}
-              dataSource={dataTable}
+              dataSource={services.map((s, index) => {
+                return {
+                  id: s.id,
+                  service_name: s.name,
+                  architectura: s.architectura,
+                  language: s.language,
+                  status: "active",
+                  last_deploy: new Date().toISOString(),
+                  key: index,
+                  repo: s.repo,
+                  source: s.source,
+                  user: s.user
+                };
+              })}
               columns={columns}
               scroll={{ y: 421 }}
-              onRow={(record, rowIndex) => {
-                return {
-                  onClick: () => {
-                    navigate(
-                      `/service/detail?host=${record.service_name}&name=${record.type}`
-                    );
-                  },
-                };
-              }}
+              // onRow={(record, rowIndex) => {
+              //   return {
+              //     onClick: () => {
+              //       navigate(
+              //         `/service/detail?host=${record.service_name}&name=${record.type}`
+              //       );
+              //     },
+              //   };
+              // }}
             />
           </div>
         </div>

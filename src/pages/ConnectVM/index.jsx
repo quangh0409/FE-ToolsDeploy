@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import socket from "../../utils/socket/socket";
 import useEffectOnce from "../../hook/useEffectOnce";
 import { useLocation } from "react-router-dom";
-import { Button, Checkbox, Input, Radio } from "antd";
+import { Button, Checkbox, Input, Radio, Collapse } from "antd";
 import { createVMS } from "../../apis/vms.api";
-import { UpdateTicket, UpdateVMs } from "../../apis";
+import { UpdateTicket } from "../../apis";
 import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
 export default function ConnectVM() {
   const location = useLocation();
@@ -29,6 +29,8 @@ export default function ConnectVM() {
   const [checkHadolint, setCheckHadolint] = useState(false);
   const [checkTrivy, setCheckTrivy] = useState(false);
 
+  const [items, setItems] = useState([]);
+
   useEffectOnce(() => {
     setVmId(vm);
     socket.connect();
@@ -36,15 +38,23 @@ export default function ConnectVM() {
       setResultSsh(data);
     });
     socket.on("logInstallDocker", (data) => {
-      console.log("🚀 ~ socket.on logInstallDocker ~ data:", data);
-      logInstallDocker.push(data);
+      logInstallDocker.push({
+        key: logInstallDocker.length + 1,
+        label: data.title,
+        children: <p>{data.mess || data?.log?.stdout}</p>,
+      });
+      console.log("🚀 ~ socket.on ~ data:", data);
       setLogInstallDocker([...logInstallDocker]);
       if (data.status === "SUCCESSFULLY" || data.status === "ERROR") {
         setLoadingDocker(false);
       }
     });
     socket.on("logInstallTrivy", (data) => {
-      logInstallTrivy.push(data);
+      logInstallTrivy.push({
+        key: logInstallTrivy.length + 1,
+        label: data.title,
+        children: <p>{data.mess || data?.log?.stdout || data?.log?.stderr}</p>,
+      });
       setLogInstallTrivy([...logInstallTrivy]);
       if (data.status === "SUCCESSFULLY" || data.status === "ERROR") {
         setLoadingTrivy(false);
@@ -52,7 +62,11 @@ export default function ConnectVM() {
       console.log("🚀 ~ socket.on logInstallTrivy ~ data:", data);
     });
     socket.on("logInstallHadolint", (data) => {
-      logInstallHadolint.push(data);
+      logInstallHadolint.push({
+        key: logInstallHadolint.length + 1,
+        label: data.title,
+        children: <p>{data.mess || data?.log?.stdout || data?.log?.stderr}</p>,
+      });
       setLogInstallHadolint([...logInstallHadolint]);
       if (data.status === "SUCCESSFULLY" || data.status === "ERROR") {
         setLoadingHadolint(false);
@@ -69,6 +83,10 @@ export default function ConnectVM() {
   };
   const onChangeTrivy = (e) => {
     setCheckTrivy(e.target.checked);
+  };
+
+  const onChange = (key) => {
+    console.log(key);
   };
 
   return (
@@ -157,7 +175,7 @@ export default function ConnectVM() {
             </Radio.Button>
           </div>
           {resultSsh?.status ? (
-            resultSsh?.status === "ok" ? (
+            resultSsh?.status === "DONE" ? (
               <div className="flex-1">
                 <CheckOutlined className="rounded-full text-green-600 border-2 border-green-500 " />
                 {resultSsh?.mess}
@@ -179,15 +197,33 @@ export default function ConnectVM() {
               <div className="flex flex-col">
                 <div className="flex">
                   <Checkbox onChange={onChangeDocker}>Docker</Checkbox>{" "}
-                  {loadingDocker && checkDocker ? <p>loading</p> : null}
+                  {loadingDocker && checkDocker ? (
+                    <img
+                      className="w-5"
+                      src="/images/loading.gif"
+                      alt="loading"
+                    />
+                  ) : null}
                 </div>
                 <div className="flex">
                   <Checkbox onChange={onChangeHadolint}>Hadolint</Checkbox>
-                  {loadingHadolint && checkHadolint ? <p>loading</p> : null}
+                  {loadingHadolint && checkHadolint ? (
+                    <img
+                      className="w-5"
+                      src="/images/loading.gif"
+                      alt="loading"
+                    />
+                  ) : null}
                 </div>
                 <div className="flex">
                   <Checkbox onChange={onChangeTrivy}>Trivy</Checkbox>
-                  {loadingTrivy && checkTrivy ? <p>loading</p> : null}
+                  {loadingTrivy && checkTrivy ? (
+                    <img
+                      className="w-5"
+                      src="/images/loading.gif"
+                      alt="loading"
+                    />
+                  ) : null}
                 </div>
               </div>
               <div className="flex items-center gap-3 w-40">
@@ -203,14 +239,44 @@ export default function ConnectVM() {
                     if (checkDocker) {
                       socket.emit("InstallDocker", token, vmId);
                       setLoadingDocker(true);
+                      items.push({
+                        key: "1",
+                        label: "InstallDocker",
+                        children: (
+                          <Collapse
+                            defaultActiveKey="1"
+                            items={logInstallDocker}
+                          />
+                        ),
+                      });
                     }
                     if (checkTrivy) {
                       socket.emit("InstallTrivy", token, vmId);
                       setLoadingTrivy(true);
+                      items.push({
+                        key: "2",
+                        label: "InstallTrivy",
+                        children: (
+                          <Collapse
+                            defaultActiveKey="2"
+                            items={logInstallTrivy}
+                          />
+                        ),
+                      });
                     }
                     if (checkHadolint) {
                       socket.emit("InstallHadolint", token, vmId);
                       setLoadingHadolint(true);
+                      items.push({
+                        key: "3",
+                        label: "InstallHadolint",
+                        children: (
+                          <Collapse
+                            defaultActiveKey="3"
+                            items={logInstallHadolint}
+                          />
+                        ),
+                      });
                     }
                   }}
                 >
@@ -220,7 +286,10 @@ export default function ConnectVM() {
             </div>
 
             <div className="flex-1 ">
-              <div className="border-solid border border-gray-500 font rounded-md h-48 overflow-auto"></div>
+              {/* border-solid border border-gray-500 font rounded-md */}
+              <div className=" h-48 overflow-auto">
+                <Collapse onChange={onChange} items={items} />
+              </div>
               <div className="flex mt-3">
                 <div className="flex-none">
                   <Radio.Button

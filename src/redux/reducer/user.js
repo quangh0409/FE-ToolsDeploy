@@ -15,8 +15,9 @@ const initialState = {
     language: "",
     repo: "",
     source: "",
-    environment: [],
+    environments: [],
   },
+  vm: "",
 };
 
 export const user = createSlice({
@@ -39,7 +40,27 @@ export const user = createSlice({
       state.ticket = action.payload;
     },
     addService: (state, action) => {
-      state.service = action.payload;
+      state.service.name = action.payload.name
+        ? action.payload.name
+        : state.service.name;
+      state.service.architectura = action.payload.architectura
+        ? action.payload.architectura
+        : state.service.architectura;
+      state.service.language = action.payload.language
+        ? action.payload.language
+        : state.service.language;
+      state.service.repo = action.payload.repo
+        ? action.payload.repo
+        : state.service.repo;
+      state.service.source = action.payload.source
+        ? action.payload.source
+        : state.service.source;
+      state.service.environments = action.payload.environments
+        ? action.payload.environments
+        : state.service.environments;
+    },
+    addVm: (state, action) => {
+      state.vm = action.payload;
     },
   },
 });
@@ -51,6 +72,7 @@ export const {
   addAvatar,
   addTicket,
   addService,
+  addVm,
 } = user.actions;
 
 export default user.reducer;

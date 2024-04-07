@@ -48,4 +48,21 @@ export async function GetLanguagesByAccessToken(repository) {
   return response.data.data;
 }
 
-export async function GetGithub() {}
+export async function GetPathFileDockerByAccessToken(repository, branch) {
+  const response = await axiosServer().post(`git/paths-file-docker`, {
+    repository: repository,
+    branch: branch,
+  });
+
+  return response.data;
+}
+
+export async function GetContentsByAccessToken(repository, sha) {
+  const response = await axiosServer().post(`git/content-file`, {
+    repository: repository,
+    sha: sha,
+  });
+
+  return response.data;
+}
+

@@ -9,6 +9,8 @@ import {
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { getVmsByIds } from "../../apis/vms.api";
+import { store } from "../../redux/store";
+import { addVm } from "../../redux/reducer/user";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -19,7 +21,6 @@ export default function Dashboard() {
     if (vms_ids.length > 0) {
       const fetch = async () => {
         const res = await getVmsByIds(vms_ids);
-        console.log("🚀 ~ fetch ~ res:", res);
         setVms(res);
       };
       fetch();
@@ -38,6 +39,7 @@ export default function Dashboard() {
             const vm = vms.find((vm) => {
               return vm.host === text;
             });
+            store.dispatch(addVm(vm.id));
             navigate(`/service?vm=${vm.id}`);
           }}
         >
@@ -74,7 +76,7 @@ export default function Dashboard() {
     {
       width: 100,
       title: "Setting",
-      key: "last_connect",
+      key: "setting",
       render: (record, index) => {
         return (
           <SettingOutlined
@@ -90,12 +92,13 @@ export default function Dashboard() {
     },
   ];
 
-  const data = vms.map((vm) => {
+  const data = vms.map((vm, index) => {
     return {
       host: vm.host,
       user: vm.user,
       status: vm.status,
       last_connect: vm.last_connect,
+      key: index,
     };
   });
   const dataTable =

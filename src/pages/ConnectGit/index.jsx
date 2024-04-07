@@ -6,7 +6,7 @@ import {
   GetInfoUserGitByAccesToken,
   GetReposGitByAccessToken,
 } from "../../apis/github.api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 export default function ConnectGit() {
@@ -15,7 +15,9 @@ export default function ConnectGit() {
   const [userGit, setUseGit] = useState();
   const [tokenStatus, setTokenStatus] = useState(true);
   const navigate = useNavigate();
-
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const vm = params.get("vm");
   useEffect(() => {
     const fecth = async () => {
       const response = await GetInfoUserGitByAccesToken();
@@ -73,32 +75,33 @@ export default function ConnectGit() {
               />
             </div>
             <div className="border-solid mt-2 border-gray-400 rounded-lg max-h-96 scroll-mx-2 overflow-auto">
-              {repos.map((repo) => {
+              {repos.map((repo, idx) => {
                 return (
-                  <>
-                    <div className="flex flex-row h-12 border border-solid border-gray-400 items-center justify-between">
-                      <div className=" h-full flex flex-row items-center ">
-                        <img
-                          className="h-full"
-                          src="/images/github.png"
-                          alt="logo"
-                        />
-                        <div className="underline ">
-                          <a href={repo.html_url}>{repo.full_name}</a>
-                        </div>
+                  <div
+                    className="flex flex-row h-12 border border-solid border-gray-400 items-center justify-between"
+                    key={idx}
+                  >
+                    <div className=" h-full flex flex-row items-center ">
+                      <img
+                        className="h-full"
+                        src="/images/github.png"
+                        alt="logo"
+                      />
+                      <div className="underline ">
+                        <a href={repo.html_url}>{repo.full_name}</a>
                       </div>
-                      <Button
-                        className=" pointer-events-auto text-blue-500"
-                        onClick={() => {
-                          navigate(
-                            `/new-webapp?repo=${repo.name}&user=${repo.owner.login}&clone_url=${repo.clone_url}`
-                          );
-                        }}
-                      >
-                        connect
-                      </Button>
                     </div>
-                  </>
+                    <Button
+                      className=" pointer-events-auto text-blue-500"
+                      onClick={() => {
+                        navigate(
+                          `/new-webapp?repo=${repo.name}&user=${repo.owner.login}&clone_url=${repo.clone_url}&vm=${vm}`
+                        );
+                      }}
+                    >
+                      connect
+                    </Button>
+                  </div>
                 );
               })}
             </div>

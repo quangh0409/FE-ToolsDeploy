@@ -22,6 +22,7 @@ import {
   setStepLog,
 } from "../../redux/reducer/log";
 import { store } from "../../redux/store";
+import ResultTrivy from "../../components/ResultTrivy";
 
 export default function OceanPage() {
   const [current, setCurrent] = useState(0);
@@ -55,7 +56,7 @@ export default function OceanPage() {
   const logRealTimeBuild = useSelector((state) => state.log.logRealTimeBuild);
   const logRealTimeDeploy = useSelector((state) => state.log.logRealTimeDeploy);
   const logRealTimeScanImages = useSelector(
-    (state) => state.log.logRealTimeScanImage
+    (state) => state.log.logRealTimeScanImages
   );
   const logBuild = useSelector((state) => state.log.logBuild);
   const logClear = useSelector((state) => state.log.logClear);
@@ -66,7 +67,6 @@ export default function OceanPage() {
   const logScanSyntax = useSelector((state) => state.log.logScanSyntax);
   const logSsh = useSelector((state) => state.log.logSsh);
   const stepLog = useSelector((state) => state.log.stepLog);
-  console.log("🚀 ~ OceanPage ~ stepLog:", stepLog)
 
   const items = [
     logSsh.map((log, idx) => {
@@ -115,18 +115,18 @@ export default function OceanPage() {
         return {
           key: idx + 1,
           label: log.sub_title,
-          children: <p>{`${log.mess || log.log.stdout}`}</p>,
+          children: <p >{`${log.mess || log.log.stdout}`}</p>,
         };
       }
       return {
         key: idx + 1,
         label: log.sub_title,
         children: (
-          <>
+          <div className="max-h-80 overflow-y-auto">
             {logRealTimeBuild.map((log) => {
               return <p>{log}</p>;
             })}
-          </>
+          </div>
         ),
       };
     }),
@@ -145,7 +145,7 @@ export default function OceanPage() {
           <>
             {logRealTimeScanImages.map((l) => {
               if (log.sub_title === l.sub_title) {
-                return <p>{l.log}</p>;
+                return <ResultTrivy Results={l.log.Results}/>;
               }
             })}
           </>
@@ -399,10 +399,10 @@ export default function OceanPage() {
             title: s.title,
             description: s.status,
             status:
-              s.status === "DONE" ||
-              s.status === "ERROR" ||
-              s.status === "SUCCESSFULLY"
+              s.status === "DONE" || s.status === "SUCCESSFULLY"
                 ? "finish"
+                : s.status === "ERROR"
+                ? "error"
                 : "process",
             icon:
               s.status === "DONE" ||

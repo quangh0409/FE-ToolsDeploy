@@ -2,6 +2,7 @@ import { Input, Radio } from "antd";
 import React, { useState } from "react";
 import useEffectOnce from "../../hook/useEffectOnce";
 import { useNavigate } from "react-router-dom";
+import socket from "../../utils/socket/socket";
 
 export default function SignInPage() {
   const [username, setUsername] = useState("");

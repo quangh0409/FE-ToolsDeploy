@@ -54,7 +54,6 @@ export const log = createSlice({
     },
     pushStepLog: (state, action) => {
       state.stepLog.push(action.payload);
-      console.log("🚀 ~ state.logSsh:", state.stepLog);
     },
     setStepLog: (state, action) => {
       state.stepLog[action.payload.idx].status = action.payload.status;

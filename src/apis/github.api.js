@@ -1,7 +1,7 @@
 import axios from "axios";
 import axiosServer from "./axios";
 import { store } from "../redux/store";
-import { addAvatar, addFullname } from "../redux/reducer/user";
+import { addAvatar, addFullname, addUserId } from "../redux/reducer/user";
 
 const axiosGithub = axios.create({
   baseURL: "https://github.com/login/oauth/authorize",
@@ -20,6 +20,7 @@ export async function loginByGithub(code) {
   localStorage.setItem("refreshToken", response.data.refreshToken);
   store.dispatch(addAvatar(response.data.avatar));
   store.dispatch(addFullname(response.data.fullname));
+  store.dispatch(addUserId(response.data.id));
 }
 
 export async function GetInfoUserGitByAccesToken() {

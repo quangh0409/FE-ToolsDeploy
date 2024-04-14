@@ -1,7 +1,11 @@
-import { Button, Card, Form, Input, Modal, Select, Space } from "antd";
+import { Button, Card, Form, Input, Modal, Radio, Select, Space } from "antd";
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { CloseOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  CloseOutlined,
+  ConsoleSqlOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import useEffectOnce from "../../hook/useEffectOnce";
 import {
   GetBranchesByAccessToken,
@@ -32,8 +36,11 @@ export default function Newwebapp() {
   const [contentfile, setContentfile] = useState();
   const [resultScanSyntax, setResultScanSyntax] = useState();
   const [errorLine, setErrorLine] = useState();
+  const [serviceId, setServiceId] = useState();
+  const [env, setEnv] = useState();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpenEnv, setIsModalOpenEnv] = useState(false);
   const [loading, setLoading] = useState(false);
   const vms_ids = useSelector((state) => state.user.ticket.vms_ids);
   const service_t = useSelector((state) => state.user.service);
@@ -69,7 +76,7 @@ export default function Newwebapp() {
   useEffect(() => {
     setDockerConfig(dockerConfig);
     setLoading(false);
-  }, [loading]);
+  }, [loading, dockerConfig]);
 
   useEffect(() => {
     if (vms_ids.length > 0) {
@@ -133,8 +140,8 @@ export default function Newwebapp() {
         name: inputValue,
         vm: "",
         branch: "",
-        docker_file: {},
-        docker_compose: {},
+        docker_file: [],
+        docker_compose: [],
       };
       setEnvironments([...environments, env]);
       setInputValue(""); // Clear input after adding
@@ -278,14 +285,17 @@ export default function Newwebapp() {
                                       repo,
                                       v
                                     );
-                                  dockerConfig[index].docker_file.push(
-                                    ...docker.dockerfile
-                                  );
-                                  dockerConfig[index].docker_compose.push(
-                                    ...docker.docker_compose
-                                  );
-
-                                  // setDockerConfig(dockerConfig);
+                                  // dockerConfig[index]?.docker_file.push(
+                                  //   ...docker.dockerfile
+                                  // );
+                                  // dockerConfig[index]?.docker_compose.push(
+                                  //   ...docker.docker_compose
+                                  // );
+                                  dockerConfig[index] = {
+                                    docker_file: docker.dockerfile,
+                                    docker_compose: docker.docker_compose,
+                                  };
+                                  setDockerConfig(dockerConfig);
                                   setLoading(true);
                                 };
                                 fetch();
@@ -321,7 +331,7 @@ export default function Newwebapp() {
 
                                 setEnvironments([...environments]);
                               }}
-                              options={dockerConfig[index].docker_file.map(
+                              options={dockerConfig[index]?.docker_file.map(
                                 (d) => {
                                   return {
                                     label: d.name,
@@ -390,8 +400,8 @@ export default function Newwebapp() {
                               open={isModalOpen}
                               footer={false}
                               onCancel={() => setIsModalOpen(false)}
-                              width={1500}
                               closeIcon={false}
+                              width={1500}
                             >
                               <TemplateDetailPage
                                 contentfile={contentfile}
@@ -428,7 +438,7 @@ export default function Newwebapp() {
                                         const check = dockerConfig[
                                           index
                                         ].docker_file?.findIndex((f, idx) => {
-                                          console.log(f.path)
+                                          console.log(f.path);
                                           if (contentfile.name === f.path) {
                                             dockerConfig[index].docker_file[
                                               idx
@@ -486,7 +496,7 @@ export default function Newwebapp() {
 
                                 setEnvironments([...environments]);
                               }}
-                              options={dockerConfig[index].docker_compose.map(
+                              options={dockerConfig[index]?.docker_compose.map(
                                 (d) => {
                                   return {
                                     label: d.name,
@@ -604,20 +614,57 @@ export default function Newwebapp() {
                     ...service,
                     environments: environments,
                   });
-
-                  console.log(res);
+                  setServiceId(res.id);
                 };
-                // fetch();
-                // navigate(`/ocean?service=${res.id}&env=${}`);
-                navigate(
-                  `/ocean?service=${"84eda100-f53d-11ee-bbde-2f6c6e730607"}&env=${"dev"}`
-                );
+                fetch();
+                if (environments.length === 1) {
+                  navigate(
+                    `/ocean?service=${res.id}&env=${environments[0].name}`
+                  );
+                } else {
+                  setIsModalOpenEnv(true);
+                }
+                console.log(environments);
               }}
             >
               Build
             </Button>
           </div>
         </div>
+        <Modal
+          open={isModalOpenEnv}
+          onCancel={() => setIsModalOpenEnv(false)}
+          closeIcon={true}
+          title={"Environment"}
+        >
+          <div className="grid-flow-row">
+            <div className="mb-2">
+              <Radio.Group
+                onChange={(e) => {
+                  setEnv(e.target.value);
+                }}
+              >
+                {environments.map((val, idx) => {
+                  console.log("🚀 ~ {environments.map ~ val:", val);
+                  return (
+                    <Radio key={idx} value={val.name}>
+                      {val.name}
+                    </Radio>
+                  );
+                })}
+              </Radio.Group>
+            </div>
+            <div className="">
+              <Button
+                onClick={() => {
+                  navigate(`/ocean?service=${serviceId}&env=${env}`);
+                }}
+              >
+                Submit
+              </Button>
+            </div>
+          </div>
+        </Modal>
       </div>
     </>
   );

@@ -21,6 +21,7 @@ export default function Dashboard() {
     if (vms_ids.length > 0) {
       const fetch = async () => {
         const res = await getVmsByIds(vms_ids);
+        console.log("🚀 ~ fetch ~ res:", res)
         setVms(res);
       };
       fetch();

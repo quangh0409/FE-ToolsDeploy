@@ -24,7 +24,6 @@ export default function ServicePage() {
   useEffect(() => {
     const fetch = async () => {
       const res = await getAllServiceByVMId(vm);
-      console.log("🚀 ~ fetch ~ res:", res);
       setServices(res);
     };
     fetch();

@@ -18,6 +18,7 @@ const initialState = {
     environments: [],
   },
   vm: "",
+  user_id: "",
 };
 
 export const user = createSlice({
@@ -62,6 +63,9 @@ export const user = createSlice({
     addVm: (state, action) => {
       state.vm = action.payload;
     },
+    addUserId: (state, action) => {
+      state.user_id = action.payload;
+    },
   },
 });
 
@@ -73,6 +77,7 @@ export const {
   addTicket,
   addService,
   addVm,
+  addUserId,
 } = user.actions;
 
 export default user.reducer;

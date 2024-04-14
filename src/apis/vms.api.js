@@ -24,3 +24,13 @@ export async function getAllServiceByVMId(vm) {
   const response = await axiosServer().get(`services/vm/${vm}`);
   return response.data;
 }
+
+export async function getServiceById(service) {
+  const response = await axiosServer().get(`services/${service}`);
+  return response.data;
+}
+
+export async function deleteServiceById(service) {
+  const response = await axiosServer().delete(`services/${service}`);
+  return response.data;
+}

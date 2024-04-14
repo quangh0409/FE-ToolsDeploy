@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button, Input, Table } from "antd";
 import {
   CheckCircleTwoTone,
@@ -6,10 +6,12 @@ import {
   SearchOutlined,
   SettingOutlined,
   CaretLeftOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import useEffectOnce from "../../hook/useEffectOnce";
-import { getAllServiceByVMId } from "../../apis";
+import { deleteServiceById, getAllServiceByVMId } from "../../apis";
+import { useEffect } from "react";
 
 export default function ServicePage() {
   const navigate = useNavigate();
@@ -17,14 +19,17 @@ export default function ServicePage() {
   const params = new URLSearchParams(location.search);
   const vm = params.get("vm");
   const [services, setServices] = useState([]);
+  const [reload, setReload] = useState(false);
 
-  useEffectOnce(() => {
+  useEffect(() => {
     const fetch = async () => {
       const res = await getAllServiceByVMId(vm);
+      console.log("🚀 ~ fetch ~ res:", res);
       setServices(res);
     };
     fetch();
-  }, [vm]);
+    setReload(false);
+  }, [vm, reload]);
 
   const columns = [
     {
@@ -81,7 +86,7 @@ export default function ServicePage() {
         return (
           <SettingOutlined
             onClick={() => {
-              navigate(`/dashboard/VM-connect?vm=${vm.id}`);
+              // navigate(`/dashboard/VM-connect?vm=${vm.id}`);
             }}
           />
         );
@@ -99,6 +104,24 @@ export default function ServicePage() {
               //   return vm.host === record.host;
               // });
               // navigate(`/dashboard/VM-connect?vm=${vm.id}`);
+              const env_name = record.environment.find((e) => vm === e.vm);
+              navigate(`/ocean?service=${record.id}&env=${env_name.name}`);
+            }}
+          />
+        );
+      },
+    },
+    {
+      width: 100,
+      title: "Delete",
+      key: "delete",
+      render: (record, index) => {
+        return (
+          <DeleteOutlined
+            onClick={async () => {
+              const res = await deleteServiceById(record.id);
+              setReload(true);
+              alert(res.message);
             }}
           />
         );
@@ -148,20 +171,12 @@ export default function ServicePage() {
                   key: index,
                   repo: s.repo,
                   source: s.source,
-                  user: s.user
+                  user: s.user,
+                  environment: s.environment,
                 };
               })}
               columns={columns}
               scroll={{ y: 421 }}
-              // onRow={(record, rowIndex) => {
-              //   return {
-              //     onClick: () => {
-              //       navigate(
-              //         `/service/detail?host=${record.service_name}&name=${record.type}`
-              //       );
-              //     },
-              //   };
-              // }}
             />
           </div>
         </div>

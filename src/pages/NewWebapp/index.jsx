@@ -1,10 +1,11 @@
 import { Button, Card, Form, Input, Modal, Select, Space } from "antd";
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { CloseOutlined } from "@ant-design/icons";
+import { CloseOutlined, PlusOutlined } from "@ant-design/icons";
 import useEffectOnce from "../../hook/useEffectOnce";
 import {
   GetBranchesByAccessToken,
+  GetContentsByAccessToken,
   GetLanguagesByAccessToken,
   GetPathFileDockerByAccessToken,
 } from "../../apis/github.api";
@@ -13,6 +14,7 @@ import { useSelector } from "react-redux";
 import { createService, getVmsByIds } from "../../apis/vms.api";
 import { store } from "../../redux/store";
 import { addService } from "../../redux/reducer/user";
+import { scanSyxtax } from "../../apis/scan.api";
 
 export default function Newwebapp() {
   const location = useLocation();
@@ -27,6 +29,9 @@ export default function Newwebapp() {
   const [languages, setLanguages] = useState([{}]);
   const [vms, setVms] = useState([]);
   const [service, setService] = useState();
+  const [contentfile, setContentfile] = useState();
+  const [resultScanSyntax, setResultScanSyntax] = useState();
+  const [errorLine, setErrorLine] = useState();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -41,27 +46,15 @@ export default function Newwebapp() {
       name: "",
       vm: "",
       branch: "",
-      docker_file: {},
-      docker_compose: {},
+      docker_file: [],
+      docker_compose: [],
     },
   ]);
 
   const [dockerConfig, setDockerConfig] = useState([
     {
-      docker_file: [
-        {
-          name: "",
-          path: "",
-          sha: "",
-        },
-      ],
-      docker_compose: [
-        {
-          name: "",
-          path: "",
-          sha: "",
-        },
-      ],
+      docker_file: [],
+      docker_compose: [],
     },
   ]);
   const handleModalshow = () => {
@@ -285,10 +278,13 @@ export default function Newwebapp() {
                                       repo,
                                       v
                                     );
-                                  dockerConfig[index] = {
-                                    docker_file: docker.dockerfile,
-                                    docker_compose: docker.docker_compose,
-                                  };
+                                  dockerConfig[index].docker_file.push(
+                                    ...docker.dockerfile
+                                  );
+                                  dockerConfig[index].docker_compose.push(
+                                    ...docker.docker_compose
+                                  );
+
                                   // setDockerConfig(dockerConfig);
                                   setLoading(true);
                                 };
@@ -304,28 +300,8 @@ export default function Newwebapp() {
                             <h2>Dockerfile</h2>
                           </div>
                           <div className="w-8/12 h-full ">
-                            {/* <Input
-                              className="h-full"
-                              placeholder={"defult"}
-                              value={environments[index].docker_file.name}
-                              onChange={(e) => {
-                                environments[index].docker_file.name =
-                                  e.target.value;
-
-                                setEnvironments([...environments]);
-                              }}
-                              //   allowClear
-                              suffix={
-                                <Button
-                                  className="text-gray-400 pointer-events-auto  "
-                                  onClick={handleModalshow}
-                                >
-                                  Edit
-                                </Button>
-                              }
-                            /> */}
                             <Select
-                              mode="tags"
+                              mode="multiple"
                               style={{
                                 width: "100%",
                               }}
@@ -338,7 +314,7 @@ export default function Newwebapp() {
                                     return {
                                       location: op.desc,
                                       name: op.label,
-                                      content: "",
+                                      content: op.value,
                                     };
                                   }
                                 );
@@ -349,40 +325,130 @@ export default function Newwebapp() {
                                 (d) => {
                                   return {
                                     label: d.name,
-                                    value: d.sha,
+                                    value: d.content,
                                     desc: d.path,
+                                    // con
                                   };
                                 }
                               )}
-                              optionRender={(option) => (
-                                <Space>
-                                  <span
-                                    role="img"
-                                    aria-label={option.data.label}
-                                  >
-                                    {option.data.emoji}
-                                  </span>
-                                  {option.data.desc}
+                              optionRender={(option, info) => (
+                                <Space className="flex justify-between">
+                                  <div>
+                                    <span
+                                      role="img"
+                                      aria-label={option.data.label}
+                                    >
+                                      {option.data.emoji}
+                                    </span>
+                                    {option.data.desc}
+                                  </div>
+                                  {option.data.desc && (
+                                    <Button
+                                      onClick={async (e) => {
+                                        setIsModalOpen(true);
+                                        setContentfile({
+                                          name: option.data.desc,
+                                          content: option.data.value,
+                                        });
+                                        e.stopPropagation();
+                                      }}
+                                    >
+                                      {" "}
+                                      Edit
+                                    </Button>
+                                  )}
                                 </Space>
+                              )}
+                              dropdownRender={(menu) => (
+                                <>
+                                  {menu}
+                                  <Space
+                                    className="w-full"
+                                    style={{ padding: "8px 4px" }}
+                                  >
+                                    <Button
+                                      type="text"
+                                      icon={<PlusOutlined />}
+                                      className="w-full"
+                                      onClick={(e) => {
+                                        setIsModalOpen(true);
+                                        setContentfile({
+                                          name: "",
+                                          content: "",
+                                          type: "DOCKERFILE",
+                                        });
+                                        e.stopPropagation();
+                                      }}
+                                    >
+                                      Add item
+                                    </Button>
+                                  </Space>
+                                </>
                               )}
                             />
                             <Modal
                               open={isModalOpen}
                               footer={false}
                               onCancel={() => setIsModalOpen(false)}
-                              width={1000}
+                              width={1500}
                               closeIcon={false}
                             >
-                              <TemplateDetailPage />
+                              <TemplateDetailPage
+                                contentfile={contentfile}
+                                setContentfile={setContentfile}
+                                resultScanSyntax={resultScanSyntax}
+                                errorLine={errorLine}
+                              />
                               <div className="flex justify-between mt-5">
                                 <div className="flex ">
                                   <Button
                                     className="mr-3"
-                                    onClick={() => setIsModalOpen(false)}
+                                    onClick={async () => {
+                                      const res = await scanSyxtax(
+                                        contentfile.content
+                                      );
+                                      const lines = res.map((val) => {
+                                        if (val.level === "error")
+                                          return val.line;
+                                      });
+                                      setErrorLine(lines);
+                                      setResultScanSyntax(res);
+                                    }}
                                   >
                                     Scan
                                   </Button>
-                                  <Button onClick={() => setIsModalOpen(false)}>
+                                  <Button
+                                    onClick={() => {
+                                      if (
+                                        !contentfile?.name ||
+                                        contentfile?.name === ""
+                                      ) {
+                                        alert("Please enter name file");
+                                      } else {
+                                        const check = dockerConfig[
+                                          index
+                                        ].docker_file?.findIndex((f, idx) => {
+                                          console.log(f.path)
+                                          if (contentfile.name === f.path) {
+                                            dockerConfig[index].docker_file[
+                                              idx
+                                            ].content = contentfile.content;
+                                            return true;
+                                          }
+                                        });
+
+                                        if (check !== 0) {
+                                          const t = contentfile.name.split("/");
+                                          dockerConfig[index].docker_file.push({
+                                            name: t[t.length - 1],
+                                            path: contentfile.name,
+                                            content: contentfile.content,
+                                          });
+                                        }
+                                        setIsModalOpen(false);
+                                      }
+                                    }}
+                                  >
                                     Save
                                   </Button>
                                 </div>
@@ -399,25 +465,6 @@ export default function Newwebapp() {
                             <h2>Docker-compose</h2>
                           </div>
                           <div className="w-8/12 h-full ">
-                            {/* <Input
-                              className="h-full"
-                              placeholder={"defult"}
-                              value={environments[index].docker_compose.name}
-                              onChange={(e) => {
-                                environments[index].docker_compose.name =
-                                  e.target.value;
-
-                                setEnvironments([...environments]);
-                              }}
-                              suffix={
-                                <Button
-                                  className="text-gray-400 pointer-events-auto  "
-                                  onClick={handleModalshow}
-                                >
-                                  Edit
-                                </Button>
-                              }
-                            /> */}
                             <Select
                               mode="multiple"
                               style={{
@@ -432,7 +479,7 @@ export default function Newwebapp() {
                                     return {
                                       location: op.desc,
                                       name: op.label,
-                                      content: "",
+                                      content: op.value,
                                     };
                                   }
                                 );
@@ -443,25 +490,64 @@ export default function Newwebapp() {
                                 (d) => {
                                   return {
                                     label: d.name,
-                                    value: d.sha,
+                                    value: d.content,
                                     desc: d.path,
                                   };
                                 }
                               )}
                               optionRender={(option) => (
-                                <Space>
-                                  <span
-                                    role="img"
-                                    aria-label={option.data.label}
-                                  >
-                                    {option.data.emoji}
-                                  </span>
-                                  {option.data.desc}
+                                <Space className="flex justify-between">
+                                  <div>
+                                    <span
+                                      role="img"
+                                      aria-label={option.data.label}
+                                    >
+                                      {option.data.emoji}
+                                    </span>
+                                    {option.data.desc}
+                                  </div>
+                                  {option.data.desc && (
+                                    <Button
+                                      onClick={(e) => {
+                                        setIsModalOpen(true);
+                                        setContentfile({
+                                          name: option.data.desc,
+                                          content: option.data.value,
+                                        });
+                                        e.stopPropagation();
+                                      }}
+                                    >
+                                      {" "}
+                                      Edit
+                                    </Button>
+                                  )}
                                 </Space>
+                              )}
+                              dropdownRender={(menu) => (
+                                <>
+                                  {menu}
+                                  <Space
+                                    className="w-full"
+                                    style={{ padding: "8px 4px" }}
+                                  >
+                                    <Button
+                                      type="text"
+                                      icon={<PlusOutlined />}
+                                      className="w-full"
+                                      onClick={(e) => {
+                                        setIsModalOpen(true);
+                                        e.stopPropagation();
+                                      }}
+                                    >
+                                      Add item
+                                    </Button>
+                                  </Space>
+                                </>
                               )}
                             />
                           </div>
                         </div>
+                        {/* -------------------------------- */}
                       </Card>
                     ))}
                     {/* -------------------------------- */}
@@ -496,11 +582,15 @@ export default function Newwebapp() {
                     ...service,
                     environments: environments,
                   });
-                
+
                   console.log(res);
                 };
-                navigate(`/service?vm${vm}`);
-                // fetch();
+                fetch();
+                navigate(`/service?vm=${vm}`);
+                // console.log({
+                //   ...service,
+                //   environments: environments,
+                // });
               }}
             >
               Save
@@ -508,7 +598,20 @@ export default function Newwebapp() {
             <Button
               className="text-gray-400 pointer-events-auto border border-solid border-gray-400  "
               onClick={() => {
-                navigate("/ocean");
+                let res;
+                const fetch = async () => {
+                  res = await createService({
+                    ...service,
+                    environments: environments,
+                  });
+
+                  console.log(res);
+                };
+                // fetch();
+                // navigate(`/ocean?service=${res.id}&env=${}`);
+                navigate(
+                  `/ocean?service=${"84eda100-f53d-11ee-bbde-2f6c6e730607"}&env=${"dev"}`
+                );
               }}
             >
               Build

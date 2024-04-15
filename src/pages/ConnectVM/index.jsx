@@ -146,7 +146,7 @@ export default function ConnectVM() {
             </Radio.Button>
           </div>
         </div>
-        <div className="border-solid border border-gray-500 font mt-6 rounded-md">
+        {/* <div className="border-solid border border-gray-500 font mt-6 rounded-md">
           <p>{`(set sudo role for user)`}</p>
           <p>sudo visudo</p>
           <p>your_username ALL=(ALL:ALL) ALL</p>
@@ -160,7 +160,7 @@ export default function ConnectVM() {
           </p>
           <p>&gt;&gt; cat id_rsa.pub &gt;&gt; ~/.ssh/authorized_keys</p>
           <p>&gt;&gt; chmod 600 ~/.ssh/authorized_keys</p>
-        </div>
+        </div> */}
         <div className="flex mt-2">
           <div className="flex-none w-40">
             <Radio.Button

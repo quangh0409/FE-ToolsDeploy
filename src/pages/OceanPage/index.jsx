@@ -59,6 +59,7 @@ export default function OceanPage() {
     (state) => state.log.logRealTimeScanImages
   );
   const logBuild = useSelector((state) => state.log.logBuild);
+  console.log("🚀 ~ OceanPage ~ logBuild:", logBuild)
   const logClear = useSelector((state) => state.log.logClear);
   const logClone = useSelector((state) => state.log.logClone);
   const logDeploy = useSelector((state) => state.log.logDeploy);
@@ -67,6 +68,7 @@ export default function OceanPage() {
   const logScanSyntax = useSelector((state) => state.log.logScanSyntax);
   const logSsh = useSelector((state) => state.log.logSsh);
   const stepLog = useSelector((state) => state.log.stepLog);
+  console.log("🚀 ~ OceanPage ~ stepLog:", stepLog)
 
   const items = [
     logSsh.map((log, idx) => {
@@ -102,11 +104,11 @@ export default function OceanPage() {
         key: idx + 1,
         label: log.sub_title,
         children: (
-          <>
+          <div className="max-h-80 overflow-y-auto">
             {logRealTimeClear.map((log) => {
               return <p>{log}</p>;
             })}
-          </>
+          </div>
         ),
       };
     }),
@@ -164,11 +166,11 @@ export default function OceanPage() {
         key: idx + 1,
         label: log.sub_title,
         children: (
-          <>
+          <div className="max-h-80 overflow-y-auto">
             {logRealTimeDeploy.map((log) => {
               return <p>{log}</p>;
             })}
-          </>
+          </div>
         ),
       };
     }),

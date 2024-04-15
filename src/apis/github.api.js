@@ -18,6 +18,7 @@ export async function loginByGithub(code) {
   const response = await axiosServer().get(`auth/login-github?code=${code}`);
   localStorage.setItem("accessToken", response.data.accessToken);
   localStorage.setItem("refreshToken", response.data.refreshToken);
+  localStorage.setItem("UserId", response.data.id);
   store.dispatch(addAvatar(response.data.avatar));
   store.dispatch(addFullname(response.data.fullname));
   store.dispatch(addUserId(response.data.id));
@@ -66,4 +67,3 @@ export async function GetContentsByAccessToken(repository, sha) {
 
   return response.data;
 }
-

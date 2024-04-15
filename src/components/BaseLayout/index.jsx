@@ -4,19 +4,12 @@ import Footer from "../Footer";
 import useEffectOnce from "../../hook/useEffectOnce";
 import { getTicketDetail } from "../../apis";
 import socket from "../../utils/socket/socket";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 export default function BaseLayout(props) {
   const navigate = useNavigate();
-  const user = useSelector((state) => {
-    return state.user.user_id;
-  });
-  socket.on("webhooks", (user_id) => {
-    if (user_id === user) {
-      console.log("ok");
-    }
-  });
+  const location = useLocation();
   useEffectOnce(() => {
     const fetch = async () => {
       if (localStorage.getItem("accessToken")) {
@@ -28,6 +21,16 @@ export default function BaseLayout(props) {
       }
     };
     fetch();
+    socket.on("webhooks", (user_id, service, env) => {
+      if (user_id === localStorage.getItem("UserId")) {
+        const currentUrl = `/ocean?service=${service}&env=${env}`;
+        if (window.location.pathname + window.location.search === currentUrl) {
+          window.location.href = currentUrl; // Buộc tải lại trang
+        } else {
+          navigate(currentUrl);
+        }
+      }
+    });
   });
 
   return (

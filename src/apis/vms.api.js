@@ -34,3 +34,18 @@ export async function deleteServiceById(service) {
   const response = await axiosServer().delete(`services/${service}`);
   return response.data;
 }
+
+export async function getImagesOfServiceById(service, env) {
+  const response = await axiosServer().post(`services/images`, {
+    service: service,
+    env: env,
+  });
+  return response.data;
+}
+
+export async function scanImageOfService(service, env, image) {
+  const response = await axiosServer().get(
+    `services/images?service=${service}&env=${env}&image=${image}`
+  );
+  return response.data;
+}

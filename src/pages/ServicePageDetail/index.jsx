@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Route, useLocation, useNavigate } from "react-router-dom";
 import { ROUTE, TYPE } from "../../constants/router";
 import {
@@ -7,24 +7,99 @@ import {
   LinkOutlined,
   MergeOutlined,
 } from "@ant-design/icons";
-import { Tabs } from "antd";
+import { Button, Table, Tabs } from "antd";
+import { getImagesOfServiceById, scanImageOfService } from "../../apis";
 
 export default function ServicePageDetail(props) {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
+  const service_id = params.get("id");
+  const service_env = params.get("env");
   const service_name = params.get("name");
-  const service_type = params.get("type");
-  console.log("🚀 ~ ServicePageDetail ~ service_type:", TYPE[service_type]);
   const navigate = useNavigate();
   const [url, setUrl] = useState("quangh0409/Decision_help_system");
+  const [images, setImages] = useState([]);
+  const [resultScan, setResultScan] = useState();
+  const columns = [
+    {
+      title: `IMAGE NAME(REPOSITORY)`,
+      key: "image_name",
+      dataIndex: "Repository",
+      width: 250,
+    },
+    {
+      title: "TAG",
+      dataIndex: "Tag",
+      key: "tag",
+      width: 100,
+    },
+    {
+      title: "IMAGE ID",
+      dataIndex: "ID",
+      key: "image_id",
+    },
+    {
+      title: "CREATED",
+      dataIndex: "CreatedAt",
+      key: "created",
+    },
+    {
+      title: "SIZE",
+      dataIndex: "Size",
+      key: "size",
+    },
+    {
+      title: "SCAN IMAGE",
+      key: "scan",
+      render: (record, index) => {
+        return (
+          <Button
+            onClick={async () => {
+              const res = await scanImageOfService(
+                service_id,
+                service_env,
+                record.Repository
+              );
+              console.log("🚀 ~ onClick={ ~ res:", res);
+              // setResultScan()
+            }}
+          >
+            {" "}
+          </Button>
+        );
+      },
+    },
+  ];
+  useEffect(() => {
+    const fetch = async () => {
+      const res = await getImagesOfServiceById(service_id, service_env);
+      setImages(res.result);
+    };
+    fetch();
+  }, [service_id, service_env]);
+
   const title_iterms = ["Event", "Logs", "Shell", "Images", "Settings"];
+  const content_iterms = [
+    <div>
+      <Table
+        pagination={false}
+        dataSource={images?.map((i, index) => {
+          return {
+            ...i,
+            key: index,
+          };
+        })}
+        columns={columns}
+        scroll={{ y: 421 }}
+      />
+    </div>,
+  ];
   return (
     <>
       <div className="h-full">
         <div className="ml-24 mr-24 mb-10 ">
           <div className=" text-3xl font-medium">
             <GlobalOutlined />
-            {TYPE[service_type]}
           </div>
           <div className="mt-2  ">{service_name}</div>
           <div className=" mt-2 ">
@@ -68,10 +143,7 @@ export default function ServicePageDetail(props) {
             </div>
           </div>
           <div className="col-span-5 border-solid border border-gray-300 rounded-md"></div> */}
-          <div
-            className="col-span-6 "
-            style={{ height: `${600}px` }}
-          >
+          <div className="col-span-6 " style={{ height: `${600}px` }}>
             <Tabs
               className="w-full h-full"
               tabPosition={"left"}
@@ -79,7 +151,7 @@ export default function ServicePageDetail(props) {
                 return {
                   label: `${t}`,
                   key: i,
-                  children: `Content of Tab ${i}`,
+                  children: content_iterms[0],
                 };
               })}
             />

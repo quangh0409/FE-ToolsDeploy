@@ -38,8 +38,8 @@ export default function ServicePage() {
       render: (record, index) => (
         <div
           onClick={() => {
-            console.log(record);
-            navigate(`/service/detail?id=${record.id}`);
+            const env = record.environment.find((e) => e.vm === vm);
+            navigate(`/service/detail?id=${record.id}&env=${env.name}`);
           }}
         >
           <GlobalOutlined />
@@ -104,7 +104,9 @@ export default function ServicePage() {
               // });
               // navigate(`/dashboard/VM-connect?vm=${vm.id}`);
               const env_name = record.environment.find((e) => vm === e.vm);
-              navigate(`/ocean?service=${record.id}&env=${env_name.name}`);
+              navigate(
+                `/ocean?service=${record.id}&env=${env_name.name}&name=${record.service_name}`
+              );
             }}
           />
         );

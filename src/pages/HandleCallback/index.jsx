@@ -18,11 +18,6 @@ export default function HandleCallback() {
       navigate("/dashboard");
       socket.connect();
       socket.emit("register", localStorage.getItem("accessToken"));
-      socket.on("webhooks", (user_id) => {
-        if(user_id){
-          
-        }
-      });
     };
 
     fetchAccessToken();

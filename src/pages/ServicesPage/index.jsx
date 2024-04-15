@@ -9,7 +9,6 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
-import useEffectOnce from "../../hook/useEffectOnce";
 import { deleteServiceById, getAllServiceByVMId } from "../../apis";
 import { useEffect } from "react";
 

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Route, useLocation, useNavigate } from "react-router-dom";
-import { ROUTE, TYPE } from "../../constants/router";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   CopyOutlined,
   GlobalOutlined,
@@ -16,7 +15,6 @@ export default function ServicePageDetail(props) {
   const service_id = params.get("id");
   const service_env = params.get("env");
   const service_name = params.get("name");
-  const navigate = useNavigate();
   const [url, setUrl] = useState("quangh0409/Decision_help_system");
   const [images, setImages] = useState([]);
   const [resultScan, setResultScan] = useState();

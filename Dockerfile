@@ -8,8 +8,6 @@
     RUN npm install
     RUN npm ci
     COPY . /app
-    ENV CI=true
-    ENV PORT=3000
     CMD [ "npm", "start" ]
     FROM development AS build
     RUN npm run build

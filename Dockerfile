@@ -1,20 +1,26 @@
-# Sử dụng image node:alpine để build ứng dụng React
-FROM node:alpine as build
-# Thiết lập thư mục làm việc
-WORKDIR /app
-# Copy file package.json và package-lock.json vào thư mục /app
-COPY package*.json ./
-# Install các dependencies
-RUN npm install
-# Copy toàn bộ mã nguồn vào thư mục /app
-COPY . .
-# Build ứng dụng React
-RUN npm run build
-# Sử dụng image nginx để serve ứng dụng build
-FROM nginx:alpine
-# Copy các file từ builder stage (build) vào thư mục của nginx
-COPY --from=build /app/build /usr/share/nginx/html
-# Mở cổng 80
-EXPOSE 80
-# Khởi động nginx
-CMD ["nginx", "-g", "daemon off;"]
+    # 1. For build React app
+    FROM node:18-alpine AS development
+    # Set working directory
+    WORKDIR /app
+    #
+    COPY package.json /app/package.json
+    COPY package-lock.json /app/package-lock.json
+    RUN npm install
+    RUN npm ci
+    COPY . /app
+    ENV CI=true
+    ENV PORT=3000
+    CMD [ "npm", "start" ]
+    FROM development AS build
+    RUN npm run build
+    # 2. For Nginx setup
+    FROM nginx:alpine
+    # Copy config nginx
+    COPY --from=build /app/nginx/nginx.conf /etc/nginx/conf.d/default.conf
+    WORKDIR /usr/share/nginx/html
+    # Remove default nginx static assets
+    RUN rm -rf ./*
+    # Copy static assets from builder stage
+    COPY --from=build /app/build .
+    # Containers run nginx with global directives and daemon off
+    ENTRYPOINT ["nginx", "-g", "daemon off;"]

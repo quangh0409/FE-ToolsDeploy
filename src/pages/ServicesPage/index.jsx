@@ -9,8 +9,9 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
-import { deleteServiceById, getAllServiceByVMId } from "../../apis";
 import { useEffect } from "react";
+import apiCaller from "../../apis/apiCaller";
+import vmsApi from "../../apis/vms.api";
 
 export default function ServicePage() {
   const navigate = useNavigate();
@@ -22,7 +23,9 @@ export default function ServicePage() {
 
   useEffect(() => {
     const fetch = async () => {
-      const res = await getAllServiceByVMId(vm);
+      const res = await apiCaller({
+        request: vmsApi.getAllServiceByVMId(vm),
+      });
       setServices(res);
     };
     fetch();
@@ -119,7 +122,9 @@ export default function ServicePage() {
         return (
           <DeleteOutlined
             onClick={async () => {
-              const res = await deleteServiceById(record.id);
+              const res = await apiCaller({
+                request: vmsApi.deleteServiceById(record.id),
+              });
               setReload(true);
               alert(res.message);
             }}

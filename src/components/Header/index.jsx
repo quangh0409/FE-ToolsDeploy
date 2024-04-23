@@ -10,7 +10,6 @@ import {
 } from "@ant-design/icons";
 import { useSelector } from "react-redux";
 import useEffectOnce from "../../hook/useEffectOnce";
-import { getTicketDetail } from "../../apis";
 
 export default function Header() {
   const uri = useLocation();

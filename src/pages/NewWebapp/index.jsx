@@ -3,22 +3,17 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   CloseOutlined,
-  ConsoleSqlOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
 import useEffectOnce from "../../hook/useEffectOnce";
-import {
-  GetBranchesByAccessToken,
-  GetContentsByAccessToken,
-  GetLanguagesByAccessToken,
-  GetPathFileDockerByAccessToken,
-} from "../../apis/github.api";
+import githubApi from "../../apis/github.api";
 import TemplateDetailPage from "../../components/Scan";
 import { useSelector } from "react-redux";
-import { createService, getVmsByIds } from "../../apis/vms.api";
+import vmsApi from "../../apis/vms.api";
 import { store } from "../../redux/store";
 import { addService } from "../../redux/reducer/user";
-import { scanSyxtax } from "../../apis/scan.api";
+import scanApi from "../../apis/scan.api";
+import apiCaller from "../../apis/apiCaller";
 
 export default function Newwebapp() {
   const location = useLocation();
@@ -81,7 +76,9 @@ export default function Newwebapp() {
   useEffect(() => {
     if (vms_ids.length > 0) {
       const fetch = async () => {
-        const res = await getVmsByIds(vms_ids);
+        const res = await apiCaller({
+          request: vmsApi.getVmsByIds(vms_ids),
+        });
         setVms(res);
       };
       fetch();
@@ -90,12 +87,17 @@ export default function Newwebapp() {
 
   useEffectOnce(() => {
     const fetchBranch = async () => {
-      const res = await GetBranchesByAccessToken(repo);
+      // const res = await GetBranchesByAccessToken(repo);
+      const res = await apiCaller({
+        request: githubApi.GetBranchesByAccessToken(repo),
+      });
       setBranches(res);
     };
 
     const fetchLanguage = async () => {
-      const res = await GetLanguagesByAccessToken(repo);
+      const res = await apiCaller({
+        request: githubApi.GetLanguagesByAccessToken(repo),
+      });
       setLanguages(res);
     };
     fetchBranch();
@@ -152,6 +154,9 @@ export default function Newwebapp() {
     const newEnvs = [...environments];
     newEnvs.splice(index, 1);
     setEnvironments(newEnvs);
+  };
+  const check = () => {
+    form.validateFields();
   };
   return (
     <>
@@ -213,7 +218,13 @@ export default function Newwebapp() {
                 />
               </div>
             </div>
-            <Form form={form} initialValues={{ items: [{}] }}>
+            <Form
+              form={form}
+              onFinish={() => {
+                console.log("ok");
+              }}
+              initialValues={{ items: [{}] }}
+            >
               <Form.List name="items">
                 {(fields, { add, remove }) => (
                   <div
@@ -240,13 +251,24 @@ export default function Newwebapp() {
                             <h2>Name</h2>
                           </div>
                           <div className="w-8/12 h-full ">
-                            <Input
-                              value={environments[index].name}
-                              onChange={(e) => {
-                                environments[index].name = e.target.value;
-                                setEnvironments([...environments]);
-                              }}
-                            />
+                            <Form.Item
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Please input your host!",
+                                },
+                              ]}
+                              label={"Name"}
+                              name={"Name"}
+                            >
+                              <Input
+                                value={environments[index].name}
+                                onChange={(e) => {
+                                  environments[index].name = e.target.value;
+                                  setEnvironments([...environments]);
+                                }}
+                              />
+                            </Form.Item>
                           </div>
                         </div>
                         {/* -------------------------------- */}
@@ -280,11 +302,13 @@ export default function Newwebapp() {
                                 environments[index].branch = v;
                                 setEnvironments([...environments]);
                                 const fetch = async () => {
-                                  const docker =
-                                    await GetPathFileDockerByAccessToken(
-                                      repo,
-                                      v
-                                    );
+                                  const docker = await apiCaller({
+                                    request:
+                                      githubApi.GetPathFileDockerByAccessToken(
+                                        repo,
+                                        v
+                                      ),
+                                  });
                                   // dockerConfig[index]?.docker_file.push(
                                   //   ...docker.dockerfile
                                   // );
@@ -414,9 +438,11 @@ export default function Newwebapp() {
                                   <Button
                                     className="mr-3"
                                     onClick={async () => {
-                                      const res = await scanSyxtax(
-                                        contentfile.content
-                                      );
+                                      const res = await apiCaller({
+                                        request: scanApi.scanSyxtax(
+                                          contentfile.content
+                                        ),
+                                      });
                                       const lines = res.map((val) => {
                                         if (val.level === "error")
                                           return val.line;
@@ -558,6 +584,12 @@ export default function Newwebapp() {
                           </div>
                         </div>
                         {/* -------------------------------- */}
+                        <div className="flex flex-row w-full h-12  justify-between mb-5">
+                          <div className="h-full">
+                            <h2>Postman</h2>
+                          </div>
+                          <div className="w-8/12 h-full ">tải file</div>
+                        </div>
                       </Card>
                     ))}
                     {/* -------------------------------- */}
@@ -586,17 +618,23 @@ export default function Newwebapp() {
           <div className="mt-20 flex gap-3">
             <Button
               className="text-green-400 pointer-events-auto border border-solid border-green-400  "
+              disabled={false}
               onClick={() => {
                 const fetch = async () => {
-                  const res = await createService({
-                    ...service,
-                    environments: environments,
+                  const res = await apiCaller({
+                    request: vmsApi.createService({
+                      ...service,
+                      environments: environments,
+                    }),
                   });
 
                   console.log(res);
                 };
-                fetch();
-                navigate(`/service?vm=${vm}`);
+                check();
+                form.submit();
+                // fetch();
+
+                // navigate(`/service?vm=${vm}`);
                 // console.log({
                 //   ...service,
                 //   environments: environments,
@@ -610,9 +648,11 @@ export default function Newwebapp() {
               onClick={() => {
                 let res;
                 const fetch = async () => {
-                  res = await createService({
-                    ...service,
-                    environments: environments,
+                  res = await apiCaller({
+                    request: vmsApi.createService({
+                      ...service,
+                      environments: environments,
+                    }),
                   });
                   setServiceId(res.id);
                 };

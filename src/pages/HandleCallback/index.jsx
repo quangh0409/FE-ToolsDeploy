@@ -1,9 +1,10 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { loginByGithub } from "../../apis/github.api";
 import useEffectOnce from "../../hook/useEffectOnce";
-import { getTicketDetail } from "../../apis";
 import socket from "../../utils/socket/socket";
+import apiCaller from "../../apis/apiCaller";
+import githubApi from "../../apis/github.api";
+import ticketApi from "../../apis/ticket.api";
 
 export default function HandleCallback() {
   const location = useLocation();
@@ -13,8 +14,12 @@ export default function HandleCallback() {
 
   useEffectOnce(() => {
     const fetchAccessToken = async () => {
-      await loginByGithub(auth);
-      await getTicketDetail();
+      await apiCaller({
+        request: githubApi.loginByGithub(auth),
+      });
+      await apiCaller({
+        request: ticketApi.getTicketDetail(),
+      });
       navigate("/dashboard");
       socket.connect();
       socket.emit("register", localStorage.getItem("accessToken"));

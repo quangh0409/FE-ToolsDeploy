@@ -2,12 +2,10 @@ import { SearchOutlined } from "@ant-design/icons";
 import { Button, Input } from "antd";
 import React, { useEffect, useState } from "react";
 import useEffectOnce from "../../hook/useEffectOnce";
-import {
-  GetInfoUserGitByAccesToken,
-  GetReposGitByAccessToken,
-} from "../../apis/github.api";
+import githubApi from "../../apis/github.api";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
+import apiCaller from "../../apis/apiCaller";
 
 export default function ConnectGit() {
   const [repos, setRepos] = useState([]);
@@ -20,15 +18,17 @@ export default function ConnectGit() {
   const vm = params.get("vm");
   useEffect(() => {
     const fecth = async () => {
-      const response = await GetInfoUserGitByAccesToken();
+      const response = await apiCaller({
+        request: githubApi.GetInfoUserGitByAccesToken(),
+      });
       setUseGit(response.login);
-      const repositorys = await GetReposGitByAccessToken();
+      const repositorys = await apiCaller({
+        request: githubApi.GetReposGitByAccessToken(),
+      });
       setRepos(repositorys);
-      // }
     };
     fecth();
   }, []);
-  // setTokenStatus(false);
 
   const handleInputChange = (e) => {
     setRepoName(e.target.value);

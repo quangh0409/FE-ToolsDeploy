@@ -5,7 +5,6 @@ import socket from "../../utils/socket/socket";
 import useEffectOnce from "../../hook/useEffectOnce";
 import { LoadingOutlined } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getServiceById } from "../../apis";
 import {
   pushLogBuild,
   pushLogClear,
@@ -23,28 +22,16 @@ import {
 } from "../../redux/reducer/log";
 import { store } from "../../redux/store";
 import ResultTrivy from "../../components/ResultTrivy";
+import apiCaller from "../../apis/apiCaller";
+import vmsApi from "../../apis/vms.api";
 
 export default function OceanPage() {
   const [current, setCurrent] = useState(0);
-  // const [logSsh, setLogSsh] = useState([]);
-  // const [stepLog, setStepLog] = useState([]);
-  // const [logClone, setLogClone] = useState([]);
-  // const [logScanSyntax, setLogScanSyntax] = useState([]);
-  // const [logClear, setClear] = useState([]);
-  // const [logBuild, setBuild] = useState([]);
-  // const [logScanImages, setScanImages] = useState([]);
-  // const [logDeploy, setDeploy] = useState([]);
-  // const [items, setItems] = useState([]);
-  // const [logRealTimeBuild, setLogRealTimeBuild] = useState([]);
-  // const [logRealTimeClear, setLogRealTimeClear] = useState([]);
-  // const [logRealTimeDeploy, setLogRealTimeDeploy] = useState([]);
-  // const [logRealTimeScanImages, setLogRealTimeScanImages] = useState([]);
 
   const [service, setService] = useState();
   const [loading, setLoading] = useState(false);
 
   const location = useLocation();
-  const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
   const service_id = params.get("service");
   const env_name = params.get("env");
@@ -59,7 +46,7 @@ export default function OceanPage() {
     (state) => state.log.logRealTimeScanImages
   );
   const logBuild = useSelector((state) => state.log.logBuild);
-  console.log("🚀 ~ OceanPage ~ logBuild:", logBuild)
+  console.log("🚀 ~ OceanPage ~ logBuild:", logBuild);
   const logClear = useSelector((state) => state.log.logClear);
   const logClone = useSelector((state) => state.log.logClone);
   const logDeploy = useSelector((state) => state.log.logDeploy);
@@ -68,7 +55,7 @@ export default function OceanPage() {
   const logScanSyntax = useSelector((state) => state.log.logScanSyntax);
   const logSsh = useSelector((state) => state.log.logSsh);
   const stepLog = useSelector((state) => state.log.stepLog);
-  console.log("🚀 ~ OceanPage ~ stepLog:", stepLog)
+  console.log("🚀 ~ OceanPage ~ stepLog:", stepLog);
 
   const items = [
     logSsh.map((log, idx) => {
@@ -117,7 +104,7 @@ export default function OceanPage() {
         return {
           key: idx + 1,
           label: log.sub_title,
-          children: <p >{`${log.mess || log.log.stdout}`}</p>,
+          children: <p>{`${log.mess || log.log.stdout}`}</p>,
         };
       }
       return {
@@ -147,7 +134,7 @@ export default function OceanPage() {
           <>
             {logRealTimeScanImages.map((l) => {
               if (log.sub_title === l.sub_title) {
-                return <ResultTrivy Results={l.log.Results}/>;
+                return <ResultTrivy Results={l.log.Results} />;
               }
             })}
           </>
@@ -175,33 +162,11 @@ export default function OceanPage() {
       };
     }),
   ];
-  // useEffect(() => {
-  //   // setLogSsh([...logSsh]);
-  //   // setLogClone([...logClone]);
-  //   // setLogScanSyntax([...logScanSyntax]);
-  //   // setClear([...logClear]);
-  //   // setBuild([...logBuild]);
-  //   // setScanImages([...logScanImages]);
-  //   // setDeploy([...logDeploy]);
-  //   setItems();
-  //   setLoading(false);
-  // }, [
-  //   logRealTimeBuild,
-  //   logRealTimeDeploy,
-  //   logRealTimeScanImages,
-  //   logBuild,
-  //   logClear,
-  //   logClone,
-  //   logDeploy,
-  //   logRealTimeClear,
-  //   logScanImages,
-  //   logScanSyntax,
-  //   logSsh,
-  // ]);
-  // console.log(logRealTimeBuild, "đ");
   useEffectOnce(() => {
     const fetch = async () => {
-      const res = await getServiceById(service_id);
+      const res = await apiCaller({
+        request: vmsApi.getServiceById(service_id),
+      });
       setService(res);
       const token = localStorage.getItem("accessToken");
       const env = res.environment.find((e) => {
@@ -228,16 +193,11 @@ export default function OceanPage() {
       socket.on("logStepClone", (data) => {
         console.log("🚀 ~ socket.on ~ data:", data);
         store.dispatch(pushLogClone(data));
-        // logClone.push(data);
-        // setLogClone([...logClone]);
         setLoading(true);
 
         if (data.status === "START") {
           store.dispatch(pushStepLog(data));
           store.dispatch(setStepLog({ idx: 1, status: data.status }));
-          // stepLog.push(data);
-          // stepLog[1].status = data.status;
-          // setStepLog([...stepLog]);
         }
         if (data.status === "IN_PROGRESS") {
           store.dispatch(setStepLog({ idx: 1, status: data.status }));
@@ -253,8 +213,6 @@ export default function OceanPage() {
 
       socket.on("logStepScanDockerfile", (data) => {
         store.dispatch(pushLogScanSyntax(data));
-        // logScanSyntax.push(data);
-        // setLogScanSyntax([...logScanSyntax]);
         setLoading(true);
 
         if (data.status === "START") {
@@ -275,15 +233,11 @@ export default function OceanPage() {
       socket.on("logRealTimeClear", (data) => {
         console.log("🚀 ~ socket.on ~ data:", data);
         store.dispatch(pushLogRealTimeClear(data));
-        // logRealTimeClear.push(data);
-        // setLogRealTimeClear(logRealTimeClear);
         setLoading(true);
       });
       socket.on("logsStepClear", (data) => {
         console.log("🚀 ~ socket.on ~ data:", data);
         store.dispatch(pushLogClear(data));
-        // logClear.push(data);
-        // setClear([...logClear]);
         setLoading(true);
 
         if (data.status === "START") {
@@ -304,15 +258,11 @@ export default function OceanPage() {
       socket.on("logRealTimeBuild", (data) => {
         console.log("🚀 ~ socket.on ~ data:", data);
         store.dispatch(pushLogRealTimeBuild(data));
-        // logRealTimeBuild.push(data);
-        // setLogRealTimeBuild(logRealTimeBuild);
         setLoading(true);
       });
       socket.on("logStepBuild", (data) => {
         console.log("🚀 ~ socket.on ~ data:", data);
         store.dispatch(pushLogBuild(data));
-        // logBuild.push(data);
-        // setBuild([...logBuild]);
         setLoading(true);
 
         if (data.status === "START") {
@@ -335,16 +285,12 @@ export default function OceanPage() {
       socket.on("logRealTimeScanImages", (data) => {
         console.log("🚀 ~ socket.on ~ data:", data);
         store.dispatch(pushLogRealTimeScanImages(data));
-        // logRealTimeScanImages.push(data);
-        // setLogRealTimeScanImages(logRealTimeScanImages);
         setLoading(true);
       });
 
       socket.on("logStepScanImage", (data) => {
         console.log("🚀 ~ socket.on ~ data:", data);
         store.dispatch(pushLogScanImages(data));
-        // logScanImages.push(data);
-        // setScanImages([...logScanImages]);
         setLoading(true);
 
         if (data.status === "START") {
@@ -366,14 +312,10 @@ export default function OceanPage() {
       socket.on("logRealTimeDeploy", (data) => {
         console.log("🚀 ~ socket.on ~ data:", data);
         store.dispatch(pushLogRealTimeDeploy(data));
-        // logRealTimeDeploy.push(data);
-        // setLogRealTimeDeploy(logRealTimeDeploy);
         setLoading(true);
       });
       socket.on("logStepDeploy", (data) => {
         store.dispatch(pushLogDeploy(data));
-        // logDeploy.push(data);
-        // setDeploy([...logDeploy]);
         setLoading(true);
 
         if (data.status === "START") {
@@ -418,7 +360,6 @@ export default function OceanPage() {
 
       <Divider />
       {stepLog[current] && <Collapse items={items[current]} />}
-      {/* <div>{stepLog[current].log}</div> */}
     </>
   );
 }

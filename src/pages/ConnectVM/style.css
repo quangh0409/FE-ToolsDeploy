@@ -1,0 +1,10 @@
+.carousel {
+    text-align: center;
+  & > ul {
+    & > li {
+      button {
+        background-color: black !important;
+      }
+    }
+  }
+}

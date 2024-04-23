@@ -5,24 +5,34 @@ import {
   GlobalOutlined,
   SearchOutlined,
   SettingOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { getVmsByIds } from "../../apis/vms.api";
+import vmsApi, { getVmsByIds } from "../../apis/vms.api";
 import { store } from "../../redux/store";
 import { addVm } from "../../redux/reducer/user";
+import apiCaller from "../../apis/apiCaller";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const [vms, setVms] = useState([]);
+  const [loading, setLoading] = useState(true);
   const vms_ids = useSelector((state) => state.user.ticket.vms_ids);
   useEffect(() => {
     if (vms_ids.length > 0) {
       const fetch = async () => {
-        const res = await getVmsByIds(vms_ids);
-        console.log("🚀 ~ fetch ~ res:", res)
+        const res = await apiCaller({
+          request: vmsApi.getVmsByIds(vms_ids),
+        });
+        console.log("🚀 ~ fetch ~ res:", res);
         setVms(res);
+        if (res) {
+          setLoading(false);
+        } else {
+          setLoading(true);
+        }
       };
       fetch();
     }
@@ -91,6 +101,22 @@ export default function Dashboard() {
         );
       },
     },
+    {
+      width: 100,
+      title: "Delete",
+      key: "delete",
+      render: (record, index) => {
+        return (
+          <DeleteOutlined
+            onClick={() => {
+              apiCaller({
+                request: vmsApi.deleteVmsById(record.id),
+              });
+            }}
+          />
+        );
+      },
+    },
   ];
 
   const data = vms.map((vm, index) => {
@@ -142,6 +168,7 @@ export default function Dashboard() {
               dataSource={dataTable}
               columns={columns}
               scroll={{ y: 421 }}
+              loading={loading}
             />
           </div>
         </div>

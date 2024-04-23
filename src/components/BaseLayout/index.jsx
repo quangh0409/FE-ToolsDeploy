@@ -2,18 +2,19 @@ import React from "react";
 import Header from "../Header";
 import Footer from "../Footer";
 import useEffectOnce from "../../hook/useEffectOnce";
-import { getTicketDetail } from "../../apis";
 import socket from "../../utils/socket/socket";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import apiCaller from "../../apis/apiCaller";
+import ticketApi from "../../apis/ticket.api";
 
 export default function BaseLayout(props) {
   const navigate = useNavigate();
-  const location = useLocation();
   useEffectOnce(() => {
     const fetch = async () => {
       if (localStorage.getItem("accessToken")) {
-        await getTicketDetail();
+        await apiCaller({
+          request: ticketApi.getTicketDetail(),
+        });
         socket.connect();
         socket.emit("register", localStorage.getItem("accessToken"));
       } else {

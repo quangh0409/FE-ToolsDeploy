@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import {
   CopyOutlined,
   GlobalOutlined,
@@ -7,7 +7,8 @@ import {
   MergeOutlined,
 } from "@ant-design/icons";
 import { Button, Table, Tabs } from "antd";
-import { getImagesOfServiceById, scanImageOfService } from "../../apis";
+import apiCaller from "../../apis/apiCaller";
+import vmsApi from "../../apis/vms.api";
 
 export default function ServicePageDetail(props) {
   const location = useLocation();
@@ -17,7 +18,6 @@ export default function ServicePageDetail(props) {
   const service_name = params.get("name");
   const [url, setUrl] = useState("quangh0409/Decision_help_system");
   const [images, setImages] = useState([]);
-  const [resultScan, setResultScan] = useState();
   const columns = [
     {
       title: `IMAGE NAME(REPOSITORY)`,
@@ -53,11 +53,13 @@ export default function ServicePageDetail(props) {
         return (
           <Button
             onClick={async () => {
-              const res = await scanImageOfService(
-                service_id,
-                service_env,
-                record.Repository
-              );
+              const res = await apiCaller({
+                request: vmsApi.scanImageOfService(
+                  service_id,
+                  service_env,
+                  record.Repository
+                ),
+              });
               console.log("🚀 ~ onClick={ ~ res:", res);
               // setResultScan()
             }}
@@ -70,7 +72,9 @@ export default function ServicePageDetail(props) {
   ];
   useEffect(() => {
     const fetch = async () => {
-      const res = await getImagesOfServiceById(service_id, service_env);
+      const res = await apiCaller({
+        request: vmsApi.getImagesOfServiceById(service_id, service_env),
+      });
       setImages(res.result);
     };
     fetch();
@@ -104,7 +108,7 @@ export default function ServicePageDetail(props) {
             <div className="flex flex-row  col-span-2 grid grid-cols-3 items-center justify-center w-20 ">
               <img className="col-span-1" src="/images/github.png" alt="logo" />
               <div className="col-span-2 flex flex-row ">
-                <a href="" className="underline  underline-offset-1">
+                <a href="#" className="underline  underline-offset-1">
                   quangh0409/Decision_help_system
                 </a>
                 <MergeOutlined />

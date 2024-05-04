@@ -5,6 +5,7 @@
     #
     COPY package.json /app/package.json
     COPY package-lock.json /app/package-lock.json
+    RUN npm install -g npm@10.7.0
     RUN npm install
     RUN npm ci
     COPY . /app

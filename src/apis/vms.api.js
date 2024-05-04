@@ -50,6 +50,12 @@ const vmsApi = {
     const response = await axiosServer.delete(`vms/${vms}`);
     return response.data;
   },
+  getRecordsOfService: (service, env) => async () => {
+    const response = await axiosServer.get(
+      `record/?service=${service}&env=${env}`
+    );
+    return response.data;
+  },
 };
 
 export default vmsApi;

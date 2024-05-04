@@ -14,8 +14,13 @@ import useEffectOnce from "../../hook/useEffectOnce";
 export default function Header() {
   const uri = useLocation();
   const navigate = useNavigate();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
   const fullname = useSelector((state) => state.user.fullname);
-  const vm = useSelector((state) => state.user.vm);
+  const vm = params.get("vm")
+  //   ? params.get("vm")
+  //   : useSelector((state) => state.user.vm);
+  // console.log("🚀 ~ Header ~ vm:", vm);
 
   const nodeRight = () => {
     if (uri.pathname === "/") {
@@ -72,8 +77,8 @@ export default function Header() {
             width={90}
             className={"rounded-lg"}
             onClick={() => {
-              const path = uri.pathname.split("/")[1];
-              if (path === "dashboard") {
+              const path = uri.pathname;
+              if (path === "/dashboard") {
                 navigate("/dashboard/VM-connect");
               } else {
                 navigate(`/connectGithub?vm=${vm}`);

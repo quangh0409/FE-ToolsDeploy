@@ -4,9 +4,8 @@ import { io } from "socket.io-client";
 //   autoConnect: false,
 // });
 
-const socket = io(`http://27.71.26.164:8000`, {
+const socket = io(`http://103.166.185.48:8080`, {
   autoConnect: false,
 });
-
 
 export default socket;

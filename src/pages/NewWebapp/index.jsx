@@ -1,10 +1,17 @@
-import { Button, Card, Form, Input, Modal, Radio, Select, Space } from "antd";
+import {
+  Button,
+  Card,
+  Form,
+  Input,
+  Modal,
+  Radio,
+  Select,
+  Space,
+  Upload,
+} from "antd";
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  CloseOutlined,
-  PlusOutlined,
-} from "@ant-design/icons";
+import { CloseOutlined, PlusOutlined, UploadOutlined } from "@ant-design/icons";
 import useEffectOnce from "../../hook/useEffectOnce";
 import githubApi from "../../apis/github.api";
 import TemplateDetailPage from "../../components/Scan";
@@ -170,61 +177,101 @@ export default function Newwebapp() {
             .
           </h2>
           <div className=" w-11/12 h-full ">
-            {/* -------------------------------- */}
-            <div className="flex flex-row w-full h-12  justify-between mb-5">
-              <div className="h-full">
-                <h2>Name</h2>
-              </div>
-              <div className="w-8/12 h-full">
-                <Input
-                  className="h-full"
-                  placeholder="Name"
-                  onChange={(e) => {
-                    store.dispatch(addService({ name: e.target.value }));
-                  }}
-                />
-              </div>
-            </div>
-            {/* -------------------------------- */}
-            <div className="flex flex-row w-full h-12  justify-between mb-5">
-              <div className="h-full">
-                <h2>Architectura</h2>
-              </div>
-              <div className="w-8/12 h-full">
-                <Select
-                  placeholder={"no choice"}
-                  //   defaultValue={"no choice"}
-                  className="w-full h-full rounded-lg "
-                  onChange={(value) => {
-                    store.dispatch(addService({ architectura: value }));
-                  }}
-                  options={itemsArchitectura}
-                />
-              </div>
-            </div>
-            {/* -------------------------------- */}
-            <div className="flex flex-row w-full h-12  justify-between mb-5">
-              <div className="h-full">
-                <h2>Language</h2>
-              </div>
-              <div className="w-8/12 h-full ">
-                <Select
-                  placeholder={"no choice"}
-                  className="w-full h-full rounded-lg "
-                  onChange={(value) => {
-                    store.dispatch(addService({ language: value }));
-                  }}
-                  options={itemsLanguage}
-                />
-              </div>
-            </div>
             <Form
               form={form}
               onFinish={() => {
-                console.log("ok");
+                const fetch = async () => {
+                  const res = await apiCaller({
+                    request: vmsApi.createService({
+                      ...service,
+                      environments: environments,
+                    }),
+                  });
+
+                  console.log(res);
+                };
+                fetch();
+
+                navigate(`/service?vm=${vm}`);
+                console.log({
+                  ...service,
+                  environments: environments,
+                });
               }}
               initialValues={{ items: [{}] }}
             >
+              <div className="flex flex-row w-full h-12  justify-between mb-5">
+                <div className="h-full">
+                  <h2>Name</h2>
+                </div>
+                <div className="w-8/12 h-full">
+                  <Form.Item
+                    // label="name_service"
+                    name="name_service"
+                    rules={[
+                      { required: true, message: "Please input name service!" },
+                    ]}
+                  >
+                    {/* -------------------------------- */}
+                    <Input
+                      className="h-full"
+                      placeholder="Name"
+                      onChange={(e) => {
+                        store.dispatch(addService({ name: e.target.value }));
+                      }}
+                    />
+                  </Form.Item>
+                </div>
+              </div>
+              <div className="flex flex-row w-full h-12  justify-between mb-5">
+                <div className="h-full">
+                  <h2>Architectura</h2>
+                </div>
+                <div className="w-8/12 h-full">
+                  <Form.Item
+                    //  label="Architectura"
+                    name="Architectura"
+                    rules={[
+                      { required: true, message: "Please input architectura!" },
+                    ]}
+                  >
+                    {/* -------------------------------- */}
+                    <Select
+                      placeholder={"no choice"}
+                      //   defaultValue={"no choice"}
+                      className="w-full h-full rounded-lg "
+                      onChange={(value) => {
+                        store.dispatch(addService({ architectura: value }));
+                      }}
+                      options={itemsArchitectura}
+                    />
+                  </Form.Item>
+                </div>
+              </div>
+              <div className="flex flex-row w-full h-12  justify-between mb-5">
+                <div className="h-full">
+                  <h2>Language</h2>
+                </div>
+                <div className="w-8/12 h-full ">
+                  <Form.Item
+                    name="language"
+                    rules={[
+                      { required: true, message: "Please input architectura!" },
+                    ]}
+                  >
+                    {/* -------------------------------- */}
+                    <Select
+                      placeholder={"no choice"}
+                      className="w-full h-full rounded-lg "
+                      onChange={(value) => {
+                        store.dispatch(addService({ language: value }));
+                      }}
+                      options={itemsLanguage}
+                    />
+                  </Form.Item>
+                </div>
+              </div>
+
               <Form.List name="items">
                 {(fields, { add, remove }) => (
                   <div
@@ -251,24 +298,25 @@ export default function Newwebapp() {
                             <h2>Name</h2>
                           </div>
                           <div className="w-8/12 h-full ">
-                            <Form.Item
+                            {/* <Form.Item
                               rules={[
                                 {
                                   required: true,
-                                  message: "Please input your host!",
+                                  message:
+                                    "Please input your name environment!",
                                 },
                               ]}
-                              label={"Name"}
-                              name={"Name"}
-                            >
-                              <Input
-                                value={environments[index].name}
-                                onChange={(e) => {
-                                  environments[index].name = e.target.value;
-                                  setEnvironments([...environments]);
-                                }}
-                              />
-                            </Form.Item>
+                              // label={"Name"}
+                              name={"name_env"}
+                            > */}
+                            <Input
+                              value={environments[index].name}
+                              onChange={(e) => {
+                                environments[index].name = e.target.value;
+                                setEnvironments([...environments]);
+                              }}
+                            />
+                            {/* </Form.Item> */}
                           </div>
                         </div>
                         {/* -------------------------------- */}
@@ -277,6 +325,16 @@ export default function Newwebapp() {
                             <h2>VM instance</h2>
                           </div>
                           <div className="w-8/12 h-full ">
+                            {/* <Form.Item
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Please input your VM instance!",
+                                },
+                              ]}
+                              // label={"Name"}
+                              name={"vm_instance"}
+                            > */}
                             <Select
                               placeholder={"no choice"}
                               className="w-full h-full rounded-lg "
@@ -287,6 +345,7 @@ export default function Newwebapp() {
                               }}
                               options={itemsVM}
                             />
+                            {/* </Form.Item> */}
                           </div>
                         </div>
                         {/* -------------------------------- */}
@@ -295,6 +354,16 @@ export default function Newwebapp() {
                             <h2>Branch</h2>
                           </div>
                           <div className="w-8/12 h-full ">
+                            {/* <Form.Item
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Please input your branch!",
+                                },
+                              ]}
+                              // label={"Name"}
+                              name={"branch"}
+                            > */}
                             <Select
                               placeholder={"no choice"}
                               className="w-full h-full rounded-lg "
@@ -326,6 +395,7 @@ export default function Newwebapp() {
                               }}
                               options={itemsBranch}
                             />
+                            {/* </Form.Item> */}
                           </div>
                         </div>
                         {/* -------------------------------- */}
@@ -334,6 +404,16 @@ export default function Newwebapp() {
                             <h2>Dockerfile</h2>
                           </div>
                           <div className="w-8/12 h-full ">
+                            {/* <Form.Item
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Please input your Dockerfile!",
+                                },
+                              ]}
+                              // label={"Name"}
+                              name={"Dockerfile"}
+                            > */}
                             <Select
                               mode="multiple"
                               style={{
@@ -420,6 +500,7 @@ export default function Newwebapp() {
                                 </>
                               )}
                             />
+                            {/* </Form.Item> */}
                             <Modal
                               open={isModalOpen}
                               footer={false}
@@ -501,6 +582,16 @@ export default function Newwebapp() {
                             <h2>Docker-compose</h2>
                           </div>
                           <div className="w-8/12 h-full ">
+                            {/* <Form.Item
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Please input your Docker-compose!",
+                                },
+                              ]}
+                              // label={"Name"}
+                              name={"docker_compose"}
+                            > */}
                             <Select
                               mode="multiple"
                               style={{
@@ -581,6 +672,7 @@ export default function Newwebapp() {
                                 </>
                               )}
                             />
+                            {/* </Form.Item> */}
                           </div>
                         </div>
                         {/* -------------------------------- */}
@@ -588,7 +680,30 @@ export default function Newwebapp() {
                           <div className="h-full">
                             <h2>Postman</h2>
                           </div>
-                          <div className="w-8/12 h-full ">tải file</div>
+                          {/* <Form.Item
+                            // rules={[
+                            //   {
+                            //     required: true,
+                            //     message: "Please input your Docker-compose!",
+                            //   },
+                            // ]}
+                            // label={"Name"}
+                            name={"postman_collection"}
+                          > */}
+                          <Upload
+                            action={
+                              "https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
+                            }
+                            onChange={({ file, fileList }) => {
+                              if (file.status !== "uploading") {
+                                console.log(file, fileList);
+                              }
+                            }}
+                            listType={"text"}
+                          >
+                            <Button icon={<UploadOutlined />}>Upload</Button>
+                          </Upload>
+                          {/* </Form.Item> */}
                         </div>
                       </Card>
                     ))}
@@ -617,46 +732,32 @@ export default function Newwebapp() {
           {/* -------------------------------- */}
           <div className="mt-20 flex gap-3">
             <Button
+              htmlType="submit"
               className="text-green-400 pointer-events-auto border border-solid border-green-400  "
               disabled={false}
               onClick={() => {
-                const fetch = async () => {
-                  const res = await apiCaller({
-                    request: vmsApi.createService({
-                      ...service,
-                      environments: environments,
-                    }),
-                  });
-
-                  console.log(res);
-                };
-                check();
+                // check();
                 form.submit();
-                // fetch();
-
-                // navigate(`/service?vm=${vm}`);
-                // console.log({
-                //   ...service,
-                //   environments: environments,
-                // });
               }}
             >
               Save
             </Button>
             <Button
               className="text-gray-400 pointer-events-auto border border-solid border-gray-400  "
-              onClick={() => {
+              onClick={async () => {
+                localStorage.setItem("build", true);
                 let res;
-                const fetch = async () => {
-                  res = await apiCaller({
-                    request: vmsApi.createService({
-                      ...service,
-                      environments: environments,
-                    }),
-                  });
-                  setServiceId(res.id);
-                };
-                fetch();
+                // const fetch = async () => {
+                res = await apiCaller({
+                  request: vmsApi.createService({
+                    ...service,
+                    environments: environments,
+                  }),
+                });
+                console.log("🚀 ~ fetch ~ res:", res);
+                setServiceId(res.id);
+                // };
+                // fetch();
                 if (environments.length === 1) {
                   navigate(
                     `/ocean?service=${res.id}&env=${environments[0].name}`

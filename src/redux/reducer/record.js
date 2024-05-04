@@ -23,6 +23,6 @@ export const record = createSlice({
   },
 });
 
-export const {} = record.actions;
+export const { setRecord } = record.actions;
 
 export default record.reducer;

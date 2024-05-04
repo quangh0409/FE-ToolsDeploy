@@ -1,5 +1,5 @@
 import { SearchOutlined } from "@ant-design/icons";
-import { Button, Input } from "antd";
+import { Button, Input, message } from "antd";
 import React, { useEffect, useState } from "react";
 import useEffectOnce from "../../hook/useEffectOnce";
 import githubApi from "../../apis/github.api";
@@ -18,14 +18,22 @@ export default function ConnectGit() {
   const vm = params.get("vm");
   useEffect(() => {
     const fecth = async () => {
-      const response = await apiCaller({
-        request: githubApi.GetInfoUserGitByAccesToken(),
-      });
-      setUseGit(response.login);
-      const repositorys = await apiCaller({
-        request: githubApi.GetReposGitByAccessToken(),
-      });
-      setRepos(repositorys);
+      try {
+        const response = await apiCaller({
+          request: githubApi.GetInfoUserGitByAccesToken(),
+        });
+        setUseGit(response.login);
+      } catch (error) {
+        message.error("");
+      }
+      try {
+        const repositorys = await apiCaller({
+          request: githubApi.GetReposGitByAccessToken(),
+        });
+        setRepos(repositorys);
+      } catch (error) {
+        message.error("");
+      }
     };
     fecth();
   }, []);

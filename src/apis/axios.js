@@ -37,7 +37,7 @@ import axios from "axios";
 // export default axiosServer;
 
 const axiosServer = axios.create({
-  baseURL: "http://27.71.26.164:8000/api/v1/",
+  baseURL: "http://103.166.185.48:8080/api/v1/",
 });
 axiosServer.interceptors.request.use(async (config) => {
   const accessToken = localStorage.getItem("accessToken");

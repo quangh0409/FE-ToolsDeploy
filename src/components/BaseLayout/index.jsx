@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Header from "../Header";
 import Footer from "../Footer";
 import useEffectOnce from "../../hook/useEffectOnce";
@@ -9,7 +9,7 @@ import ticketApi from "../../apis/ticket.api";
 
 export default function BaseLayout(props) {
   const navigate = useNavigate();
-  useEffectOnce(() => {
+  useEffect(() => {
     const fetch = async () => {
       if (localStorage.getItem("accessToken")) {
         await apiCaller({
@@ -22,8 +22,9 @@ export default function BaseLayout(props) {
       }
     };
     fetch();
-    socket.on("webhooks", (user_id, service, env) => {
-      if (user_id === localStorage.getItem("UserId")) {
+    socket.on(
+      `webhooks-${localStorage.getItem("UserId")}`,
+      (user_id, service, env) => {
         const currentUrl = `/ocean?service=${service}&env=${env}`;
         if (window.location.pathname + window.location.search === currentUrl) {
           window.location.href = currentUrl; // Buộc tải lại trang
@@ -31,8 +32,8 @@ export default function BaseLayout(props) {
           navigate(currentUrl);
         }
       }
-    });
-  });
+    );
+  }, [localStorage]);
 
   return (
     <div className="flex flex-col min-h-[100vh] h-screen">

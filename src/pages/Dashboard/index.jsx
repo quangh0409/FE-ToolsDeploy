@@ -26,7 +26,6 @@ export default function Dashboard() {
         const res = await apiCaller({
           request: vmsApi.getVmsByIds(vms_ids),
         });
-        console.log("🚀 ~ fetch ~ res:", res);
         setVms(res);
         if (res) {
           setLoading(false);

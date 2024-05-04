@@ -106,6 +106,7 @@ export default function ServicePage() {
               // });
               // navigate(`/dashboard/VM-connect?vm=${vm.id}`);
               const env_name = record.environment.find((e) => vm === e.vm);
+              localStorage.setItem("build", true);
               navigate(
                 `/ocean?service=${record.id}&env=${env_name.name}&name=${record.service_name}`
               );

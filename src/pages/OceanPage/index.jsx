@@ -24,6 +24,7 @@ import { store } from "../../redux/store";
 import ResultTrivy from "../../components/ResultTrivy";
 import apiCaller from "../../apis/apiCaller";
 import vmsApi from "../../apis/vms.api";
+import { setRecord } from "../../redux/reducer/record";
 
 export default function OceanPage() {
   const [current, setCurrent] = useState(0);
@@ -39,126 +40,131 @@ export default function OceanPage() {
   const onChange = (value) => {
     setCurrent(value);
   };
-
-  const logRealTimeBuild = useSelector((state) => state.log.logRealTimeBuild);
-  const logRealTimeDeploy = useSelector((state) => state.log.logRealTimeDeploy);
-  const logRealTimeScanImages = useSelector(
-    (state) => state.log.logRealTimeScanImages
-  );
-  const logBuild = useSelector((state) => state.log.logBuild);
-  console.log("🚀 ~ OceanPage ~ logBuild:", logBuild);
-  const logClear = useSelector((state) => state.log.logClear);
-  const logClone = useSelector((state) => state.log.logClone);
-  const logDeploy = useSelector((state) => state.log.logDeploy);
-  const logRealTimeClear = useSelector((state) => state.log.logRealTimeClear);
-  const logScanImages = useSelector((state) => state.log.logScanImages);
-  const logScanSyntax = useSelector((state) => state.log.logScanSyntax);
-  const logSsh = useSelector((state) => state.log.logSsh);
-  const stepLog = useSelector((state) => state.log.stepLog);
-  console.log("🚀 ~ OceanPage ~ stepLog:", stepLog);
-
+  const record = useSelector((state) => state.record.record);
   const items = [
-    logSsh.map((log, idx) => {
+    record?.logs?.ssh?.map((log, idx) => {
       return {
         key: idx + 1,
         label: log.sub_title,
-        children: <p>{`${log.mess || log.log.stdout}`}</p>,
+        children: <p>{`${log.mess || log.log}`}</p>,
       };
     }),
-    logClone.map((log, idx) => {
-      return {
-        key: idx + 1,
-        label: log.sub_title,
-        children: <p>{`${log.mess || log.log.stdout}`}</p>,
-      };
-    }),
-    logScanSyntax.map((log, idx) => {
-      return {
-        key: idx + 1,
-        label: log.sub_title,
-        children: <p>{`${log.mess || log.log.stdout}`}</p>,
-      };
-    }),
-    logClear.map((log, idx) => {
-      if (idx === 0 || !log.sub_title) {
+    record?.logs?.clone?.map((log, idx) => {
+      if (log.log.length > 0) {
         return {
           key: idx + 1,
           label: log.sub_title,
-          children: <p>{`${log.mess || log.log.stdout}`}</p>,
+          children: (
+            <div className="max-h-80 overflow-y-auto">
+              {log.log.map((l, idx) => {
+                return <p key={idx}>{l}</p>;
+              })}
+            </div>
+          ),
         };
       }
       return {
         key: idx + 1,
         label: log.sub_title,
-        children: (
-          <div className="max-h-80 overflow-y-auto">
-            {logRealTimeClear.map((log) => {
-              return <p>{log}</p>;
-            })}
-          </div>
-        ),
+        children: <p>{`${log.mess}`}</p>,
       };
     }),
-    logBuild.map((log, idx) => {
-      if (idx === 0 || !log.sub_title) {
+    record?.logs?.scanSyntax?.map((log, idx) => {
+      if (log.log.length > 0) {
         return {
           key: idx + 1,
           label: log.sub_title,
-          children: <p>{`${log.mess || log.log.stdout}`}</p>,
+          children: (
+            <div className="max-h-80 overflow-y-auto">
+              {log.log.map((l, idx) => {
+                return <p key={idx}>{l}</p>;
+              })}
+            </div>
+          ),
         };
       }
       return {
         key: idx + 1,
         label: log.sub_title,
-        children: (
-          <div className="max-h-80 overflow-y-auto">
-            {logRealTimeBuild.map((log) => {
-              return <p>{log}</p>;
-            })}
-          </div>
-        ),
+        children: <p>{`${log.mess}`}</p>,
       };
     }),
-    logScanImages.map((log, idx) => {
-      if (idx === 0 || !log.sub_title) {
+    record?.logs?.clear?.map((log, idx) => {
+      if (log.log.length > 0) {
         return {
           key: idx + 1,
           label: log.sub_title,
-          children: <p>{`${log.mess || log.log.stdout}`}</p>,
+          children: (
+            <div className="max-h-80 overflow-y-auto">
+              {log.log.map((l, idx) => {
+                return <p key={idx}>{l}</p>;
+              })}
+            </div>
+          ),
         };
       }
       return {
         key: idx + 1,
         label: log.sub_title,
-        children: (
-          <>
-            {logRealTimeScanImages.map((l) => {
-              if (log.sub_title === l.sub_title) {
-                return <ResultTrivy Results={l.log.Results} />;
-              }
-            })}
-          </>
-        ),
+        children: <p>{`${log.mess}`}</p>,
       };
     }),
-    logDeploy.map((log, idx) => {
-      if (idx === 0 || !log.sub_title) {
+    record?.logs?.build?.map((log, idx) => {
+      if (log.log.length > 0) {
         return {
           key: idx + 1,
           label: log.sub_title,
-          children: <p>{`${log.mess || log.log.stdout}`}</p>,
+          children: (
+            <div className="max-h-80 overflow-y-auto">
+              {log.log.map((l, idx) => {
+                return <p key={idx}>{l}</p>;
+              })}
+            </div>
+          ),
         };
       }
       return {
         key: idx + 1,
         label: log.sub_title,
-        children: (
-          <div className="max-h-80 overflow-y-auto">
-            {logRealTimeDeploy.map((log) => {
-              return <p>{log}</p>;
-            })}
-          </div>
-        ),
+        children: <p>{`${log.mess}`}</p>,
+      };
+    }),
+    record?.logs?.scanImages?.map((log, idx) => {
+      if (log.log.length > 0 && log.log[0] !== "") {
+        return {
+          key: idx + 1,
+          label: log.sub_title,
+          children: (
+            <>
+              <ResultTrivy Results={JSON.parse(log.log[0])?.Results} />;
+            </>
+          ),
+        };
+      }
+      return {
+        key: idx + 1,
+        label: log.sub_title,
+        children: <p>{`${log.mess}`}</p>,
+      };
+    }),
+    record?.logs?.deploy?.map((log, idx) => {
+      if (log.log.length > 0) {
+        return {
+          key: idx + 1,
+          label: log.sub_title,
+          children: (
+            <div className="max-h-80 overflow-y-auto">
+              {log.log.map((l, idx) => {
+                return <p key={idx}>{l}</p>;
+              })}
+            </div>
+          ),
+        };
+      }
+      return {
+        key: idx + 1,
+        label: log.sub_title,
+        children: <p>{`${log.mess}`}</p>,
       };
     }),
   ];
@@ -172,186 +178,49 @@ export default function OceanPage() {
       const env = res.environment.find((e) => {
         return env_name === e.name;
       });
-      // socket.connect();
-      /**------------------------------------------ */
-      socket.emit("CheckConnectVM", token, env.vm);
-      socket.on("logCheckConnectVM", (data) => {
-        store.dispatch(pushLogSsh(data));
-        setLoading(true);
-
-        if (data.status === "DONE" || data.status === "ERROR") {
-          store.dispatch(pushStepLog(data));
-          // stepLog.push(data);
-          // setStepLog([...stepLog]);
-        }
-        if (data.status === "DONE") {
-          socket.emit("clone", token, env.vm, res.id, env.name);
-        }
-      });
-      // /**------------------------------------------ */
-
-      socket.on("logStepClone", (data) => {
+      if (localStorage.getItem("build") === "true") {
+        localStorage.setItem("build", false);
+        socket.emit("planCiCd", token, env.vm.id, res.id, env.name);
+      }
+      console.log(`logPlanCiCd-${localStorage.getItem("UserId")}`);
+      socket.on(`logPlanCiCd-${localStorage.getItem("UserId")}`, (data) => {
         console.log("🚀 ~ socket.on ~ data:", data);
-        store.dispatch(pushLogClone(data));
-        setLoading(true);
-
-        if (data.status === "START") {
-          store.dispatch(pushStepLog(data));
-          store.dispatch(setStepLog({ idx: 1, status: data.status }));
-        }
-        if (data.status === "IN_PROGRESS") {
-          store.dispatch(setStepLog({ idx: 1, status: data.status }));
-        }
-        if (data.status === "SUCCESSFULLY" || data.status === "ERROR") {
-          store.dispatch(setStepLog({ idx: 1, status: data.status }));
-        }
-        if (data.status === "SUCCESSFULLY") {
-          socket.emit("scanSyntax", token, env.vm, res.id, env.name);
-        }
-      });
-      // /**--------------------------------------------- */
-
-      socket.on("logStepScanDockerfile", (data) => {
-        store.dispatch(pushLogScanSyntax(data));
-        setLoading(true);
-
-        if (data.status === "START") {
-          store.dispatch(pushStepLog(data));
-          store.dispatch(setStepLog({ idx: 2, status: data.status }));
-        }
-        if (data.status === "IN_PROGRESS") {
-          store.dispatch(setStepLog({ idx: 2, status: data.status }));
-        }
-        if (data.status === "SUCCESSFULLY" || data.status === "ERROR") {
-          store.dispatch(setStepLog({ idx: 2, status: data.status }));
-        }
-        if (data.status === "SUCCESSFULLY") {
-          socket.emit("clear", token, env.vm, res.id, env.name);
-        }
-      });
-      // /**--------------------------------------------- */
-      socket.on("logRealTimeClear", (data) => {
-        console.log("🚀 ~ socket.on ~ data:", data);
-        store.dispatch(pushLogRealTimeClear(data));
-        setLoading(true);
-      });
-      socket.on("logsStepClear", (data) => {
-        console.log("🚀 ~ socket.on ~ data:", data);
-        store.dispatch(pushLogClear(data));
-        setLoading(true);
-
-        if (data.status === "START") {
-          store.dispatch(pushStepLog(data));
-          store.dispatch(setStepLog({ idx: 3, status: data.status }));
-        }
-        if (data.status === "IN_PROGRESS") {
-          store.dispatch(setStepLog({ idx: 3, status: data.status }));
-        }
-        if (data.status === "SUCCESSFULLY" || data.status === "ERROR") {
-          store.dispatch(setStepLog({ idx: 3, status: data.status }));
-        }
-        if (data.status === "SUCCESSFULLY") {
-          socket.emit("build", token, env.vm, res.id, env.name);
-        }
-      });
-      // /**----------------------------------------------- */
-      socket.on("logRealTimeBuild", (data) => {
-        console.log("🚀 ~ socket.on ~ data:", data);
-        store.dispatch(pushLogRealTimeBuild(data));
-        setLoading(true);
-      });
-      socket.on("logStepBuild", (data) => {
-        console.log("🚀 ~ socket.on ~ data:", data);
-        store.dispatch(pushLogBuild(data));
-        setLoading(true);
-
-        if (data.status === "START") {
-          store.dispatch(pushStepLog(data));
-          store.dispatch(setStepLog({ idx: 4, status: data.status }));
-        }
-        if (data.status === "IN_PROGRESS") {
-          store.dispatch(setStepLog({ idx: 4, status: data.status }));
-        }
-        if (data.status === "SUCCESSFULLY" || data.status === "ERROR") {
-          store.dispatch(setStepLog({ idx: 4, status: data.status }));
-        }
-        if (data.status === "SUCCESSFULLY") {
-          socket.emit("scanImages", token, env.vm, res.id, env.name);
-        }
-      });
-
-      /**----------------------------------------------- */
-
-      socket.on("logRealTimeScanImages", (data) => {
-        console.log("🚀 ~ socket.on ~ data:", data);
-        store.dispatch(pushLogRealTimeScanImages(data));
-        setLoading(true);
-      });
-
-      socket.on("logStepScanImage", (data) => {
-        console.log("🚀 ~ socket.on ~ data:", data);
-        store.dispatch(pushLogScanImages(data));
-        setLoading(true);
-
-        if (data.status === "START") {
-          store.dispatch(pushStepLog(data));
-          store.dispatch(setStepLog({ idx: 5, status: data.status }));
-        }
-        if (data.status === "IN_PROGRESS") {
-          store.dispatch(setStepLog({ idx: 5, status: data.status }));
-        }
-        if (data.status === "SUCCESSFULLY" || data.status === "ERROR") {
-          store.dispatch(setStepLog({ idx: 5, status: data.status }));
-        }
-        if (data.status === "SUCCESSFULLY") {
-          socket.emit("deploy", token, env.vm, res.id, env.name);
-        }
-      });
-
-      /**----------------------------------------------- */
-      socket.on("logRealTimeDeploy", (data) => {
-        console.log("🚀 ~ socket.on ~ data:", data);
-        store.dispatch(pushLogRealTimeDeploy(data));
-        setLoading(true);
-      });
-      socket.on("logStepDeploy", (data) => {
-        store.dispatch(pushLogDeploy(data));
-        setLoading(true);
-
-        if (data.status === "START") {
-          store.dispatch(pushStepLog(data));
-          store.dispatch(setStepLog({ idx: 6, status: data.status }));
-        }
-        if (data.status === "IN_PROGRESS") {
-          store.dispatch(setStepLog({ idx: 6, status: data.status }));
-        }
-        if (data.status === "SUCCESSFULLY" || data.status === "ERROR") {
-          store.dispatch(setStepLog({ idx: 6, status: data.status }));
-        }
+        store.dispatch(setRecord(data));
       });
     };
+
     fetch();
   }, [service_id]);
   return (
     <>
+      <div>
+        <p>{service?.name}</p>
+        <p>{`Branch: ${record?.branch}`}</p>
+        <p>{`Bộ đếm thời gian: ${record?.created_time}`}</p>
+        <p>{`Commit: ${record?.commit_id?.substring(0, 6)}`}</p>
+        <p>{`${record?.commit_message}`}</p>
+      </div>
       <div className="flex justify-center">
         <Steps
-          style={{ width: `${stepLog.length * 200}px` }}
+          style={{
+            width: `${Object.keys(record?.ocean || {}).length * 200}px`,
+          }}
           current={current}
           onChange={onChange}
-          items={stepLog.map((s) => ({
-            title: s.title,
-            description: s.status,
+          items={Object.keys(record?.ocean || {}).map((s) => ({
+            title: record?.ocean[s].title,
+            description: record?.ocean[s].status,
             status:
-              s.status === "DONE" || s.status === "SUCCESSFULLY"
+              record?.ocean[s].status === "DONE" ||
+              record?.ocean[s].status === "SUCCESSFULLY"
                 ? "finish"
-                : s.status === "ERROR"
+                : record?.ocean[s].status === "ERROR"
                 ? "error"
                 : "process",
             icon:
-              s.status === "DONE" ||
-              s.status === "ERROR" ||
-              s.status === "SUCCESSFULLY" ? null : (
+              record?.ocean[s].status === "DONE" ||
+              record?.ocean[s].status === "ERROR" ||
+              record?.ocean[s].status === "SUCCESSFULLY" ? null : (
                 <LoadingOutlined />
               ),
           }))}
@@ -359,7 +228,9 @@ export default function OceanPage() {
       </div>
 
       <Divider />
-      {stepLog[current] && <Collapse items={items[current]} />}
+      {Object.keys(record?.ocean || {})[current] && (
+        <Collapse items={items[current]} />
+      )}
     </>
   );
 }

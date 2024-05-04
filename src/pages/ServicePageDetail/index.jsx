@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import {
+  CheckOutlined,
+  CloseOutlined,
   CopyOutlined,
+  ExclamationCircleOutlined,
   GlobalOutlined,
   LinkOutlined,
   MergeOutlined,
 } from "@ant-design/icons";
-import { Button, Table, Tabs } from "antd";
+import { Button, Card, Table, Tabs } from "antd";
 import apiCaller from "../../apis/apiCaller";
 import vmsApi from "../../apis/vms.api";
 
@@ -18,6 +21,9 @@ export default function ServicePageDetail(props) {
   const service_name = params.get("name");
   const [url, setUrl] = useState("quangh0409/Decision_help_system");
   const [images, setImages] = useState([]);
+  const [service, setService] = useState();
+  const [host, setHost] = useState();
+  const [records, setRecords] = useState([]);
   const columns = [
     {
       title: `IMAGE NAME(REPOSITORY)`,
@@ -76,12 +82,52 @@ export default function ServicePageDetail(props) {
         request: vmsApi.getImagesOfServiceById(service_id, service_env),
       });
       setImages(res.result);
+      const records = await apiCaller({
+        request: vmsApi.getRecordsOfService(service_id, service_env),
+      });
+      setRecords(records);
+      const service = await apiCaller({
+        request: vmsApi.getServiceById(service_id),
+      });
+      setService(service);
+      service?.environment.map((env) => {
+        if (env.name === service_env) {
+          setHost(env.vm.host);
+        }
+      });
     };
     fetch();
   }, [service_id, service_env]);
 
   const title_iterms = ["Event", "Logs", "Shell", "Images", "Settings"];
   const content_iterms = [
+    <div>
+      {records.map((record, idx) => {
+        const color = record.status ? '' : ""
+        return (
+          <div
+            key={idx}
+            className={`m-2 p-2 flex flex-row border-solid border rounded-md `}
+          >
+            <div className="flex mr-1">
+              {record.status === "SUCCESSFULLY" ? (
+                <CheckOutlined style={{ color: "Highlight" }} />
+              ) : (
+                <ExclamationCircleOutlined style={{ color: "red" }} />
+              )}
+            </div>
+            <div className="grid-row">
+              <div>
+                {`#${record.index} Commit: ${record.commit_id.substring(0, 6)}`}{" "}
+              </div>
+              <div>dsds</div>
+            </div>
+          </div>
+        );
+      })}
+    </div>,
+    <div></div>,
+    <div></div>,
     <div>
       <Table
         pagination={false}
@@ -95,6 +141,7 @@ export default function ServicePageDetail(props) {
         scroll={{ y: 421 }}
       />
     </div>,
+    <div></div>,
   ];
   return (
     <>
@@ -102,12 +149,12 @@ export default function ServicePageDetail(props) {
         <div className="ml-24 mr-24 mb-10 ">
           <div className=" text-3xl font-medium">
             <GlobalOutlined />
+            {service?.name}
           </div>
-          <div className="mt-2  ">{service_name}</div>
           <div className=" mt-2 ">
-            <div className="flex flex-row  col-span-2 grid grid-cols-3 items-center justify-center w-20 ">
-              <img className="col-span-1" src="/images/github.png" alt="logo" />
-              <div className="col-span-2 flex flex-row ">
+            <div className="flex flex-row  col-span-2 grid-row-3 items-center justify-center w-20 ">
+              <img className="row-span-1" src="/images/github.png" alt="logo" />
+              <div className="row-span-2 flex flex-row ">
                 <a href="#" className="underline  underline-offset-1">
                   quangh0409/Decision_help_system
                 </a>
@@ -118,11 +165,11 @@ export default function ServicePageDetail(props) {
           </div>
           <div>
             <div className=" mt-2 ">
-              <div className="flex flex-row  col-span-2 grid grid-cols-3 items-center justify-center w-20 ">
+              <div className="flex flex-row  col-span-2 grid-cols-3 items-center justify-center w-20 ">
                 <LinkOutlined />
                 <div className="col-span-2 flex flex-row ">
                   <a href="" className="underline  underline-offset-1">
-                    quangh0409/Decision_help_system
+                    {}
                   </a>
                   <CopyOutlined
                     onClick={() => {
@@ -153,7 +200,7 @@ export default function ServicePageDetail(props) {
                 return {
                   label: `${t}`,
                   key: i,
-                  children: content_iterms[0],
+                  children: content_iterms[i],
                 };
               })}
             />

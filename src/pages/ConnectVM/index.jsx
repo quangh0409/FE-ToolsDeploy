@@ -53,7 +53,6 @@ export default function ConnectVM() {
       setIsOpen(false);
     }
   };
-  console.log(isOpen);
   useEffectOnce(() => {
     setVmId(vm);
     if (vm) {
@@ -131,6 +130,7 @@ export default function ConnectVM() {
     };
     fetch();
   };
+
   const cards = {
     docker: {
       fn: installDocker,
@@ -166,7 +166,22 @@ export default function ConnectVM() {
             <Form.Item
               label="Host"
               name="host"
-              rules={[{ required: true, message: "Please input your host!" }]}
+              rules={[
+                { required: true, message: "Please input your host!" },
+                {
+                  validator: (rule, value) => {
+                    if (
+                      !value ||
+                      /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
+                        value
+                      )
+                    ) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject("Invalid IP address");
+                  },
+                },
+              ]}
               initialValue={hostVM}
             >
               <Input
@@ -201,6 +216,7 @@ export default function ConnectVM() {
                 onChange={(e) => {
                   setPassVM(e.target.value);
                 }}
+                type="password"
               />
             </Form.Item>
           </div>
@@ -217,8 +233,11 @@ export default function ConnectVM() {
         <br />
         {infoVms && (
           <div>
-            <p>
-              SSH session to {infoVms.user}@{infoVms.host}
+            <p className="flex">
+              <p>SSH session to &nbsp;</p>
+              <p className="text-purple-400">
+                {infoVms.user}@{infoVms.host}
+              </p>
             </p>
             <p>
               Wellcome to {infoVms.operating_system} ( {infoVms.kernel}{" "}
@@ -226,52 +245,76 @@ export default function ConnectVM() {
             </p>
             <br />
             <div className="flex">
-              <p className="w-32">*Home:</p>
-              <p>{infoVms.home_url}</p>
+              <p className="w-32 ">*Home:</p>
+              <a
+                href={`${infoVms.home_url}`}
+                className="underline first-letter:underline-offset-1"
+              >
+                {infoVms.home_url}
+              </a>
             </div>
             <div className="flex">
-              <p className="w-32">*Support:</p>
-              <p>{infoVms.support_url}</p>
+              <p className="w-32 ">*Support:</p>
+              <a
+                href={`${infoVms.support_url}`}
+                className="underline first-letter:underline-offset-1"
+              >
+                {infoVms.support_url}
+              </a>
             </div>
             <div className="flex">
-              <p className="w-32">*Bug report:</p>
-              <p> {infoVms.bug_report_url}</p>
+              <p className="w-32 ">*Bug report:</p>
+              <a
+                href={`${infoVms.bug_report_url}`}
+                className="underline first-letter:underline-offset-1"
+              >
+                {infoVms.bug_report_url}
+              </a>
             </div>
             <div className="flex">
-              <p className="w-32">*Privacy policy:</p>
-              <p> {infoVms.privacy_policy_url}</p>
+              <p className="w-32 ">*Privacy policy:</p>
+              <a
+                href={`${infoVms.privacy_policy_url}`}
+                className="underline first-letter:underline-offset-1"
+              >
+                {infoVms.privacy_policy_url}
+              </a>
             </div>
-            <div className="grid grid-cols-2">
+            <div className="grid grid-cols-2 mt-2">
               <div>
                 {Object.keys(infoVms?.landscape_sysinfo)
-                  .slice(
-                    0,
-                    Math.ceil(
-                      Object.keys(infoVms?.landscape_sysinfo).length / 2
-                    )
-                  )
-                  .map((key) => {
+                  .filter((key, idx) => idx % 2 === 0)
+                  .map((key, idx) => {
                     const value = infoVms.landscape_sysinfo[key];
+                    const color =
+                      /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
+                        value
+                      )
+                        ? "text-purple-400"
+                        : "";
                     return (
-                      <div>
-                        {key}: {value}
+                      <div className="flex" key={idx}>
+                        <p>{`${key}:`} &nbsp;</p>{" "}
+                        <p className={`${color}`}> {value}</p>
                       </div>
                     );
                   })}
               </div>
               <div>
                 {Object.keys(infoVms?.landscape_sysinfo)
-                  .slice(
-                    Math.ceil(
-                      Object.keys(infoVms?.landscape_sysinfo).length / 2
-                    ),
-                    Object.keys(infoVms?.landscape_sysinfo).length
-                  )
-                  .map((key) => {
+                  .filter((key, idx) => idx % 2 !== 0)
+                  .map((key, idx) => {
                     const value = infoVms.landscape_sysinfo[key];
+                    const color =
+                      /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
+                        value
+                      )
+                        ? "text-purple-400"
+                        : "";
                     return (
-                      <div>
-                        {key}: {value}
+                      <div className="flex" key={idx}>
+                        <p>{`${key}:`} &nbsp;</p>{" "}
+                        <p className={`${color}`}> {value}</p>
                       </div>
                     );
                   })}
@@ -285,19 +328,19 @@ export default function ConnectVM() {
               </div>
               <div className=" flex items-center justify-between p-4 h-6 border border-solid border-[#f0d0f0] rounded-md">
                 <p>ram</p>
-                <p>{infoVms.cpus}</p>
+                <p>{infoVms.ram}</p>
               </div>
               <div className=" flex items-center justify-between p-4 h-6 border border-solid border-[#f0d0f0] rounded-md">
-                <p>cpu(s)</p>
-                <p>{infoVms.cpus}</p>
+                <p>core(s)</p>
+                <p>{infoVms.cores}</p>
               </div>
               <div className=" flex items-center justify-between p-4 h-6 border border-solid border-[#f0d0f0] rounded-md">
-                <p>cpu(s)</p>
-                <p>{infoVms.cpus}</p>
+                <p>socket(s)</p>
+                <p>{infoVms.sockets}</p>
               </div>
               <div className=" flex items-center justify-between p-4 h-6 border border-solid border-[#f0d0f0] rounded-md">
-                <p>cpu(s)</p>
-                <p>{infoVms.cpus}</p>
+                <p>thread(s)</p>
+                <p>{infoVms.thread}</p>
               </div>
             </div>
           </div>

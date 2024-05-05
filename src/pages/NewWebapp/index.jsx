@@ -165,6 +165,24 @@ export default function Newwebapp() {
   const check = () => {
     form.validateFields();
   };
+  const [jsonData, setJsonData] = useState(null);
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      try {
+        const content = JSON.parse(e.target.result);
+        setJsonData(content);
+      } catch (error) {
+        console.error("Lỗi khi đọc file JSON:", error);
+      }
+    };
+
+    reader.readAsText(file);
+  };
+  console.log(jsonData);
   return (
     <>
       <div>
@@ -298,7 +316,7 @@ export default function Newwebapp() {
                             <h2>Name</h2>
                           </div>
                           <div className="w-8/12 h-full ">
-                            {/* <Form.Item
+                            <Form.Item
                               rules={[
                                 {
                                   required: true,
@@ -308,7 +326,7 @@ export default function Newwebapp() {
                               ]}
                               // label={"Name"}
                               name={"name_env"}
-                            > */}
+                            >
                             <Input
                               value={environments[index].name}
                               onChange={(e) => {
@@ -316,7 +334,7 @@ export default function Newwebapp() {
                                 setEnvironments([...environments]);
                               }}
                             />
-                            {/* </Form.Item> */}
+                            </Form.Item>
                           </div>
                         </div>
                         {/* -------------------------------- */}
@@ -325,7 +343,7 @@ export default function Newwebapp() {
                             <h2>VM instance</h2>
                           </div>
                           <div className="w-8/12 h-full ">
-                            {/* <Form.Item
+                            <Form.Item
                               rules={[
                                 {
                                   required: true,
@@ -334,7 +352,7 @@ export default function Newwebapp() {
                               ]}
                               // label={"Name"}
                               name={"vm_instance"}
-                            > */}
+                            >
                             <Select
                               placeholder={"no choice"}
                               className="w-full h-full rounded-lg "
@@ -345,7 +363,7 @@ export default function Newwebapp() {
                               }}
                               options={itemsVM}
                             />
-                            {/* </Form.Item> */}
+                            </Form.Item>
                           </div>
                         </div>
                         {/* -------------------------------- */}
@@ -690,19 +708,13 @@ export default function Newwebapp() {
                             // label={"Name"}
                             name={"postman_collection"}
                           > */}
-                          <Upload
-                            action={
-                              "https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
-                            }
-                            onChange={({ file, fileList }) => {
-                              if (file.status !== "uploading") {
-                                console.log(file, fileList);
-                              }
-                            }}
-                            listType={"text"}
-                          >
-                            <Button icon={<UploadOutlined />}>Upload</Button>
-                          </Upload>
+                          <div className="w-8/12">
+                            <input
+                              type="file"
+                              accept=".json"
+                              onChange={handleFileUpload}
+                            />
+                          </div>
                           {/* </Form.Item> */}
                         </div>
                       </Card>

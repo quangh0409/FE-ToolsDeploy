@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   CheckOutlined,
-  CloseOutlined,
+  ClockCircleOutlined,
   CopyOutlined,
   ExclamationCircleOutlined,
   GlobalOutlined,
@@ -12,9 +12,17 @@ import {
 import { Button, Card, Table, Tabs } from "antd";
 import apiCaller from "../../apis/apiCaller";
 import vmsApi from "../../apis/vms.api";
+import githubApi from "../../apis/github.api";
+import socket from "../../utils/socket/socket";
+import { ReactTerminal } from "react-terminal";
+import Terminal, { ColorMode, TerminalOutput } from "react-terminal-ui";
+import { store } from "../../redux/store";
+import { pushLogRealTimeBuild } from "../../redux/reducer/log";
+import { useSelector } from "react-redux";
 
 export default function ServicePageDetail(props) {
   const location = useLocation();
+  const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
   const service_id = params.get("id");
   const service_env = params.get("env");
@@ -24,6 +32,8 @@ export default function ServicePageDetail(props) {
   const [service, setService] = useState();
   const [host, setHost] = useState();
   const [records, setRecords] = useState([]);
+  const [github, setGithub] = useState();
+
   const columns = [
     {
       title: `IMAGE NAME(REPOSITORY)`,
@@ -78,14 +88,18 @@ export default function ServicePageDetail(props) {
   ];
   useEffect(() => {
     const fetch = async () => {
-      const res = await apiCaller({
-        request: vmsApi.getImagesOfServiceById(service_id, service_env),
-      });
-      setImages(res.result);
+      // const res = await apiCaller({
+      //   request: vmsApi.getImagesOfServiceById(service_id, service_env),
+      // });
+      // setImages(res.result);
       const records = await apiCaller({
         request: vmsApi.getRecordsOfService(service_id, service_env),
       });
       setRecords(records);
+      const github = await apiCaller({
+        request: githubApi.GetInfoUserGitByAccesToken(),
+      });
+      setGithub(github);
       const service = await apiCaller({
         request: vmsApi.getServiceById(service_id),
       });
@@ -97,17 +111,48 @@ export default function ServicePageDetail(props) {
       });
     };
     fetch();
+    socket.emit("logs");
+    // socket.on("data", (data) => {
+    //   if (data !== undefined && data !== "") {
+    //     store.dispatch(pushLogRealTimeBuild(data));
+    //   }
+    // });
   }, [service_id, service_env]);
+  const logRealTimeBuild = useSelector((state) => state.log.logRealTimeBuild);
+  function subtractTime(time1, time2) {
+    // Chuyển đổi thời gian thành mili giây
+    let t1 = new Date(time1).getTime();
+    let t2 = new Date(time2).getTime();
+
+    // Tính toán sự khác biệt
+    let diff = Math.abs(t1 - t2);
+
+    // Chuyển đổi sự khác biệt thành phút và giây
+    let minutes = Math.floor(diff / 60000);
+    let seconds = ((diff % 60000) / 1000).toFixed(0);
+
+    // Trả về kết quả dưới dạng chuỗi
+    return minutes + "m " + seconds + "s";
+  }
+  const commands = {
+    whoami: "jackharper",
+    cd: (directory) => `changed path to ${directory}`,
+  };
 
   const title_iterms = ["Event", "Logs", "Shell", "Images", "Settings"];
   const content_iterms = [
     <div>
       {records.map((record, idx) => {
-        const color = record.status ? '' : ""
+        const color = record.status ? "" : "";
         return (
           <div
             key={idx}
-            className={`m-2 p-2 flex flex-row border-solid border rounded-md `}
+            className={`m-2 p-2 flex flex-row border-solid border rounded-md cursor-pointer`}
+            onClick={() => {
+              navigate(
+                `/ocean?service=${service.id}&env=${service_env}&name=${service.name}&record=${record.id}`
+              );
+            }}
           >
             <div className="flex mr-1">
               {record.status === "SUCCESSFULLY" ? (
@@ -116,17 +161,39 @@ export default function ServicePageDetail(props) {
                 <ExclamationCircleOutlined style={{ color: "red" }} />
               )}
             </div>
-            <div className="grid-row">
-              <div>
+            <div className="grid-row flex-grow">
+              <a href={`${record.commit_html_url}`}>
                 {`#${record.index} Commit: ${record.commit_id.substring(0, 6)}`}{" "}
+              </a>
+              <div className=" flex gap-3 justify-between content-between">
+                <div className="mr-4">{`${record.commit_message}`}</div>
+                <div className="flex gap-3">
+                  <p>
+                    {record.end_time
+                      ? subtractTime(record.created_time, record.end_time)
+                      : `${subtractTime(record.created_time, new Date())} ago`}
+                  </p>
+                  <ClockCircleOutlined style={{ color: "blue" }} />
+                </div>
               </div>
-              <div>dsds</div>
             </div>
           </div>
         );
       })}
     </div>,
-    <div></div>,
+    <div>
+      <Terminal
+        name="docker-compose logs -f"
+        colorMode={ColorMode.Light}
+        // onInput={(terminalInput) =>
+        //   console.log(`New terminal input received: '${terminalInput}'`)
+        // }
+      >
+        {logRealTimeBuild.map((log, idx) => (
+          <TerminalOutput key={idx}>{log}</TerminalOutput>
+        ))}
+      </Terminal>
+    </div>,
     <div></div>,
     <div>
       <Table
@@ -152,24 +219,31 @@ export default function ServicePageDetail(props) {
             {service?.name}
           </div>
           <div className=" mt-2 ">
-            <div className="flex flex-row  col-span-2 grid-row-3 items-center justify-center w-20 ">
-              <img className="row-span-1" src="/images/github.png" alt="logo" />
+            <div className="flex flex-row grid-row-3 items-center  w-auto ">
+              <img
+                className="row-span-1 w-6"
+                src="/images/github.png"
+                alt="logo"
+              />
               <div className="row-span-2 flex flex-row ">
-                <a href="#" className="underline  underline-offset-1">
-                  quangh0409/Decision_help_system
+                <a
+                  href={`https://github.com/${github?.login}/${service?.repo}/tree/${service_env}`}
+                  className="underline  underline-offset-1 w-full"
+                >
+                  {`${github?.login}/${service?.repo}`}
+                  <MergeOutlined />
+                  {service_env}
                 </a>
-                <MergeOutlined />
-                <a className="underline  underline-offset-1">main</a>
               </div>
             </div>
           </div>
           <div>
             <div className=" mt-2 ">
-              <div className="flex flex-row  col-span-2 grid-cols-3 items-center justify-center w-20 ">
+              <div className="flex items-center gap-2">
                 <LinkOutlined />
-                <div className="col-span-2 flex flex-row ">
+                <div className="flex  gap-4">
                   <a href="" className="underline  underline-offset-1">
-                    {}
+                    {host}
                   </a>
                   <CopyOutlined
                     onClick={() => {

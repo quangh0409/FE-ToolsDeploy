@@ -70,44 +70,44 @@ export default function ResultTrivy(props) {
             <div>
               {val.Target} ({val.Class})
             </div>
-            <span>{`Total: ${val.Vulnerabilities.length} `}</span>
+            <span>{`Total: ${val?.Vulnerabilities?.length || 0} `}</span>
             <span>{`( `}</span>
             <span className="text-yellow-300">{`UNKNOWN`}</span>
             <span>
               {`: ${
-                val.Vulnerabilities.filter((v) => v.Severity === "UNKNOWN")
-                  .length
+                val?.Vulnerabilities?.filter((v) => v.Severity === "UNKNOWN")
+                  .length || 0
               }, `}
             </span>
             <span className="text-green-400">{`LOW`}</span>
             <span>
               {`:
                 ${
-                  val.Vulnerabilities.filter((v) => v.Severity === "LOW").length
+                  val?.Vulnerabilities?.filter((v) => v.Severity === "LOW").length || 0
                 } `}
             </span>
             <span className="text-orange-300">{`MEDIUM`}</span>
             <span>
               {`: 
                 ${
-                  val.Vulnerabilities.filter((v) => v.Severity === "MEDIUM")
-                    .length
+                  val?.Vulnerabilities?.filter((v) => v.Severity === "MEDIUM")
+                    .length || 0
                 }, `}
             </span>
             <span className="text-orange-700">{`HIGH`}</span>
             <span>
               {`: 
                 ${
-                  val.Vulnerabilities.filter((v) => v.Severity === "HIGH")
-                    .length
+                  val?.Vulnerabilities?.filter((v) => v.Severity === "HIGH")
+                    .length || 0
                 }, `}
             </span>
             <span className="text-red-700 font-bold">{`CRITICAL`}</span>
             <span>
               {`:
                 ${
-                  val.Vulnerabilities.filter((v) => v.Severity === "CRITICAL")
-                    .length
+                  val?.Vulnerabilities?.filter((v) => v.Severity === "CRITICAL")
+                    .length || 0
                 })`}
             </span>
             <Table

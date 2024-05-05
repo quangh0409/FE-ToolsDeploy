@@ -36,6 +36,7 @@ export default function OceanPage() {
   const params = new URLSearchParams(location.search);
   const service_id = params.get("service");
   const env_name = params.get("env");
+  const record_id = params.get("record");
 
   const onChange = (value) => {
     setCurrent(value);

@@ -13,13 +13,16 @@ import vmsApi, { getVmsByIds } from "../../apis/vms.api";
 import { store } from "../../redux/store";
 import { addVm } from "../../redux/reducer/user";
 import apiCaller from "../../apis/apiCaller";
+import ticketApi from "../../apis/ticket.api";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const [vms, setVms] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState();
   const vms_ids = useSelector((state) => state.user.ticket.vms_ids);
+  const ticket_id = useSelector((state) => state.user.ticket.id);
   useEffect(() => {
     if (vms_ids.length > 0) {
       const fetch = async () => {
@@ -107,9 +110,12 @@ export default function Dashboard() {
       render: (record, index) => {
         return (
           <DeleteOutlined
-            onClick={() => {
-              apiCaller({
-                request: vmsApi.deleteVmsById(record.id),
+            onClick={async () => {
+              await apiCaller({
+                request: vmsApi.deleteVmsById(record.id, ticket_id),
+              });
+              await apiCaller({
+                request: ticketApi.getTicketDetail(),
               });
             }}
           />
@@ -125,6 +131,7 @@ export default function Dashboard() {
       status: vm.status,
       last_connect: vm.last_connect,
       key: index,
+      id: vm.id,
     };
   });
   const dataTable =
@@ -148,12 +155,34 @@ export default function Dashboard() {
                 onClick={() => {}}
               />
             }
-            value={""}
-            onChange={() => {}}
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+            }}
+            onKeyDown={async (e) => {
+              setSearch(e.target.value);
+              console.log(e.target.value);
+              if (e.key === "Enter") {
+                const res = await apiCaller({
+                  request: vmsApi.findVmsByHost(e.target.value),
+                });
+                setVms(res);
+              }
+              if (e.target.value === "") {
+                const res = await apiCaller({
+                  request: vmsApi.getVmsByIds(vms_ids),
+                });
+                setVms(res);
+              }
+            }}
             suffix={
               <Button
                 className="text-gray-400 pointer-events-auto border-0 "
-                onClick={() => {}}
+                onClick={(e) => {
+                  e.preventDefault();
+                  console.log(search);
+                  setSearch("");
+                }}
               >
                 Clear
               </Button>

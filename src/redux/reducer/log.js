@@ -13,6 +13,7 @@ const initialState = {
   logScanSyntax: [],
   logSsh: [],
   stepLog: [],
+  loading: null,
 };
 
 export const log = createSlice({
@@ -58,6 +59,11 @@ export const log = createSlice({
     setStepLog: (state, action) => {
       state.stepLog[action.payload.idx].status = action.payload.status;
     },
+    addloading: (state, action) => {
+      console.log("🚀 ~ action:", action);
+
+      state.loading = action.payload;
+    },
   },
 });
 
@@ -75,6 +81,7 @@ export const {
   pushLogSsh,
   pushStepLog,
   setStepLog,
+  addloading,
 } = log.actions;
 
 export default log.reducer;

@@ -1,4 +1,8 @@
-import { SearchOutlined } from "@ant-design/icons";
+import {
+  ExportOutlined,
+  SearchOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { Button, Input, message } from "antd";
 import React, { useEffect, useState } from "react";
 import useEffectOnce from "../../hook/useEffectOnce";
@@ -16,6 +20,7 @@ export default function ConnectGit() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const vm = params.get("vm");
+  const git_user = useSelector((state) => state.user.ticket.github.git_user);
   useEffect(() => {
     const fecth = async () => {
       try {
@@ -115,7 +120,28 @@ export default function ConnectGit() {
             </div>
           </div>
         </div>
-        <div className="col-span-1"> ds</div>
+        <div className="col-span-1 p-8 mt-28">
+          <div className=" mt-4 ">
+            <div className=" h-full items-center ">
+              <div className="flex items-center font-semibold">
+                <img className="h-8" src="/images/github.png" alt="logo" />{" "}
+                GitHub
+              </div>
+              <a
+                className="m-1 underline underline-offset-1 mr-2 ml-2 "
+                href={`https://github.com/${git_user}?tab=repositories`}
+              >
+                <UserOutlined />
+                <a className="m-1">@{git_user}</a>
+                <ExportOutlined className="" />
+              </a>
+              <span className="antialiased font-sans font-normal text-sm leading-6 select-none text-gray-500">
+                .
+              </span>
+              <span>{repos.length} repos</span>
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );

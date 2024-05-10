@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import socket from "../../utils/socket/socket";
 import useEffectOnce from "../../hook/useEffectOnce";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Input, Form, Modal, Carousel, Card, message } from "antd";
 import vmsApi from "../../apis/vms.api";
 import "./style.css";
 import apiCaller from "../../apis/apiCaller";
 import ticketApi from "../../apis/ticket.api";
 export default function ConnectVM() {
+  const navigate = useNavigate();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const vm = params.get("vm");
@@ -29,11 +30,12 @@ export default function ConnectVM() {
   const [isOpen, setIsOpen] = useState(false);
   const [infoVms, setInfoVms] = useState();
   const token = localStorage.getItem("accessToken");
+  const [fields, setFields] = useState();
   useEffect(() => {
     setVersionDocker(infoVms?.set_up?.docker);
     setVersionHadolint(infoVms?.set_up?.hadolint);
     setVersionTrivy(infoVms?.set_up?.trivy);
-    if (infoVms !== undefined) {
+    if (infoVms !== undefined && infoVms.status === "CONNECTED") {
       setIsOpen(true);
     }
   }, [infoVms]);
@@ -61,9 +63,25 @@ export default function ConnectVM() {
           request: vmsApi.getVmsById(vm),
         });
         setInfoVms(res);
-        setHostVM(res.host);
+        setUserVM(res.user);
+        setPassVM(res.pass);
+        setFields([
+          {
+            name: ["host"],
+            value: res.host,
+          },
+          {
+            name: ["username"],
+            value: res.user,
+          },
+          {
+            name: ["password"],
+            value: res.pass,
+          },
+        ]);
       };
       setVmId(vm);
+
       fetch();
     }
     socket.connect();
@@ -115,20 +133,46 @@ export default function ConnectVM() {
   };
 
   const handleRegister = () => {
-    const fetch = async () => {
-      const vm = await apiCaller({
+    const fetchC = async () => {
+      const vmT = await apiCaller({
         request: vmsApi.createVMS(hostVM, userVM, passVM),
       });
-      if (vm) {
-        alert("success full");
-      }
       await apiCaller({
-        request: ticketApi.UpdateTicket(vm.id, undefined),
+        request: ticketApi.UpdateTicket(vmT.id, undefined),
       });
-      setVmId(vm.id);
-      setInfoVms(vm);
+      if (vmT.status === "DISCONNECTED") {
+        message.warning("DISCONNECTED. You check connect or infor user");
+        await apiCaller({
+          request: ticketApi.getTicketDetail(),
+        });
+        // window.location.href = "/dashboard";
+        navigate("/dashboard");
+      } else {
+        setVmId(vmT.id);
+        setInfoVms(vmT);
+      }
     };
-    fetch();
+    const fetchU = async () => {
+      console.log("🚀 ~ fetchU ~ userVM, passVM:", userVM, passVM);
+      const vmU = await apiCaller({
+        request: vmsApi.updateVms(vm, userVM, passVM),
+      });
+      // const res = await apiCaller({
+      //   request: vmsApi.getVmsById(vm),
+      // });
+      if (vmU.status === "DISCONNECTED") {
+        message.warning("DISCONNECTED. You check connect or infor user");
+        await apiCaller({
+          request: ticketApi.getTicketDetail(),
+        });
+        // window.location.href = "/dashboard";
+        navigate("/dashboard");
+      } else {
+        setVmId(vmU.id);
+        setInfoVms(vmU);
+      }
+    };
+    vm ? fetchU() : fetchC();
   };
 
   const cards = {
@@ -161,7 +205,12 @@ export default function ConnectVM() {
         <div className=" text-xl font-medium my-6">
           Follow the instructions to connect your remote VM
         </div>
-        <Form layout="vertical" form={form} onFinish={handleRegister}>
+        <Form
+          layout="vertical"
+          form={form}
+          onFinish={handleRegister}
+          fields={fields}
+        >
           <div className="grid gap-3 grid-cols-3">
             <Form.Item
               label="Host"
@@ -182,13 +231,16 @@ export default function ConnectVM() {
                   },
                 },
               ]}
-              initialValue={hostVM}
             >
               <Input
                 placeholder="0.0.0.0"
                 className="w-40"
+                // defaultValue={hostVM}
+                disabled={fields ? true : false}
+                // value={hostVM}
                 onChange={(e) => {
-                  setHostVM(e.target.value);
+                  const newValue = e.target.value;
+                  setHostVM(newValue);
                 }}
               />
             </Form.Item>
@@ -231,7 +283,7 @@ export default function ConnectVM() {
         </Form>
         <hr />
         <br />
-        {infoVms && (
+        {infoVms && infoVms.status === "CONNECTED" && (
           <div>
             <p className="flex">
               <p>SSH session to &nbsp;</p>
@@ -353,10 +405,12 @@ export default function ConnectVM() {
           style={{ display: "flex", justifyContent: "space-around" }}
         >
           {infoVms &&
-            Object.keys(infoVms?.set_up).map((key) => {
+            infoVms.status === "CONNECTED" &&
+            Object.keys(infoVms?.set_up).map((key, index) => {
               const version = infoVms?.set_up[key];
               return (
                 <Card
+                  key={index}
                   title={
                     <div className="flex gap-5">
                       <img className="w-7" alt="#" src={cards[key]?.logo} />

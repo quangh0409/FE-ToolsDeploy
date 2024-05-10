@@ -8,7 +8,11 @@ const ticketApi = {
     store.dispatch(addAvatar(response.data.user.avatar));
     store.dispatch(addFullname(response.data.user.fullname));
     store.dispatch(
-      addTicket({ id: response.data.id, vms_ids: response.data.vms_ids })
+      addTicket({
+        id: response.data.id,
+        vms_ids: response.data.vms_ids,
+        github: response.data.github,
+      })
     );
     localStorage.setItem("token", response.data.github.access_token);
     return response.data;

@@ -23,25 +23,25 @@ export default function SignInPage() {
     <>
       <div className="h-svh">
         <div className="flex flex-col mt-52 ml-7">
-          <div className="text-3xl w-96 h-10 ml-6">Sign in to ToolsDeploy</div>
-          <div className="text-xl w-72 h-8 ml-6 text-center">or</div>
+          <div className="text-3xl w-96 h-10 ml-6 items-center justify-center">Sign in to ToolsDeploy</div>
+          <div className="text-xl w-96 h-8 ml-6 text-center">or</div>
 
-          <div className="grid grid-cols-6 w-96 h-14 items-center justify-center ml-3">
+          <div className="flex grid-cols-6 w-96 h-14 items-center justify-center ml-6 cursor-pointer">
             <div
-              className="col-span-2 grid grid-cols-3 items-center justify-center border-black border-solid border hover:bg-slate-500 m-3"
+              className="w-32 h-14 grid grid-cols-3 items-center justify-center border-black border-solid border hover:bg-slate-500 m-3 hover:text-white "
               onClick={handleLoginWithGithub}
             >
               <img className="col-span-1" src="/images/github.png" alt="logo" />
               <div className="col-span-2 text-center ">Github</div>
             </div>
-            <div className="col-span-2 grid grid-cols-3 items-center justify-center border-black border-solid border hover:bg-slate-500 m-3">
+            {/* <div className="col-span-2 grid grid-cols-3 items-center justify-center border-black border-solid border hover:bg-slate-500 m-3">
               <img className="col-span-1" src="/images/gitlab.png" alt="logo" />
               <div className="col-span-2 text-center ">Gitlab</div>
             </div>
             <div className="col-span-2 grid grid-cols-3 items-center justify-center border-black border-solid border hover:bg-slate-500 m-3">
               <img className="col-span-1" src="/images/google.png" alt="logo" />
               <div className="col-span-2 text-center ">Google</div>
-            </div>
+            </div> */}
           </div>
           <div className="ml-6 font-medium">Email</div>
           <div>

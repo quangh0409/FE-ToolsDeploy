@@ -8,8 +8,9 @@ import {
   GlobalOutlined,
   LinkOutlined,
   MergeOutlined,
+  SyncOutlined,
 } from "@ant-design/icons";
-import { Button, Card, Table, Tabs } from "antd";
+import { Button, Card, Modal, Table, Tabs } from "antd";
 import apiCaller from "../../apis/apiCaller";
 import vmsApi from "../../apis/vms.api";
 import githubApi from "../../apis/github.api";
@@ -17,12 +18,15 @@ import socket from "../../utils/socket/socket";
 import { ReactTerminal } from "react-terminal";
 import Terminal, { ColorMode, TerminalOutput } from "react-terminal-ui";
 import { store } from "../../redux/store";
-import { pushLogRealTimeBuild } from "../../redux/reducer/log";
-import { useSelector } from "react-redux";
+import { addloading, pushLogRealTimeBuild } from "../../redux/reducer/log";
+import { useDispatch, useSelector } from "react-redux";
+import ResultTrivy from "../../components/ResultTrivy";
 
 export default function ServicePageDetail(props) {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const indexScan = useSelector((state) => state.log.loading);
   const params = new URLSearchParams(location.search);
   const service_id = params.get("id");
   const service_env = params.get("env");
@@ -33,7 +37,8 @@ export default function ServicePageDetail(props) {
   const [host, setHost] = useState();
   const [records, setRecords] = useState([]);
   const [github, setGithub] = useState();
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [resultScan, setResultScan] = useState();
   const columns = [
     {
       title: `IMAGE NAME(REPOSITORY)`,
@@ -67,31 +72,42 @@ export default function ServicePageDetail(props) {
       key: "scan",
       render: (record, index) => {
         return (
-          <Button
-            onClick={async () => {
-              const res = await apiCaller({
-                request: vmsApi.scanImageOfService(
-                  service_id,
-                  service_env,
-                  record.Repository
-                ),
-              });
-              console.log("🚀 ~ onClick={ ~ res:", res);
-              // setResultScan()
+          <div
+            onClick={() => {
+              dispatch(addloading(index?.key));
             }}
           >
-            {" "}
-          </Button>
+            <Button
+              onClick={async () => {
+                const res = await apiCaller({
+                  request: vmsApi.scanImageOfService(
+                    service_id,
+                    service_env,
+                    record.Repository
+                  ),
+                });
+
+                if (res) {
+                  console.log(res);
+                  dispatch(addloading(null));
+                  setResultScan(res?.Results);
+                  setIsModalOpen(true);
+                }
+              }}
+            >
+              <SyncOutlined spin={indexScan == index?.key ? true : false} />
+            </Button>
+          </div>
         );
       },
     },
   ];
   useEffect(() => {
     const fetch = async () => {
-      // const res = await apiCaller({
-      //   request: vmsApi.getImagesOfServiceById(service_id, service_env),
-      // });
-      // setImages(res.result);
+      const res = await apiCaller({
+        request: vmsApi.getImagesOfServiceById(service_id, service_env),
+      });
+      setImages(res.result);
       const records = await apiCaller({
         request: vmsApi.getRecordsOfService(service_id, service_env),
       });
@@ -112,7 +128,7 @@ export default function ServicePageDetail(props) {
     };
     fetch();
     socket.emit("logs");
-    // socket.on("data", (data) => {
+    // socket.on("docker-compose-logs", (service_id, service_env ) => {
     //   if (data !== undefined && data !== "") {
     //     store.dispatch(pushLogRealTimeBuild(data));
     //   }
@@ -139,9 +155,9 @@ export default function ServicePageDetail(props) {
     cd: (directory) => `changed path to ${directory}`,
   };
 
-  const title_iterms = ["Event", "Logs", "Shell", "Images", "Settings"];
+  const title_iterms = ["Event", "Logs", "Images", "Settings"];
   const content_iterms = [
-    <div>
+    <div className="max-h-[500px] overflow-y-auto ">
       {records.map((record, idx) => {
         const color = record.status ? "" : "";
         return (
@@ -194,7 +210,6 @@ export default function ServicePageDetail(props) {
         ))}
       </Terminal>
     </div>,
-    <div></div>,
     <div>
       <Table
         pagination={false}
@@ -212,6 +227,15 @@ export default function ServicePageDetail(props) {
   ];
   return (
     <>
+      <Modal
+        open={isModalOpen}
+        footer={false}
+        onCancel={() => setIsModalOpen(false)}
+        closeIcon={true}
+        width={1500}
+      >
+        <ResultTrivy Results={resultScan} y={500} />;
+      </Modal>
       <div className="h-full">
         <div className="ml-24 mr-24 mb-10 ">
           <div className=" text-3xl font-medium">

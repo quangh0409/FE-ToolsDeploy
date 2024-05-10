@@ -27,7 +27,7 @@ export default function ResultTrivy(props) {
       title: "Severity",
       dataIndex: "severity",
       render: (text) => severity[text],
-      width:100
+      width: 100,
     },
     {
       title: "Status",
@@ -36,7 +36,7 @@ export default function ResultTrivy(props) {
     {
       title: "InstalledVersion",
       dataIndex: "installedVersion",
-      width:140
+      width: 140,
     },
     {
       title: "FixedVersion",
@@ -83,7 +83,8 @@ export default function ResultTrivy(props) {
             <span>
               {`:
                 ${
-                  val?.Vulnerabilities?.filter((v) => v.Severity === "LOW").length || 0
+                  val?.Vulnerabilities?.filter((v) => v.Severity === "LOW")
+                    .length || 0
                 } `}
             </span>
             <span className="text-orange-300">{`MEDIUM`}</span>
@@ -111,7 +112,7 @@ export default function ResultTrivy(props) {
                 })`}
             </span>
             <Table
-              scroll={{ y: 300 }}
+              scroll={{ y: props?.y | 300 }}
               pagination={false}
               className="col-span-3"
               //   loading={loading}

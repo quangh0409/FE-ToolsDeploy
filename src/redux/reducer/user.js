@@ -8,6 +8,7 @@ const initialState = {
   ticket: {
     id: "",
     vms_ids: [],
+    github: {}
   },
   service: {
     name: "",

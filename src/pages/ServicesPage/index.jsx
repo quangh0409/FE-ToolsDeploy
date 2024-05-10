@@ -12,6 +12,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import apiCaller from "../../apis/apiCaller";
 import vmsApi from "../../apis/vms.api";
+import { useSelector } from "react-redux";
 
 export default function ServicePage() {
   const navigate = useNavigate();
@@ -20,13 +21,19 @@ export default function ServicePage() {
   const vm = params.get("vm");
   const [services, setServices] = useState([]);
   const [reload, setReload] = useState(false);
-
+  const [vmInstance, setVmInstance] = useState();
+  const [search, setSearch] = useState();
+  const user = useSelector((state) => state.user.user_git);
   useEffect(() => {
     const fetch = async () => {
       const res = await apiCaller({
         request: vmsApi.getAllServiceByVMId(vm),
       });
       setServices(res);
+      const vm_instance = await apiCaller({
+        request: vmsApi.getVmsById(vm),
+      });
+      setVmInstance(vm_instance);
     };
     fetch();
     setReload(false);
@@ -87,7 +94,10 @@ export default function ServicePage() {
         return (
           <SettingOutlined
             onClick={() => {
-              // navigate(`/dashboard/VM-connect?vm=${vm.id}`);
+              const env = record.environment.find((e) => vm === e.vm);
+              navigate(
+                `/new-webapp?repo=${record.repo}&user=${user}&clone_url=${record.source}&vm=${env.vm}&service=${record.id}`
+              );
             }}
           />
         );
@@ -124,7 +134,7 @@ export default function ServicePage() {
           <DeleteOutlined
             onClick={async () => {
               const res = await apiCaller({
-                request: vmsApi.deleteServiceById(record.id),
+                request: vmsApi.deleteServiceById(record.id, vm),
               });
               setReload(true);
               alert(res.message);
@@ -138,9 +148,7 @@ export default function ServicePage() {
   return (
     <>
       <div className="ml-24 mr-24 h-full">
-        <div className="border-solid border border-cyan-300 text-3xl font-medium">
-          Overview
-        </div>
+        <div className=" text-3xl font-medium">Server: {vmInstance?.host}</div>
         <div className="mt-9">
           <Input
             placeholder="Enter your username"
@@ -150,12 +158,34 @@ export default function ServicePage() {
                 onClick={() => {}}
               />
             }
-            value={""}
-            onChange={() => {}}
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+            }}
+            onKeyDown={async (e) => {
+              setSearch(e.target.value);
+              console.log(e.target.value);
+              if (e.key === "Enter") {
+                const res = await apiCaller({
+                  request: vmsApi.findServiceInVmsByName(vm, e.target.value),
+                });
+                setServices(res);
+              }
+              if (e.target.value === "") {
+                const res = await apiCaller({
+                  request: vmsApi.getAllServiceByVMId(vm),
+                });
+                setServices(res);
+              }
+            }}
             suffix={
               <Button
                 className="text-gray-400 pointer-events-auto border-0 "
-                onClick={() => {}}
+                onClick={(e) => {
+                  e.preventDefault();
+                  console.log(search);
+                  setSearch("");
+                }}
               >
                 Clear
               </Button>

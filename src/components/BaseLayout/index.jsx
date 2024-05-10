@@ -25,6 +25,7 @@ export default function BaseLayout(props) {
     socket.on(
       `webhooks-${localStorage.getItem("UserId")}`,
       (user_id, service, env) => {
+        localStorage.setItem("build", true);
         const currentUrl = `/ocean?service=${service}&env=${env}`;
         if (window.location.pathname + window.location.search === currentUrl) {
           window.location.href = currentUrl; // Buộc tải lại trang

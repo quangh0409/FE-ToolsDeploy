@@ -17,7 +17,8 @@ export default function Header() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const fullname = useSelector((state) => state.user.fullname);
-  const vm = params.get("vm")
+  const vm = params.get("vm");
+  const path = uri.pathname;
   //   ? params.get("vm")
   //   : useSelector((state) => state.user.vm);
   // console.log("🚀 ~ Header ~ vm:", vm);
@@ -77,7 +78,6 @@ export default function Header() {
             width={90}
             className={"rounded-lg"}
             onClick={() => {
-              const path = uri.pathname;
               if (path === "/dashboard") {
                 navigate("/dashboard/VM-connect");
               } else {
@@ -110,11 +110,18 @@ export default function Header() {
     ]),
   ];
 
-  const NewItems = [
-    getItem("New", "sub1", <PlusOutlined />, [
-      getItem("Webapp", "Webapp", <GlobalOutlined />),
-    ]),
-  ];
+  const NewItems =
+    path === "/dashboard"
+      ? [
+          getItem("New", "sub1", <PlusOutlined />, [
+            getItem("Add VM instance", "Webapp", <GlobalOutlined />),
+          ]),
+        ]
+      : [
+          getItem("New", "sub1", <PlusOutlined />, [
+            getItem("Add Webapp", "Webapp", <GlobalOutlined />),
+          ]),
+        ];
 
   return (
     <>

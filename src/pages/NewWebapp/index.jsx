@@ -13,9 +13,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   CloseOutlined,
-  InboxOutlined,
   PlusOutlined,
-  UploadOutlined,
 } from "@ant-design/icons";
 import useEffectOnce from "../../hook/useEffectOnce";
 import githubApi from "../../apis/github.api";
@@ -28,7 +26,6 @@ import scanApi from "../../apis/scan.api";
 import apiCaller from "../../apis/apiCaller";
 import { message } from "antd";
 import Icon from "@ant-design/icons/lib/components/Icon";
-const { Dragger } = Upload;
 export default function Newwebapp() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -105,7 +102,7 @@ export default function Newwebapp() {
       store.dispatch(addService({ architectura: res.architectura }));
       store.dispatch(addService({ language: res.language }));
       const items = [];
-      res.environment.map((env, idx) => {
+      res.environment.forEach((env, idx) => {
         setFileListC([
           {
             uid: "1",
@@ -143,14 +140,6 @@ export default function Newwebapp() {
             name: ["items", idx, "docker_compose"],
             value: env.docker_compose.map((file) => file.name),
           },
-          {
-            name: ["items", idx, "postman_collection"],
-            value: fileListC,
-          }
-          // {
-          //   name: ["items", idx, "postman_environment"],
-          //   value: env.branch,
-          // }
         );
       });
 

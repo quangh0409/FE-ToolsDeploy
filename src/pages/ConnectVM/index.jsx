@@ -13,7 +13,6 @@ export default function ConnectVM() {
   const params = new URLSearchParams(location.search);
   const vm = params.get("vm");
   const [form] = Form.useForm();
-  const [resultSsh, setResultSsh] = useState();
 
   const [logInstallHadolint, setLogInstallHadolint] = useState([]);
   const [logInstallTrivy, setLogInstallTrivy] = useState([]);
@@ -84,10 +83,6 @@ export default function ConnectVM() {
 
       fetch();
     }
-    socket.connect();
-    socket.on("logCheckConnectVM", (data) => {
-      setResultSsh(data);
-    });
     socket.on("logInstallDocker", (data) => {
       logInstallDocker.push({
         key: logInstallDocker.length + 1,
@@ -145,7 +140,6 @@ export default function ConnectVM() {
         await apiCaller({
           request: ticketApi.getTicketDetail(),
         });
-        // window.location.href = "/dashboard";
         navigate("/dashboard");
       } else {
         setVmId(vmT.id);
@@ -157,15 +151,11 @@ export default function ConnectVM() {
       const vmU = await apiCaller({
         request: vmsApi.updateVms(vm, userVM, passVM),
       });
-      // const res = await apiCaller({
-      //   request: vmsApi.getVmsById(vm),
-      // });
       if (vmU.status === "DISCONNECTED") {
         message.warning("DISCONNECTED. You check connect or infor user");
         await apiCaller({
           request: ticketApi.getTicketDetail(),
         });
-        // window.location.href = "/dashboard";
         navigate("/dashboard");
       } else {
         setVmId(vmU.id);

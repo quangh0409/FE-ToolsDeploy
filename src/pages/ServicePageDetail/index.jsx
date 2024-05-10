@@ -10,15 +10,13 @@ import {
   MergeOutlined,
   SyncOutlined,
 } from "@ant-design/icons";
-import { Button, Card, Modal, Table, Tabs } from "antd";
+import { Button, Modal, Table, Tabs } from "antd";
 import apiCaller from "../../apis/apiCaller";
 import vmsApi from "../../apis/vms.api";
 import githubApi from "../../apis/github.api";
 import socket from "../../utils/socket/socket";
-import { ReactTerminal } from "react-terminal";
 import Terminal, { ColorMode, TerminalOutput } from "react-terminal-ui";
-import { store } from "../../redux/store";
-import { addloading, pushLogRealTimeBuild } from "../../redux/reducer/log";
+import { addloading } from "../../redux/reducer/log";
 import { useDispatch, useSelector } from "react-redux";
 import ResultTrivy from "../../components/ResultTrivy";
 
@@ -30,7 +28,6 @@ export default function ServicePageDetail(props) {
   const params = new URLSearchParams(location.search);
   const service_id = params.get("id");
   const service_env = params.get("env");
-  const service_name = params.get("name");
   const [url, setUrl] = useState("quangh0409/Decision_help_system");
   const [images, setImages] = useState([]);
   const [service, setService] = useState();
@@ -95,7 +92,7 @@ export default function ServicePageDetail(props) {
                 }
               }}
             >
-              <SyncOutlined spin={indexScan == index?.key ? true : false} />
+              <SyncOutlined spin={indexScan === index?.key ? true : false} />
             </Button>
           </div>
         );
@@ -120,7 +117,7 @@ export default function ServicePageDetail(props) {
         request: vmsApi.getServiceById(service_id),
       });
       setService(service);
-      service?.environment.map((env) => {
+      service?.environment.forEach((env) => {
         if (env.name === service_env) {
           setHost(env.vm.host);
         }
@@ -150,16 +147,11 @@ export default function ServicePageDetail(props) {
     // Trả về kết quả dưới dạng chuỗi
     return minutes + "m " + seconds + "s";
   }
-  const commands = {
-    whoami: "jackharper",
-    cd: (directory) => `changed path to ${directory}`,
-  };
 
   const title_iterms = ["Event", "Logs", "Images", "Settings"];
   const content_iterms = [
     <div className="max-h-[500px] overflow-y-auto ">
       {records.map((record, idx) => {
-        const color = record.status ? "" : "";
         return (
           <div
             key={idx}
@@ -266,7 +258,7 @@ export default function ServicePageDetail(props) {
               <div className="flex items-center gap-2">
                 <LinkOutlined />
                 <div className="flex  gap-4">
-                  <a href="" className="underline  underline-offset-1">
+                  <a href="#cscs" className="underline  underline-offset-1">
                     {host}
                   </a>
                   <CopyOutlined
@@ -280,16 +272,6 @@ export default function ServicePageDetail(props) {
           </div>
         </div>
         <div className="ml-24 mr-24 h-full grid grid-cols-6 gap-4 ">
-          {/* <div className="col-span-1 border-solid border border-gray-300 rounded-md">
-            <div className="grid grid-row-5 gap-1">
-              <div className="row-span-1 h-8">Event</div>
-              <div className="row-span-1 h-8">Logs</div>
-              <div className="row-span-1 h-8">Shell</div>
-              <div className="row-span-1 h-8">Images</div>
-              <div className="row-span-1 h-8">Settings</div>
-            </div>
-          </div>
-          <div className="col-span-5 border-solid border border-gray-300 rounded-md"></div> */}
           <div className="col-span-6 " style={{ height: `${600}px` }}>
             <Tabs
               className="w-full h-full"

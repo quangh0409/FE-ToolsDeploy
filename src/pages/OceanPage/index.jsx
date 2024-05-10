@@ -4,20 +4,17 @@ import { useSelector } from "react-redux";
 import socket from "../../utils/socket/socket";
 import useEffectOnce from "../../hook/useEffectOnce";
 import { ClockCircleOutlined, LoadingOutlined } from "@ant-design/icons";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { store } from "../../redux/store";
 import ResultTrivy from "../../components/ResultTrivy";
 import apiCaller from "../../apis/apiCaller";
 import vmsApi from "../../apis/vms.api";
 import { setRecord } from "../../redux/reducer/record";
-// const fs = require("fs");
-import * as fs from "fs";
 
 export default function OceanPage() {
   const [current, setCurrent] = useState(0);
 
   const [service, setService] = useState();
-  const [loading, setLoading] = useState(false);
   const [postman, setPostman] = useState();
   const [timer, setTimer] = useState(new Date());
   const countRef = useRef(null);
@@ -306,7 +303,7 @@ export default function OceanPage() {
       };
       fecth();
     }
-  }, [record, service]);
+  }, [record, service,env_name]);
   useEffectOnce(() => {
     const fetch = async () => {
       const res = await apiCaller({

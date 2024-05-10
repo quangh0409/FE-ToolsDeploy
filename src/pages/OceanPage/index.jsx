@@ -55,7 +55,6 @@ export default function OceanPage() {
       fetch();
     }
   }, [record]);
-  console.log(postmanStatus);
   const onChange = (value) => {
     setCurrent(value);
   };

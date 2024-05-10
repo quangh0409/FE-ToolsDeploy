@@ -1,7 +1,3 @@
-import { message } from "antd";
-import { store } from "../redux/store";
-import { addloading } from "../redux/reducer/log";
-
 export default async function apiCaller({
   request,
   errorHandler = defaultErrorHandler,
@@ -28,5 +24,4 @@ export default async function apiCaller({
 
 function defaultErrorHandler(error) {
   console.error("An error occurred:", error);
-  message.error(error.msg);
 }

@@ -99,6 +99,7 @@ export default function OceanPage() {
           children: (
             <div className="max-h-80 overflow-y-auto">
               {log.log.map((l, idx) => {
+                console.log("🚀 ~ {log.log.map ~ l:", l);
                 const columns = [
                   {
                     title: "Code",
@@ -137,26 +138,26 @@ export default function OceanPage() {
                     key: "message",
                   },
                 ];
-                const data = (l !== "") ? JSON.parse(l) : [];
-                const dataTable =
-                  data.length &&
-                  data.map((val, index) => {
-                    return {
-                      ...val,
-                      key: index,
-                    };
-                  });
+                // const data = (l !== "") ? JSON.parse(l) : [];
+                // const dataTable =
+                //   data.length &&
+                //   data.map((val, index) => {
+                //     return {
+                //       ...val,
+                //       key: index,
+                //     };
+                //   });
                 return (
                   <div
                     key={idx}
                     className="col-span-1 border rounded-lg h-full overflow-auto"
                   >
-                    <Table
+                    {/* <Table
                       pagination={false}
                       dataSource={dataTable}
                       columns={columns}
                       scroll={{ y: 421 }}
-                    />
+                    /> */}
                   </div>
                 );
               })}
@@ -375,7 +376,7 @@ export default function OceanPage() {
                 ? "bg-green-400"
                 : record?.status === "ERROR"
                 ? "bg-red-400"
-                : ""
+                : "bg-blue-400"
             }`}
           >
             <p>{service?.name}</p>

@@ -134,7 +134,7 @@ export default function OceanPage() {
                     key: "message",
                   },
                 ];
-                const data = (l !== "") ? JSON.parse(l) : [];
+                const data = l.startsWith("[") ? JSON.parse(l) : [];
                 const dataTable =
                   data.length &&
                   data.map((val, index) => {
@@ -303,7 +303,7 @@ export default function OceanPage() {
       };
       fecth();
     }
-  }, [record, service,env_name]);
+  }, [record, service, env_name]);
   useEffectOnce(() => {
     const fetch = async () => {
       const res = await apiCaller({
@@ -316,7 +316,7 @@ export default function OceanPage() {
       });
       if (localStorage.getItem("build") === "true") {
         localStorage.setItem("build", false);
-        socket.emit("planCiCd", token, env.vm.id, res.id, env.name);
+        socket.emit("planCiCd", token, env.vm.id, service_id, env.name);
       }
       socket.on(`logPlanCiCd-${localStorage.getItem("UserId")}`, (data) => {
         store.dispatch(setRecord(data));

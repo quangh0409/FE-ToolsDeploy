@@ -9,13 +9,12 @@ import ticketApi from "../../apis/ticket.api";
 export default function BaseLayout(props) {
   const navigate = useNavigate();
   useEffect(() => {
+    socket.connect();
     const fetch = async () => {
       if (localStorage.getItem("accessToken")) {
         await apiCaller({
           request: ticketApi.getTicketDetail(),
         });
-        socket.connect();
-        socket.emit("register", localStorage.getItem("accessToken"));
       } else {
         navigate("/");
       }
@@ -30,7 +29,7 @@ export default function BaseLayout(props) {
         if (window.location.pathname + window.location.search === currentUrl) {
           window.location.href = currentUrl; // Buộc tải lại trang
         } else {
-          navigate(currentUrl);
+          window.location.href = currentUrl;
         }
       }
     );

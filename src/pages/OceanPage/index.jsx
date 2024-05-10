@@ -16,20 +16,49 @@ export default function OceanPage() {
 
   const [service, setService] = useState();
   const [postman, setPostman] = useState();
+  const [postmanStatus, setPostmanStatus] = useState(false);
   const [timer, setTimer] = useState(new Date());
   const countRef = useRef(null);
+  const countRefRecord = useRef(null);
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const service_id = params.get("service");
   const env_name = params.get("env");
   const record_id = params.get("record");
+  const record = useSelector((state) => state.record.record);
   countRef.current = setInterval(() => {
     setTimer(new Date());
   }, 1000);
+  // countRefRecord.current = setInterval(async () => {
+  //   const res = await apiCaller({
+  //     request: vmsApi.getRecordById(record.id),
+  //   });
+  //   if (res) {
+  //     console.log("d vao");
+  //     store.dispatch(setRecord(res));
+  //   }
+  // }, 1000);
+  useEffect(() => {
+    const fetch = async () => {
+      const res = await apiCaller({
+        request: vmsApi.getRecordById(record.id),
+      });
+      if (res) {
+        store.dispatch(setRecord(res));
+        setPostmanStatus(true);
+      }
+    };
+    if (
+      record.status !== "SUCCESSFULLY" &&
+      (record?.logs?.deploy || record?.logs?.scanImages)
+    ) {
+      fetch();
+    }
+  }, [record]);
+  console.log(postmanStatus);
   const onChange = (value) => {
     setCurrent(value);
   };
-  const record = useSelector((state) => state.record.record);
   const items = [
     record?.logs?.ssh?.map((log, idx) => {
       return {
@@ -287,7 +316,7 @@ export default function OceanPage() {
     }),
   ];
   useEffect(() => {
-    if (record.status === "SUCCESSFULLY" && service) {
+    if (postmanStatus) {
       const env = service?.environment.find((env) => env.name === env_name);
       const fecth = async () => {
         const res = await apiCaller({
@@ -303,7 +332,7 @@ export default function OceanPage() {
       };
       fecth();
     }
-  }, [record, service, env_name]);
+  }, [postmanStatus]);
   useEffectOnce(() => {
     const fetch = async () => {
       const res = await apiCaller({
@@ -319,7 +348,9 @@ export default function OceanPage() {
         socket.emit("planCiCd", token, env.vm.id, service_id, env.name);
       }
       socket.on(`logPlanCiCd-${localStorage.getItem("UserId")}`, (data) => {
-        store.dispatch(setRecord(data));
+        if (!postmanStatus) {
+          store.dispatch(setRecord(data));
+        }
       });
     };
     const fetchRecord = async () => {
@@ -331,6 +362,7 @@ export default function OceanPage() {
         request: vmsApi.getServiceById(service_id),
       });
       setService(service);
+      setPostmanStatus(true);
     };
 
     if (record_id) {
@@ -338,7 +370,7 @@ export default function OceanPage() {
     } else {
       fetch();
     }
-  }, [service_id, record_id]);
+  }, [service_id, record_id, postmanStatus]);
 
   function timeDifference(time1, time2) {
     let date1 = new Date(time1).getTime();

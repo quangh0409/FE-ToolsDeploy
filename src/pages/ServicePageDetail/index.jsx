@@ -16,9 +16,11 @@ import vmsApi from "../../apis/vms.api";
 import githubApi from "../../apis/github.api";
 import socket from "../../utils/socket/socket";
 import Terminal, { ColorMode, TerminalOutput } from "react-terminal-ui";
-import { addloading } from "../../redux/reducer/log";
+import { addloading, pushLogRealTimeBuild } from "../../redux/reducer/log";
 import { useDispatch, useSelector } from "react-redux";
 import ResultTrivy from "../../components/ResultTrivy";
+import { store } from "../../redux/store";
+import useEffectOnce from "../../hook/useEffectOnce";
 
 export default function ServicePageDetail(props) {
   const location = useLocation();
@@ -99,7 +101,8 @@ export default function ServicePageDetail(props) {
       },
     },
   ];
-  useEffect(() => {
+
+  useEffectOnce(() => {
     const fetch = async () => {
       const res = await apiCaller({
         request: vmsApi.getImagesOfServiceById(service_id, service_env),
@@ -122,14 +125,19 @@ export default function ServicePageDetail(props) {
           setHost(env.vm.host);
         }
       });
+      socket.emit("logs", service_id, service_env);
     };
     fetch();
-    socket.emit("logs");
-    // socket.on("docker-compose-logs", (service_id, service_env ) => {
-    //   if (data !== undefined && data !== "") {
-    //     store.dispatch(pushLogRealTimeBuild(data));
-    //   }
-    // });
+    console.log("first");
+    socket.on("docker-compose-logs", (data) => {
+      if (data !== undefined && data !== "") {
+        store.dispatch(
+          pushLogRealTimeBuild(
+            <TerminalOutput key={Math.random()}>{data}</TerminalOutput>
+          )
+        );
+      }
+    });
   }, [service_id, service_env]);
   const logRealTimeBuild = useSelector((state) => state.log.logRealTimeBuild);
   function subtractTime(time1, time2) {
@@ -197,9 +205,7 @@ export default function ServicePageDetail(props) {
         //   console.log(`New terminal input received: '${terminalInput}'`)
         // }
       >
-        {logRealTimeBuild.map((log, idx) => (
-          <TerminalOutput key={idx}>{log}</TerminalOutput>
-        ))}
+        {logRealTimeBuild}
       </Terminal>
     </div>,
     <div>
@@ -228,7 +234,7 @@ export default function ServicePageDetail(props) {
       >
         <ResultTrivy Results={resultScan} y={500} />;
       </Modal>
-      <div className="h-full">
+      {service && <div className="h-full">
         <div className="ml-24 mr-24 mb-10 ">
           <div className=" text-3xl font-medium">
             <GlobalOutlined />
@@ -286,7 +292,7 @@ export default function ServicePageDetail(props) {
             />
           </div>
         </div>
-      </div>
+      </div>}
     </>
   );
 }

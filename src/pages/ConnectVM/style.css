@@ -1,5 +1,5 @@
 .carousel {
-    text-align: center;
+  text-align: center;
   & > ul {
     & > li {
       button {
@@ -7,4 +7,8 @@
       }
     }
   }
+}
+
+.slick-list {
+  width: 100% !important;; /* Thay đổi giá trị này theo nhu cầu của bạn */
 }

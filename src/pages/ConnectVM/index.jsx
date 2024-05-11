@@ -400,6 +400,7 @@ export default function ConnectVM() {
               const version = infoVms?.set_up[key];
               return (
                 <Card
+                className="w-[472px]"
                   key={index}
                   title={
                     <div className="flex gap-5">
@@ -409,11 +410,13 @@ export default function ConnectVM() {
                   }
                   style={{ width: 240 }}
                   cover={
-                    <img
-                      className="h-[250px] object-cover"
-                      alt="docker.png"
-                      src={cards[key]?.bg}
-                    />
+                    <div className="w-[472px]">
+                      <img
+                        className="h-[250px] w-full object-cover"
+                        alt="docker.png"
+                        src={cards[key]?.bg}
+                      />
+                    </div>
                   }
                 >
                   <div className="h-36">

@@ -42,6 +42,21 @@ export default function Dashboard() {
 
   const columns = [
     {
+      title: "OS",
+      key: "os",
+      width: 230,
+      render: (record, index) => {
+        return (
+          <div style={{width: "max-content"}} className="flex items-center">
+            {record.os?.includes("Ubuntu") && (
+              <img className="w-8" src="/images/logoUbuntu.png" />
+            )}
+            <span>{record.os}</span>
+          </div>
+        );
+      },
+    },
+    {
       title: `HOST`,
       sorter: (a, b) => a.service_name.length - b.service_name.length,
       dataIndex: "host",
@@ -85,12 +100,14 @@ export default function Dashboard() {
       title: "LAST CONNECT",
       dataIndex: "last_connect",
       key: "last_connect",
+      render: (text) => <div>{new Date(text).toLocaleDateString()}</div>,
     },
     {
       width: 100,
       title: "Setting",
       key: "setting",
       render: (record, index) => {
+        console.log("🚀 ~ Dashboard ~ record:", record)
         return (
           <SettingOutlined
             onClick={() => {
@@ -132,6 +149,7 @@ export default function Dashboard() {
       last_connect: vm.last_connect,
       key: index,
       id: vm.id,
+      os: vm.operating_system
     };
   });
   const dataTable =

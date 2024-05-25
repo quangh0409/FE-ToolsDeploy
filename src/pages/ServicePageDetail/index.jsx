@@ -37,6 +37,7 @@ export default function ServicePageDetail(props) {
   const [records, setRecords] = useState([]);
   const [github, setGithub] = useState();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [resultScan, setResultScan] = useState();
   const columns = [
     {
@@ -125,10 +126,8 @@ export default function ServicePageDetail(props) {
           setHost(env.vm.host);
         }
       });
-      socket.emit("logs", service_id, service_env);
     };
     fetch();
-    console.log("first");
     socket.on("docker-compose-logs", (data) => {
       if (data !== undefined && data !== "") {
         store.dispatch(
@@ -156,7 +155,7 @@ export default function ServicePageDetail(props) {
     return minutes + "m " + seconds + "s";
   }
 
-  const title_iterms = ["Event", "Logs", "Images", "Settings"];
+  const title_iterms = ["Event", "Logs", "Images"];
   const content_iterms = [
     <div className="max-h-[500px] overflow-y-auto ">
       {records.map((record, idx) => {
@@ -198,15 +197,26 @@ export default function ServicePageDetail(props) {
       })}
     </div>,
     <div>
-      <Terminal
-        name="docker-compose logs -f"
-        colorMode={ColorMode.Light}
-        // onInput={(terminalInput) =>
-        //   console.log(`New terminal input received: '${terminalInput}'`)
-        // }
+      <Button
+        className="w-full"
+        onClick={() => {
+          socket.emit("logs", service_id, service_env);
+          setIsOpen(true);
+        }}
       >
-        {logRealTimeBuild}
-      </Terminal>
+        View log
+      </Button>
+      {isOpen && (
+        <Terminal
+          name="docker-compose logs -f"
+          colorMode={ColorMode.Light}
+          // onInput={(terminalInput) =>
+          //   console.log(`New terminal input received: '${terminalInput}'`)
+          // }
+        >
+          {logRealTimeBuild}
+        </Terminal>
+      )}
     </div>,
     <div>
       <Table
@@ -221,7 +231,6 @@ export default function ServicePageDetail(props) {
         scroll={{ y: 421 }}
       />
     </div>,
-    <div></div>,
   ];
   return (
     <>
@@ -234,65 +243,71 @@ export default function ServicePageDetail(props) {
       >
         <ResultTrivy Results={resultScan} y={500} />;
       </Modal>
-      {service && <div className="h-full">
-        <div className="ml-24 mr-24 mb-10 ">
-          <div className=" text-3xl font-medium">
-            <GlobalOutlined />
-            {service?.name}
-          </div>
-          <div className=" mt-2 ">
-            <div className="flex flex-row grid-row-3 items-center  w-auto ">
-              <img
-                className="row-span-1 w-6"
-                src="/images/github.png"
-                alt="logo"
-              />
-              <div className="row-span-2 flex flex-row ">
-                <a
-                  href={`https://github.com/${github?.login}/${service?.repo}/tree/${service_env}`}
-                  className="underline  underline-offset-1 w-full"
-                >
-                  {`${github?.login}/${service?.repo}`}
-                  <MergeOutlined />
-                  {service_env}
-                </a>
+      {service ? (
+        <div className="h-full">
+          <div className="ml-24 mr-24 mb-10 ">
+            <div className=" text-3xl font-medium">
+              <GlobalOutlined />
+              {service?.name}
+            </div>
+            <div className=" mt-2 ">
+              <div className="flex flex-row grid-row-3 items-center  w-auto ">
+                <img
+                  className="row-span-1 w-6"
+                  src="/images/github.png"
+                  alt="logo"
+                />
+                <div className="row-span-2 flex flex-row ">
+                  <a
+                    href={`https://github.com/${github?.login}/${service?.repo}/tree/${service_env}`}
+                    className="underline  underline-offset-1 w-full"
+                  >
+                    {`${github?.login}/${service?.repo}`}
+                    <MergeOutlined />
+                    {service_env}
+                  </a>
+                </div>
               </div>
             </div>
-          </div>
-          <div>
-            <div className=" mt-2 ">
-              <div className="flex items-center gap-2">
-                <LinkOutlined />
-                <div className="flex  gap-4">
-                  <a href="#cscs" className="underline  underline-offset-1">
-                    {host}
-                  </a>
-                  <CopyOutlined
-                    onClick={() => {
-                      navigator.clipboard.writeText(url);
-                    }}
-                  />
+            <div>
+              <div className=" mt-2 ">
+                <div className="flex items-center gap-2">
+                  <LinkOutlined />
+                  <div className="flex  gap-4">
+                    <a href="#cscs" className="underline  underline-offset-1">
+                      {host}
+                    </a>
+                    <CopyOutlined
+                      onClick={() => {
+                        navigator.clipboard.writeText(url);
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        <div className="ml-24 mr-24 h-full grid grid-cols-6 gap-4 ">
-          <div className="col-span-6 " style={{ height: `${600}px` }}>
-            <Tabs
-              className="w-full h-full"
-              tabPosition={"left"}
-              items={title_iterms.map((t, i) => {
-                return {
-                  label: `${t}`,
-                  key: i,
-                  children: content_iterms[i],
-                };
-              })}
-            />
+          <div className="ml-24 mr-24 h-full grid grid-cols-6 gap-4 ">
+            <div className="col-span-6 " style={{ height: `${600}px` }}>
+              <Tabs
+                className="w-full h-full"
+                tabPosition={"left"}
+                items={title_iterms.map((t, i) => {
+                  return {
+                    label: `${t}`,
+                    key: i,
+                    children: content_iterms[i],
+                  };
+                })}
+              />
+            </div>
           </div>
         </div>
-      </div>}
+      ) : (
+        <div className="flex items-center justify-center">
+          <img className="w-8" src="/images/loading.gif"></img>
+        </div>
+      )}
     </>
   );
 }

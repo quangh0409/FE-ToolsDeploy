@@ -35,9 +35,13 @@ import axios from "axios";
 // };
 
 // export default axiosServer;
-
+const host = process.env.CA_BE_FE_HOST
+  ? process.env.CA_BE_FE_HOST
+  : "103.166.185.48";
+const port = process.env.CA_BE_FE_PORT ? process.env.CA_BE_FE_PORT : "8080";
 const axiosServer = axios.create({
-  baseURL: "http://103.166.185.48:8080/api/v1/",
+  // baseURL: "http://103.166.185.48:8080/api/v1/",
+  baseURL: `http://${host}:${port}/api/v1/`,
 });
 axiosServer.interceptors.request.use(async (config) => {
   const accessToken = localStorage.getItem("accessToken");

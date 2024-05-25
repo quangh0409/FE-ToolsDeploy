@@ -49,12 +49,11 @@ export default function OceanPage() {
       }
     };
     if (
-      record.status !== "SUCCESSFULLY" &&
-      (record?.logs?.deploy || record?.logs?.scanImages)
+      record.status !== "SUCCESSFULLY" && !postmanStatus
     ) {
       fetch();
     }
-  }, [record]);
+  }, [record,postmanStatus]);
   const onChange = (value) => {
     setCurrent(value);
   };

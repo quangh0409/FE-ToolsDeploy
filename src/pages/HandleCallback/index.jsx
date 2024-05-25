@@ -22,7 +22,7 @@ export default function HandleCallback() {
       });
       navigate("/dashboard");
       socket.connect();
-      socket.emit("register", localStorage.getItem("accessToken"));
+      // socket.emit("register", localStorage.getItem("accessToken"));
     };
 
     fetchAccessToken();

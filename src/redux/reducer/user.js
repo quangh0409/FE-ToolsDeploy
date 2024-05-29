@@ -8,7 +8,8 @@ const initialState = {
   ticket: {
     id: "",
     vms_ids: [],
-    github: {}
+    github: {},
+    standard_ids: [],
   },
   service: {
     name: "",
@@ -20,6 +21,19 @@ const initialState = {
   },
   vm: "",
   user_id: "",
+  environments: [
+    {
+      name: "",
+      vm: "",
+      branch: "",
+      docker_file: [],
+      docker_compose: [],
+      postman: {
+        collection: {},
+        environment: {},
+      },
+    },
+  ],
 };
 
 export const user = createSlice({
@@ -67,6 +81,9 @@ export const user = createSlice({
     addUserId: (state, action) => {
       state.user_id = action.payload;
     },
+    setEnvironments: (state, action) => {
+      state.environments = action.payload;
+    },
   },
 });
 
@@ -79,6 +96,7 @@ export const {
   addService,
   addVm,
   addUserId,
+  setEnvironments,
 } = user.actions;
 
 export default user.reducer;

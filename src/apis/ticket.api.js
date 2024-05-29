@@ -12,14 +12,15 @@ const ticketApi = {
         id: response.data.id,
         vms_ids: response.data.vms_ids,
         github: response.data.github,
+        standard_ids: response.data.standard_ids,
       })
     );
     localStorage.setItem("token", response.data.github.access_token);
-    return response.data;
+    return response;
   },
   UpdateTicket: (vms_ids) => async () => {
     const response = await axiosServer.put(`ticket/`, { vms_ids });
-    return response.data;
+    return response;
   },
 };
 

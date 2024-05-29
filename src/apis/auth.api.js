@@ -14,13 +14,20 @@ const authApi = {
     store.dispatch(addAvatar(response.data.avatar));
     store.dispatch(addFullname(response.data.fullname));
     store.dispatch(addUserId(response.data.id));
-    return response.data;
+    return response;
   },
   "forgot-password": (email) => async () => {
     const response = await axiosServer.post("auth/forgot-password", {
       email: email,
     });
-    return response.data;
+    return response;
+  },
+  "update-password": (old_password, new_password) => async () => {
+    const response = await axiosServer.post("auth/update-password", {
+      old_password: old_password,
+      new_password: new_password,
+    });
+    return response;
   },
 };
 

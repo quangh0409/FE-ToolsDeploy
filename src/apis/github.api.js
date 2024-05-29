@@ -26,38 +26,38 @@ const githubApi = {
   },
   GetInfoUserGitByAccesToken: () => async () => {
     const response = await axiosServer.post(`git/user-git-token`);
-    return response.data;
+    return response;
   },
   GetReposGitByAccessToken: () => async () => {
     const response = await axiosServer.post(`git/repos-git-token`);
-    return response.data.data;
+    return response.data;
   },
 
   GetBranchesByAccessToken: (repository) => async () => {
     const response = await axiosServer.post(`git/branches`, {
       repository: repository,
     });
-    return response.data.data;
+    return response.data;
   },
   GetLanguagesByAccessToken: (repository) => async () => {
     const response = await axiosServer.post(`git/languages`, {
       repository: repository,
     });
-    return response.data.data;
+    return response.data;
   },
   GetPathFileDockerByAccessToken: (repository, branch) => async () => {
     const response = await axiosServer.post(`git/paths-file-docker`, {
       repository: repository,
       branch: branch,
     });
-    return response.data;
+    return response;
   },
   GetContentsByAccessToken: (repository, sha) => async () => {
     const response = await axiosServer.post(`git/content-file`, {
       repository: repository,
       sha: sha,
     });
-    return response.data;
+    return response;
   },
 };
 export default githubApi;

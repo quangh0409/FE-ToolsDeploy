@@ -2,11 +2,24 @@ import React, { useEffect, useState } from "react";
 import socket from "../../utils/socket/socket";
 import useEffectOnce from "../../hook/useEffectOnce";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button, Input, Form, Modal, Carousel, Card, message } from "antd";
+import {
+  Button,
+  Input,
+  Form,
+  Modal,
+  Carousel,
+  Card,
+  message,
+  Select,
+  Progress,
+  Flex,
+} from "antd";
 import vmsApi from "../../apis/vms.api";
 import "./style.css";
 import apiCaller from "../../apis/apiCaller";
 import ticketApi from "../../apis/ticket.api";
+import { useSelector } from "react-redux";
+
 export default function ConnectVM() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -21,15 +34,27 @@ export default function ConnectVM() {
   const [hostVM, setHostVM] = useState();
   const [userVM, setUserVM] = useState();
   const [passVM, setPassVM] = useState();
+  const [standardVM, setStandardVM] = useState();
+  const [standardCompoareVM, setStandardCompoareVM] = useState();
   const [vmId, setVmId] = useState();
 
   const [versionDocker, setVersionDocker] = useState();
   const [versionHadolint, setVersionHadolint] = useState();
   const [versionTrivy, setVersionTrivy] = useState();
   const [isOpen, setIsOpen] = useState(false);
+  const [reload, setReload] = useState(false);
   const [infoVms, setInfoVms] = useState();
   const token = localStorage.getItem("accessToken");
   const [fields, setFields] = useState();
+  const [standards, SetStandards] = useState([]);
+  const standard_ids = useSelector((state) => state.user.ticket.standard_ids);
+  const conicColors = {
+    "0%": "red",
+    "50%": "yellow", // Corrected spelling
+    "100%": "green", // Corrected spelling
+  };
+  const [stepsCount, setStepsCount] = React.useState(5);
+  const [stepsGap, setStepsGap] = React.useState(7);
   useEffect(() => {
     setVersionDocker(infoVms?.set_up?.docker);
     setVersionHadolint(infoVms?.set_up?.hadolint);
@@ -38,6 +63,25 @@ export default function ConnectVM() {
       setIsOpen(true);
     }
   }, [infoVms]);
+
+  useEffect(() => {
+    setVersionDocker(infoVms?.set_up?.docker);
+    setVersionHadolint(infoVms?.set_up?.hadolint);
+    setVersionTrivy(infoVms?.set_up?.trivy);
+    if (infoVms !== undefined && infoVms.status === "CONNECTED") {
+      setIsOpen(true);
+    }
+  }, [infoVms]);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const res = await apiCaller({
+        request: vmsApi.getStandards(standard_ids),
+      });
+      SetStandards(res);
+    };
+    fetch();
+  }, [standard_ids]);
 
   const checkInstall = () => {
     if (versionDocker === "" || versionHadolint === "" || versionTrivy === "") {
@@ -54,7 +98,7 @@ export default function ConnectVM() {
       setIsOpen(false);
     }
   };
-  useEffectOnce(() => {
+  useEffect(() => {
     setVmId(vm);
     if (vm) {
       const fetch = async () => {
@@ -78,76 +122,80 @@ export default function ConnectVM() {
             value: res.pass,
           },
         ]);
+        const compare = await apiCaller({
+          request: vmsApi.compareStandard(res.standard, res.id),
+        });
+        if (compare?.code) {
+          message.error(compare.errors[0].message);
+        } else {
+          setStandardVM(res.standard);
+          setStandardCompoareVM(compare);
+        }
       };
       setVmId(vm);
 
       fetch();
     }
-    socket.on("logInstallDocker", (data) => {
-      logInstallDocker.push({
-        key: logInstallDocker.length + 1,
-        label: data.title,
-        children: <p>{data.mess || data?.log?.stdout}</p>,
-      });
-      setLogInstallDocker([...logInstallDocker]);
-      if (data.status === "SUCCESSFULLY" || data.status === "ERROR") {
-        setVersionDocker(data?.log?.stdout);
-      }
+    setReload(false);
+  }, [vm, reload]);
+  const installDocker = async (e) => {
+    const res = await apiCaller({
+      request: vmsApi.installDocker(vm),
     });
-    socket.on("logInstallTrivy", (data) => {
-      logInstallTrivy.push({
-        key: logInstallTrivy.length + 1,
-        label: data.title,
-        children: <p>{data.mess || data?.log?.stdout || data?.log?.stderr}</p>,
-      });
-      setLogInstallTrivy([...logInstallTrivy]);
-      if (data.status === "SUCCESSFULLY" || data.status === "ERROR") {
-        setVersionTrivy(data?.log?.stdout);
-      }
-    });
-    socket.on("logInstallHadolint", (data) => {
-      logInstallHadolint.push({
-        key: logInstallHadolint.length + 1,
-        label: data.title,
-        children: <p>{data.mess || data?.log?.stdout || data?.log?.stderr}</p>,
-      });
-      setLogInstallHadolint([...logInstallHadolint]);
-      if (data.status === "SUCCESSFULLY" || data.status === "ERROR") {
-        setVersionHadolint(data?.log?.stdout);
-      }
-    });
-  }, [vm]);
-  const installDocker = (e) => {
-    socket.emit("InstallDocker", token, vmId);
+    if (res?.code) {
+      message.error(res.errors[0].message);
+    } else {
+      message.info(res?.message);
+    }
+    setReload(true);
   };
-  const installHadolint = (e) => {
-    socket.emit("InstallHadolint", token, vmId);
+  const installHadolint = async (e) => {
+    const res = await apiCaller({
+      request: vmsApi.installHadolint(vm),
+    });
+    if (res?.code) {
+      message.error(res.errors[0].message);
+    } else {
+      message.info(res?.message);
+    }
+    setReload(true);
   };
-  const installTrivy = (e) => {
-    socket.emit("InstallTrivy", token, vmId);
+  const installTrivy = async (e) => {
+    const res = await apiCaller({
+      request: vmsApi.installTrivy(vm),
+    });
+    if (res?.code) {
+      message.error(res.errors[0].message);
+    } else {
+      message.info(res?.message);
+    }
+    setReload(true);
   };
 
   const handleRegister = () => {
     const fetchC = async () => {
       const vmT = await apiCaller({
-        request: vmsApi.createVMS(hostVM, userVM, passVM),
+        request: vmsApi.createVMS(hostVM, userVM, passVM, standardVM),
       });
-      await apiCaller({
-        request: ticketApi.UpdateTicket(vmT.id, undefined),
-      });
-      if (vmT.status === "DISCONNECTED") {
-        message.warning("DISCONNECTED. You check connect or infor user");
-        await apiCaller({
-          request: ticketApi.getTicketDetail(),
-        });
-        navigate("/dashboard");
+      if (vmT?.code) {
+        message.error(`${vmT?.errors[0].message} ${vmT.errors[0].value}`);
       } else {
-        setVmId(vmT.id);
-        setInfoVms(vmT);
+        await apiCaller({
+          request: ticketApi.UpdateTicket(vmT.id, undefined),
+        });
+        if (vmT.status === "DISCONNECTED") {
+          message.warning("DISCONNECTED. You check connect or infor user");
+          await apiCaller({
+            request: ticketApi.getTicketDetail(),
+          });
+          navigate("/dashboard");
+        } else {
+          setVmId(vmT.id);
+          setInfoVms(vmT);
+        }
       }
     };
     const fetchU = async () => {
-      console.log("🚀 ~ fetchU ~ userVM, passVM:", userVM, passVM);
       const vmU = await apiCaller({
         request: vmsApi.updateVms(vm, userVM, passVM),
       });
@@ -262,12 +310,292 @@ export default function ConnectVM() {
               />
             </Form.Item>
           </div>
-
+          <div>
+            <div>
+              <div className="flex items-center gap-2">
+                <Form.Item
+                  name={"standard"}
+                  label={"Standard"}
+                  rules={[
+                    { required: true, message: "Please input your standard!" },
+                  ]}
+                >
+                  <Select
+                    style={{ width: 200 }}
+                    onChange={async (value) => {
+                      const res = await apiCaller({
+                        request: vmsApi.compareStandardBeforeCreate(
+                          value,
+                          hostVM,
+                          userVM,
+                          passVM
+                        ),
+                      });
+                      if (res?.code) {
+                        message.error(res.errors[0].message);
+                      } else {
+                        setStandardVM(value);
+                        setStandardCompoareVM(res);
+                      }
+                    }}
+                    options={standards.map((s, index) => {
+                      return {
+                        value: s.id,
+                        label: <>{s.name}</>,
+                        key: index,
+                      };
+                    })}
+                  />
+                </Form.Item>
+                {standardCompoareVM && (
+                  <Flex gap="small" wrap>
+                    <Progress
+                      type="circle"
+                      size={"small"}
+                      percent={Number.parseInt(
+                        Number.parseFloat(standardCompoareVM?.rate_total) * 100
+                      )}
+                      strokeColor={conicColors}
+                      format={(percent) => {
+                        return `${
+                          standardCompoareVM?.rate_total &&
+                          Number.parseFloat(standardCompoareVM?.rate_total) < 1
+                            ? "Not suitable"
+                            : Number.parseFloat(
+                                standardCompoareVM?.rate_total
+                              ) >= 1
+                            ? "suitable"
+                            : "Very suitable"
+                        }`;
+                      }}
+                    />
+                  </Flex>
+                )}
+              </div>
+              <div className="flex w-40">
+                {standardCompoareVM && (
+                  <Flex gap="small" className="w-full" vertical>
+                    <div>
+                      <div
+                        className={`${
+                          standardCompoareVM?.rate_ram &&
+                          Number.parseFloat(standardCompoareVM?.rate_ram) < 1
+                            ? "text-red-500"
+                            : Number.parseFloat(standardCompoareVM?.rate_ram) >=
+                              1
+                            ? "text-yellow-500"
+                            : "text-green-500"
+                        }`}
+                      >
+                        Ram{" "}
+                        {`${
+                          standardCompoareVM?.rate_ram &&
+                          Number.parseFloat(standardCompoareVM?.rate_ram) < 1
+                            ? "not suitable"
+                            : Number.parseFloat(standardCompoareVM?.rate_ram) >=
+                              1
+                            ? "suitable"
+                            : "very suitable"
+                        }`}
+                      </div>
+                      <Progress
+                        percent={
+                          Number.parseFloat(standardCompoareVM?.rate_ram) * 100
+                        }
+                        strokeColor={conicColors}
+                        status={`${
+                          standardCompoareVM?.rate_ram &&
+                          Number.parseFloat(standardCompoareVM?.rate_ram) < 1
+                            ? "exception"
+                            : Number.parseFloat(standardCompoareVM?.rate_ram) >=
+                              1
+                            ? "active"
+                            : "success"
+                        }`}
+                      />
+                    </div>
+                    <div>
+                      <div
+                        className={`${
+                          standardCompoareVM?.rate_cpu &&
+                          Number.parseFloat(standardCompoareVM?.rate_cpu) < 1
+                            ? "text-red-500"
+                            : Number.parseFloat(standardCompoareVM?.rate_cpu) >=
+                              1
+                            ? "text-yellow-500"
+                            : "text-green-500"
+                        }`}
+                      >
+                        Cpu{" "}
+                        {`${
+                          standardCompoareVM?.rate_cpu &&
+                          Number.parseFloat(standardCompoareVM?.rate_cpu) < 1
+                            ? "not suitable"
+                            : Number.parseFloat(standardCompoareVM?.rate_cpu) >=
+                              1
+                            ? "suitable"
+                            : "very suitable"
+                        }`}
+                      </div>
+                      <Progress
+                        percent={
+                          Number.parseFloat(standardCompoareVM?.rate_cpu) * 100
+                        }
+                        status={`${
+                          standardCompoareVM?.rate_cpu &&
+                          Number.parseFloat(standardCompoareVM?.rate_cpu) < 1
+                            ? "exception"
+                            : Number.parseFloat(standardCompoareVM?.rate_cpu) >=
+                              1
+                            ? "active"
+                            : "success"
+                        }`}
+                        strokeColor={conicColors}
+                      />
+                    </div>
+                    <div>
+                      <div
+                        className={`${
+                          standardCompoareVM?.rate_core &&
+                          Number.parseFloat(standardCompoareVM?.rate_core) < 1
+                            ? "text-red-500"
+                            : Number.parseFloat(
+                                standardCompoareVM?.rate_core
+                              ) >= 1
+                            ? "text-yellow-500"
+                            : "text-green-500"
+                        }`}
+                      >
+                        Core{" "}
+                        {`${
+                          standardCompoareVM?.rate_core &&
+                          Number.parseFloat(standardCompoareVM?.rate_core) < 1
+                            ? "not suitable"
+                            : Number.parseFloat(
+                                standardCompoareVM?.rate_core
+                              ) >= 1
+                            ? "suitable"
+                            : "very suitable"
+                        }`}
+                      </div>
+                      <Progress
+                        percent={
+                          Number.parseFloat(standardCompoareVM?.rate_core) * 100
+                        }
+                        status={`${
+                          standardCompoareVM?.rate_core &&
+                          Number.parseFloat(standardCompoareVM?.rate_core) < 1
+                            ? "exception"
+                            : Number.parseFloat(
+                                standardCompoareVM?.rate_core
+                              ) >= 1
+                            ? "active"
+                            : "success"
+                        }`}
+                        strokeColor={conicColors}
+                      />
+                    </div>
+                    <div>
+                      <div
+                        className={`${
+                          standardCompoareVM?.rate_os &&
+                          Number.parseFloat(standardCompoareVM?.rate_os) < 1
+                            ? "text-red-500"
+                            : Number.parseFloat(standardCompoareVM?.rate_os) >=
+                              1
+                            ? "text-green-500"
+                            : "text-green-500"
+                        }`}
+                      >
+                        Os{" "}
+                        {`${
+                          standardCompoareVM?.rate_os &&
+                          Number.parseFloat(standardCompoareVM?.rate_os) < 1
+                            ? "not suitable"
+                            : Number.parseFloat(standardCompoareVM?.rate_os) >=
+                              1
+                            ? "suitable"
+                            : "very suitable"
+                        }`}
+                      </div>
+                      <Progress
+                        percent={
+                          Number.parseFloat(standardCompoareVM?.rate_os) * 100
+                        }
+                        strokeColor={conicColors}
+                        status={`${
+                          standardCompoareVM?.rate_os &&
+                          Number.parseFloat(standardCompoareVM?.rate_os) < 1
+                            ? "exception"
+                            : Number.parseFloat(standardCompoareVM?.rate_os) >=
+                              1
+                            ? "success"
+                            : "success"
+                        }`}
+                      />
+                    </div>
+                    <div>
+                      <div
+                        className={`${
+                          standardCompoareVM?.rate_architecture &&
+                          Number.parseFloat(
+                            standardCompoareVM?.rate_architecture
+                          ) < 1
+                            ? "text-red-500"
+                            : Number.parseFloat(
+                                standardCompoareVM?.rate_architecture
+                              ) >= 1
+                            ? "text-green-500"
+                            : "text-green-500"
+                        }`}
+                      >
+                        Architecture{" "}
+                        {`${
+                          standardCompoareVM?.rate_architecture &&
+                          Number.parseFloat(
+                            standardCompoareVM?.rate_architecture
+                          ) < 1
+                            ? "not suitable"
+                            : Number.parseFloat(
+                                standardCompoareVM?.rate_architecture
+                              ) >= 1
+                            ? "suitable"
+                            : "very suitable"
+                        }`}
+                      </div>
+                      <Progress
+                        percent={
+                          Number.parseFloat(
+                            standardCompoareVM?.rate_architecture
+                          ) * 100
+                        }
+                        strokeColor={conicColors}
+                        status={`${
+                          standardCompoareVM?.rate_architecture &&
+                          Number.parseFloat(
+                            standardCompoareVM?.rate_architecture
+                          ) < 1
+                            ? "exception"
+                            : Number.parseFloat(
+                                standardCompoareVM?.rate_architecture
+                              ) >= 1
+                            ? "success"
+                            : "success"
+                        }`}
+                      />
+                    </div>
+                  </Flex>
+                )}
+              </div>
+            </div>
+          </div>
           <Form.Item>
             {vm ? (
               <Button htmlType="submit">Update</Button>
             ) : (
-              <Button htmlType="submit">Register</Button>
+              <Button htmlType="submit" disabled={!standardVM ? true : false}>
+                Register
+              </Button>
             )}
           </Form.Item>
         </Form>
@@ -400,7 +728,7 @@ export default function ConnectVM() {
               const version = infoVms?.set_up[key];
               return (
                 <Card
-                className="w-[472px]"
+                  className="w-[472px]"
                   key={index}
                   title={
                     <div className="flex gap-5">
@@ -425,7 +753,7 @@ export default function ConnectVM() {
                       {version === "" ? (
                         <Button onClick={cards[key]?.fn}>Install</Button>
                       ) : (
-                        version
+                        <div onClick={cards[key]?.fn}>{version}</div>
                       )}
                     </div>
                   </div>

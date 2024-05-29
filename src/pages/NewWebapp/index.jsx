@@ -11,17 +11,14 @@ import {
 } from "antd";
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  CloseOutlined,
-  PlusOutlined,
-} from "@ant-design/icons";
+import { CloseOutlined, PlusOutlined } from "@ant-design/icons";
 import useEffectOnce from "../../hook/useEffectOnce";
 import githubApi from "../../apis/github.api";
 import TemplateDetailPage from "../../components/Scan";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import vmsApi from "../../apis/vms.api";
 import { store } from "../../redux/store";
-import { addService } from "../../redux/reducer/user";
+import { addService, setEnvironments } from "../../redux/reducer/user";
 import scanApi from "../../apis/scan.api";
 import apiCaller from "../../apis/apiCaller";
 import { message } from "antd";
@@ -46,7 +43,7 @@ export default function Newwebapp() {
   const [errorLine, setErrorLine] = useState();
   const [serviceId, setServiceId] = useState();
   const [env, setEnv] = useState();
-
+  const dispatch = useDispatch();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalOpenEnv, setIsModalOpenEnv] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -54,22 +51,22 @@ export default function Newwebapp() {
   const service_t = useSelector((state) => state.user.service);
   const [fields, setFields] = useState();
   const [form] = Form.useForm();
-  const [fileListC, setFileListC] = useState([]);
-  const [fileListE, setFileListE] = useState([]);
   const [inputValue, setInputValue] = useState("");
-  const [environments, setEnvironments] = useState([
-    {
-      name: "",
-      vm: "",
-      branch: "",
-      docker_file: [],
-      docker_compose: [],
-      postman: {
-        collection: {},
-        environment: {},
-      },
-    },
-  ]);
+  // const [environments, setEnvironments] = useState([
+  //   {
+  //     name: "",
+  //     vm: "",
+  //     branch: "",
+  //     docker_file: [],
+  //     docker_compose: [],
+  //     postman: {
+  //       collection: {},
+  //       environment: {},
+  //     },
+  //   },
+  // ]);
+
+  const environments = useSelector((state) => state.user.environments);
 
   const [dockerConfig, setDockerConfig] = useState([
     {
@@ -103,22 +100,6 @@ export default function Newwebapp() {
       store.dispatch(addService({ language: res.language }));
       const items = [];
       res.environment.forEach((env, idx) => {
-        setFileListC([
-          {
-            uid: "1",
-            name: env?.postman?.collection?.name,
-            status: "done",
-            percent: 33,
-          },
-        ]);
-        setFileListE([
-          {
-            uid: "1",
-            name: env?.postman?.environment?.name,
-            status: "done",
-            percent: 33,
-          },
-        ]);
         items.push(
           {
             name: ["items", idx, "name_env"],
@@ -139,11 +120,11 @@ export default function Newwebapp() {
           {
             name: ["items", idx, "docker_compose"],
             value: env.docker_compose.map((file) => file.name),
-          },
+          }
         );
       });
 
-      setEnvironments(res.environment);
+      store.dispatch(setEnvironments(res.environment));
       setDockerConfig(
         res.environment.map((env) => ({
           docker_file: env.docker_file,
@@ -239,18 +220,15 @@ export default function Newwebapp() {
   ];
 
   const handleAddEnvironment = (add) => {
-    if (inputValue.trim() !== "") {
-      add();
-      const env = {
-        name: inputValue,
-        vm: "",
-        branch: "",
-        docker_file: [],
-        docker_compose: [],
-      };
-      setEnvironments([...environments, env]);
-      setInputValue(""); // Clear input after adding
-    }
+    add();
+    const env = {
+      name: inputValue,
+      vm: "",
+      branch: "",
+      docker_file: [],
+      docker_compose: [],
+    };
+    store.dispatch(setEnvironments([...environments, env]));
   };
   const handleRemoveCard = (remove, index) => {
     remove(index);
@@ -258,8 +236,7 @@ export default function Newwebapp() {
     setVms([...vms, vmsr]);
     const newEnvs = [...environments];
     newEnvs.splice(index, 1);
-
-    setEnvironments(newEnvs);
+    store.dispatch(setEnvironments([...newEnvs]));
   };
   const propsC = {
     // name: "file",
@@ -271,7 +248,6 @@ export default function Newwebapp() {
         message.error(`${info.file.name} file upload failed.`);
       }
     },
-    // fileListC,
   };
   const propsE = {
     name: "file",
@@ -309,7 +285,7 @@ export default function Newwebapp() {
                     }),
                   });
                   if (res) {
-                    navigate(`/service?vm=${vm}`);
+                    navigate(`/service?vm=${environments[0].vm}`);
                   }
                 };
                 const fetchU = async () => {
@@ -330,7 +306,7 @@ export default function Newwebapp() {
                     ),
                   });
                   if (res) {
-                    navigate(`/service?vm=${vm}`);
+                    navigate(`/service?vm=${environments[0].vm.id}`);
                   }
                 };
                 service_id ? fetchU() : fetchC();
@@ -427,538 +403,632 @@ export default function Newwebapp() {
                         flexDirection: "column",
                       }}
                     >
-                      {fields.map((field, index) => (
-                        <Card
-                          size="small"
-                          title={"Environment: " + environments[index].name}
-                          key={field.key}
-                          extra={
-                            <CloseOutlined
-                              onClick={() => handleRemoveCard(remove, index)}
-                            />
-                          }
-                        >
-                          {/* -------------------------------- */}
-                          <div className="flex flex-row w-full h-12  justify-between mb-5">
-                            <div className="h-full">
-                              <h2>Name</h2>
+                      {fields.map((field, index) => {
+                        return (
+                          <Card
+                            size="small"
+                            title={"Environment: " + environments[index].name}
+                            key={field.key}
+                            extra={
+                              <CloseOutlined
+                                onClick={() => handleRemoveCard(remove, index)}
+                              />
+                            }
+                          >
+                            {/* -------------------------------- */}
+                            <div className="flex flex-row w-full h-12  justify-between mb-5">
+                              <div className="h-full">
+                                <h2>Name</h2>
+                              </div>
+                              <div className="w-8/12 h-full ">
+                                <Form.Item
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message:
+                                        "Please input your name environment!",
+                                    },
+                                  ]}
+                                  // label={"Name"} name={"name"}
+                                  name={[field.name, "name_env"]}
+                                >
+                                  <Input
+                                    value={environments[index].name}
+                                    onChange={(e) => {
+                                      environments[index].name = e.target.value;
+                                      store.dispatch(
+                                        setEnvironments([...environments])
+                                      );
+                                    }}
+                                  />
+                                </Form.Item>
+                              </div>
                             </div>
-                            <div className="w-8/12 h-full ">
-                              <Form.Item
-                                rules={[
-                                  {
-                                    required: true,
-                                    message:
-                                      "Please input your name environment!",
-                                  },
-                                ]}
-                                // label={"Name"} name={"name"}
-                                name={[field.name, "name_env"]}
-                              >
-                                <Input
-                                  value={environments[index].name}
-                                  onChange={(e) => {
-                                    environments[index].name = e.target.value;
-                                    setEnvironments([...environments]);
-                                  }}
-                                />
-                              </Form.Item>
+                            {/* -------------------------------- */}
+                            <div className="flex flex-row w-full h-12  justify-between mb-5">
+                              <div className="h-full">
+                                <h2>VM instance</h2>
+                              </div>
+                              <div className="w-8/12 h-full ">
+                                <Form.Item
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Please input your VM instance!",
+                                    },
+                                  ]}
+                                  // label={"Name"}
+                                  name={[field.name, "vm_instance"]}
+                                >
+                                  <Select
+                                    placeholder={"no choice"}
+                                    className="w-full h-full rounded-lg "
+                                    onChange={(v, op) => {
+                                      environments[index].vm = op.lable;
+                                      console.log(vms);
+                                      setVms(
+                                        vms.filter((vm) => vm.id !== op.lable)
+                                      );
+                                      store.dispatch(
+                                        setEnvironments([...environments])
+                                      );
+                                    }}
+                                    options={itemsVM}
+                                  />
+                                </Form.Item>
+                              </div>
                             </div>
-                          </div>
-                          {/* -------------------------------- */}
-                          <div className="flex flex-row w-full h-12  justify-between mb-5">
-                            <div className="h-full">
-                              <h2>VM instance</h2>
-                            </div>
-                            <div className="w-8/12 h-full ">
-                              <Form.Item
-                                rules={[
-                                  {
-                                    required: true,
-                                    message: "Please input your VM instance!",
-                                  },
-                                ]}
-                                // label={"Name"}
-                                name={[field.name, "vm_instance"]}
-                              >
-                                <Select
-                                  placeholder={"no choice"}
-                                  className="w-full h-full rounded-lg "
-                                  onChange={(v, op) => {
-                                    environments[index].vm = op.lable;
-                                    console.log(vms);
-                                    setVms(
-                                      vms.filter((vm) => vm.id !== op.lable)
-                                    );
-                                    setEnvironments([...environments]);
-                                  }}
-                                  options={itemsVM}
-                                />
-                              </Form.Item>
-                            </div>
-                          </div>
-                          {/* -------------------------------- */}
-                          <div className="flex flex-row w-full h-12  justify-between mb-5">
-                            <div className="h-full">
-                              <h2>Branch</h2>
-                            </div>
-                            <div className="w-8/12 h-full ">
-                              <Form.Item
-                                rules={[
-                                  {
-                                    required: true,
-                                    message: "Please input your branch!",
-                                  },
-                                ]}
-                                name={[field.name, "branch"]}
-                              >
-                                <Select
-                                  placeholder={"no choice"}
-                                  className="w-full h-full rounded-lg "
-                                  onChange={(v, op) => {
-                                    environments[index].branch = v;
-                                    setEnvironments([...environments]);
-                                    const fetch = async () => {
-                                      const docker = await apiCaller({
-                                        request:
-                                          githubApi.GetPathFileDockerByAccessToken(
-                                            repo,
-                                            v
-                                          ),
-                                      });
-                                      dockerConfig[index] = {
-                                        docker_file: docker.dockerfile,
-                                        docker_compose: docker.docker_compose,
-                                      };
-                                      setDockerConfig(dockerConfig);
-                                      setLoading(true);
-                                    };
-                                    fetch();
-                                  }}
-                                  options={itemsBranch}
-                                />
-                              </Form.Item>
-                            </div>
-                          </div>
-                          {/* -------------------------------- */}
-                          <div className="flex flex-row w-full h-12  justify-between mb-5">
-                            <div className="h-full">
-                              <h2>Dockerfile</h2>
-                            </div>
-                            <div className="w-8/12 h-full ">
-                              <Form.Item
-                                rules={[
-                                  {
-                                    required: true,
-                                    message: "Please input your Dockerfile!",
-                                  },
-                                ]}
-                                // label={"Name"}
-                                name={[field.name, "dockerfile"]}
-                              >
-                                <Select
-                                  mode="multiple"
-                                  style={{
-                                    width: "100%",
-                                  }}
-                                  onChange={(value, ops) => {
-                                    console.log(ops);
-                                    environments[index].docker_file = ops.map(
-                                      (op) => {
-                                        return {
-                                          location: op.desc,
-                                          name: op.label,
-                                          content: op.value,
+                            {/* -------------------------------- */}
+                            <div className="flex flex-row w-full h-12  justify-between mb-5">
+                              <div className="h-full">
+                                <h2>Branch</h2>
+                              </div>
+                              <div className="w-8/12 h-full ">
+                                <Form.Item
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Please input your branch!",
+                                    },
+                                  ]}
+                                  name={[field.name, "branch"]}
+                                >
+                                  <Select
+                                    placeholder={"no choice"}
+                                    className="w-full h-full rounded-lg "
+                                    onChange={(v, op) => {
+                                      environments[index].branch = v;
+                                      store.dispatch(
+                                        setEnvironments([...environments])
+                                      );
+                                      const fetch = async () => {
+                                        const docker = await apiCaller({
+                                          request:
+                                            githubApi.GetPathFileDockerByAccessToken(
+                                              repo,
+                                              v
+                                            ),
+                                        });
+                                        dockerConfig[index] = {
+                                          docker_file: docker.dockerfile,
+                                          docker_compose: docker.docker_compose,
                                         };
-                                      }
-                                    );
+                                        setDockerConfig(dockerConfig);
+                                        setLoading(true);
+                                      };
+                                      fetch();
+                                    }}
+                                    options={itemsBranch}
+                                  />
+                                </Form.Item>
+                              </div>
+                            </div>
+                            {/* -------------------------------- */}
+                            <div className="flex flex-row w-full h-12  justify-between mb-5">
+                              <div className="h-full">
+                                <h2>Dockerfile</h2>
+                              </div>
+                              <div className="w-8/12 h-full ">
+                                <Form.Item
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Please input your Dockerfile!",
+                                    },
+                                  ]}
+                                  // label={"Name"}
+                                  name={[field.name, "dockerfile"]}
+                                >
+                                  <Select
+                                    mode="multiple"
+                                    style={{
+                                      width: "100%",
+                                    }}
+                                    onChange={(value, ops) => {
+                                      console.log(ops);
+                                      environments[index].docker_file = ops.map(
+                                        (op) => {
+                                          return {
+                                            location: op.desc,
+                                            name: op.label,
+                                            content: op.value,
+                                          };
+                                        }
+                                      );
 
-                                    setEnvironments([...environments]);
-                                  }}
-                                  options={dockerConfig[index]?.docker_file.map(
-                                    (d) => {
+                                      store.dispatch(
+                                        setEnvironments([...environments])
+                                      );
+                                    }}
+                                    options={dockerConfig[
+                                      index
+                                    ]?.docker_file.map((d) => {
                                       return {
                                         label: d.name,
                                         value: d.content,
                                         desc: d?.path ? d?.path : d?.location,
                                       };
-                                    }
-                                  )}
-                                  optionRender={(option, info) => (
-                                    <Space className="flex justify-between">
-                                      <div>
-                                        <span
-                                          role="img"
-                                          aria-label={option.data.label}
-                                        >
-                                          {option.data.emoji}
-                                        </span>
-                                        {option.data.desc}
-                                      </div>
-                                      {option.data.desc && (
-                                        <Button
-                                          onClick={async (e) => {
-                                            setIsModalOpen(true);
-                                            setContentfile({
-                                              name: option.data.desc,
-                                              content: option.data.value,
-                                            });
-                                            e.stopPropagation();
-                                          }}
-                                        >
-                                          {" "}
-                                          Edit
-                                        </Button>
-                                      )}
-                                    </Space>
-                                  )}
-                                  dropdownRender={(menu) => (
-                                    <>
-                                      {menu}
-                                      <Space
-                                        className="w-full"
-                                        style={{ padding: "8px 4px" }}
-                                      >
-                                        <Button
-                                          type="text"
-                                          icon={<PlusOutlined />}
-                                          className="w-full"
-                                          onClick={(e) => {
-                                            setIsModalOpen(true);
-                                            setContentfile({
-                                              name: "",
-                                              content: "",
-                                              type: "DOCKERFILE",
-                                            });
-                                            e.stopPropagation();
-                                          }}
-                                        >
-                                          Add item
-                                        </Button>
+                                    })}
+                                    optionRender={(option, info) => (
+                                      <Space className="flex justify-between">
+                                        <div>
+                                          <span
+                                            role="img"
+                                            aria-label={option.data.label}
+                                          >
+                                            {option.data.emoji}
+                                          </span>
+                                          {option.data.desc}
+                                        </div>
+                                        {option.data.desc && (
+                                          <Button
+                                            onClick={async (e) => {
+                                              setIsModalOpen(true);
+                                              setContentfile({
+                                                name: option.data.desc,
+                                                content: option.data.value,
+                                              });
+                                              e.stopPropagation();
+                                            }}
+                                          >
+                                            {" "}
+                                            Edit
+                                          </Button>
+                                        )}
                                       </Space>
-                                    </>
-                                  )}
-                                />
-                              </Form.Item>
-                              <Modal
-                                open={isModalOpen}
-                                footer={false}
-                                onCancel={() => setIsModalOpen(false)}
-                                closeIcon={false}
-                                width={1500}
-                              >
-                                <TemplateDetailPage
-                                  contentfile={contentfile}
-                                  setContentfile={setContentfile}
-                                  resultScanSyntax={resultScanSyntax}
-                                  errorLine={errorLine}
-                                />
-                                <div className="flex justify-between mt-5">
-                                  <div className="flex ">
-                                    <Button
-                                      className="mr-3"
-                                      onClick={async () => {
-                                        const res = await apiCaller({
-                                          request: scanApi.scanSyxtax(
-                                            contentfile.content
-                                          ),
-                                        });
-                                        const lines = res.map((val) => {
-                                          if (val.level === "error")
-                                            return val.line;
-                                        });
-                                        setErrorLine(lines);
-                                        setResultScanSyntax(res);
-                                      }}
-                                    >
-                                      Scan
-                                    </Button>
+                                    )}
+                                    dropdownRender={(menu) => (
+                                      <>
+                                        {menu}
+                                        <Space
+                                          className="w-full"
+                                          style={{ padding: "8px 4px" }}
+                                        >
+                                          <Button
+                                            type="text"
+                                            icon={<PlusOutlined />}
+                                            className="w-full"
+                                            onClick={(e) => {
+                                              setIsModalOpen(true);
+                                              setContentfile({
+                                                name: "",
+                                                content: "",
+                                                type: "DOCKERFILE",
+                                              });
+                                              e.stopPropagation();
+                                            }}
+                                          >
+                                            Add item
+                                          </Button>
+                                        </Space>
+                                      </>
+                                    )}
+                                  />
+                                </Form.Item>
+                                <Modal
+                                  open={isModalOpen}
+                                  footer={false}
+                                  onCancel={() => setIsModalOpen(false)}
+                                  closeIcon={false}
+                                  width={1500}
+                                >
+                                  <TemplateDetailPage
+                                    contentfile={contentfile}
+                                    setContentfile={setContentfile}
+                                    resultScanSyntax={resultScanSyntax}
+                                    errorLine={errorLine}
+                                  />
+                                  <div className="flex justify-between mt-5">
+                                    <div className="flex ">
+                                      <Button
+                                        className="mr-3"
+                                        onClick={async () => {
+                                          const res = await apiCaller({
+                                            request: scanApi.scanSyxtax(
+                                              contentfile.content
+                                            ),
+                                          });
+                                          const lines = res.map((val) => {
+                                            if (val.level === "error")
+                                              return val.line;
+                                          });
+                                          setErrorLine(lines);
+                                          setResultScanSyntax(res);
+                                        }}
+                                      >
+                                        Scan
+                                      </Button>
+                                      <Button
+                                        onClick={() => {
+                                          if (
+                                            !contentfile?.name ||
+                                            contentfile?.name === ""
+                                          ) {
+                                            alert("Please enter name file");
+                                          } else {
+                                            const check = dockerConfig[
+                                              index
+                                            ].docker_file?.findIndex(
+                                              (f, idx) => {
+                                                console.log(f.path);
+                                                if (
+                                                  contentfile.name === f.path
+                                                ) {
+                                                  dockerConfig[
+                                                    index
+                                                  ].docker_file[idx].content =
+                                                    contentfile.content;
+                                                  return true;
+                                                }
+                                              }
+                                            );
+
+                                            if (check !== 0) {
+                                              const t =
+                                                contentfile.name.split("/");
+                                              dockerConfig[
+                                                index
+                                              ].docker_file.push({
+                                                name: t[t.length - 1],
+                                                path: contentfile.name,
+                                                content: contentfile.content,
+                                              });
+                                            }
+                                            setIsModalOpen(false);
+                                          }
+                                        }}
+                                      >
+                                        Save
+                                      </Button>
+                                    </div>
                                     <Button
                                       onClick={() => {
-                                        if (
-                                          !contentfile?.name ||
-                                          contentfile?.name === ""
-                                        ) {
-                                          alert("Please enter name file");
-                                        } else {
-                                          const check = dockerConfig[
-                                            index
-                                          ].docker_file?.findIndex((f, idx) => {
-                                            console.log(f.path);
-                                            if (contentfile.name === f.path) {
-                                              dockerConfig[index].docker_file[
-                                                idx
-                                              ].content = contentfile.content;
-                                              return true;
-                                            }
-                                          });
-
-                                          if (check !== 0) {
-                                            const t =
-                                              contentfile.name.split("/");
-                                            dockerConfig[
-                                              index
-                                            ].docker_file.push({
-                                              name: t[t.length - 1],
-                                              path: contentfile.name,
-                                              content: contentfile.content,
-                                            });
-                                          }
-                                          setIsModalOpen(false);
-                                        }
+                                        setIsModalOpen(false);
+                                        setContentfile({
+                                          name: "",
+                                          content: "",
+                                          type: "",
+                                        });
                                       }}
                                     >
-                                      Save
+                                      Cancel
                                     </Button>
                                   </div>
-                                  <Button
-                                    onClick={() => {
-                                      setIsModalOpen(false);
-                                      setContentfile({
-                                        name: "",
-                                        content: "",
-                                        type: "",
-                                      });
+                                </Modal>
+                              </div>
+                            </div>
+                            {/* -------------------------------- */}
+                            <div className="flex flex-row w-full h-12  justify-between mb-5">
+                              <div className="h-full">
+                                <h2>Docker-compose</h2>
+                              </div>
+                              <div className="w-8/12 h-full ">
+                                <Form.Item
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message:
+                                        "Please input your Docker-compose!",
+                                    },
+                                  ]}
+                                  // label={"Name"}
+                                  name={[field.name, "docker_compose"]}
+                                >
+                                  <Select
+                                    mode="multiple"
+                                    style={{
+                                      width: "100%",
                                     }}
-                                  >
-                                    Cancel
-                                  </Button>
-                                </div>
-                              </Modal>
-                            </div>
-                          </div>
-                          {/* -------------------------------- */}
-                          <div className="flex flex-row w-full h-12  justify-between mb-5">
-                            <div className="h-full">
-                              <h2>Docker-compose</h2>
-                            </div>
-                            <div className="w-8/12 h-full ">
-                              <Form.Item
-                                rules={[
-                                  {
-                                    required: true,
-                                    message:
-                                      "Please input your Docker-compose!",
-                                  },
-                                ]}
-                                // label={"Name"}
-                                name={[field.name, "docker_compose"]}
-                              >
-                                <Select
-                                  mode="multiple"
-                                  style={{
-                                    width: "100%",
-                                  }}
-                                  onChange={(value, ops) => {
-                                    console.log(ops);
-                                    environments[index].docker_compose =
-                                      ops.map((op) => {
-                                        return {
-                                          location: op.desc,
-                                          name: op.label,
-                                          content: op.value,
-                                        };
-                                      });
+                                    onChange={(value, ops) => {
+                                      console.log(ops);
+                                      environments[index].docker_compose =
+                                        ops.map((op) => {
+                                          return {
+                                            location: op.desc,
+                                            name: op.label,
+                                            content: op.value,
+                                          };
+                                        });
 
-                                    setEnvironments([...environments]);
-                                  }}
-                                  options={dockerConfig[
-                                    index
-                                  ]?.docker_compose.map((d) => {
-                                    return {
-                                      label: d.name,
-                                      value: d.content,
-                                      desc: d?.path ? d?.path : d?.location,
-                                    };
-                                  })}
-                                  optionRender={(option) => (
-                                    <Space className="flex justify-between">
-                                      <div>
-                                        <span
-                                          role="img"
-                                          aria-label={option.data.label}
-                                        >
-                                          {option.data.emoji}
-                                        </span>
-                                        {option.data.desc}
-                                      </div>
-                                      {option.data.desc && (
-                                        <Button
-                                          onClick={(e) => {
-                                            setIsModalOpen(true);
-                                            setContentfile({
-                                              name: option.data.desc,
-                                              content: option.data.value,
-                                            });
-                                            e.stopPropagation();
-                                          }}
-                                        >
-                                          {" "}
-                                          Edit
-                                        </Button>
-                                      )}
-                                    </Space>
-                                  )}
-                                  dropdownRender={(menu) => (
-                                    <>
-                                      {menu}
-                                      <Space
-                                        className="w-full"
-                                        style={{ padding: "8px 4px" }}
-                                      >
-                                        <Button
-                                          type="text"
-                                          icon={<PlusOutlined />}
-                                          className="w-full"
-                                          onClick={(e) => {
-                                            setIsModalOpen(true);
-                                            e.stopPropagation();
-                                          }}
-                                        >
-                                          Add item
-                                        </Button>
+                                      store.dispatch(
+                                        setEnvironments([...environments])
+                                      );
+                                    }}
+                                    options={dockerConfig[
+                                      index
+                                    ]?.docker_compose.map((d) => {
+                                      return {
+                                        label: d.name,
+                                        value: d.content,
+                                        desc: d?.path ? d?.path : d?.location,
+                                      };
+                                    })}
+                                    optionRender={(option) => (
+                                      <Space className="flex justify-between">
+                                        <div>
+                                          <span
+                                            role="img"
+                                            aria-label={option.data.label}
+                                          >
+                                            {option.data.emoji}
+                                          </span>
+                                          {option.data.desc}
+                                        </div>
+                                        {option.data.desc && (
+                                          <Button
+                                            onClick={(e) => {
+                                              setIsModalOpen(true);
+                                              setContentfile({
+                                                name: option.data.desc,
+                                                content: option.data.value,
+                                              });
+                                              e.stopPropagation();
+                                            }}
+                                          >
+                                            {" "}
+                                            Edit
+                                          </Button>
+                                        )}
                                       </Space>
-                                    </>
+                                    )}
+                                    dropdownRender={(menu) => (
+                                      <>
+                                        {menu}
+                                        <Space
+                                          className="w-full"
+                                          style={{ padding: "8px 4px" }}
+                                        >
+                                          <Button
+                                            type="text"
+                                            icon={<PlusOutlined />}
+                                            className="w-full"
+                                            onClick={(e) => {
+                                              setIsModalOpen(true);
+                                              e.stopPropagation();
+                                            }}
+                                          >
+                                            Add item
+                                          </Button>
+                                        </Space>
+                                      </>
+                                    )}
+                                  />
+                                </Form.Item>
+                              </div>
+                            </div>
+                            {/* -------------------------------- */}
+                            <div className="flex flex-row w-full h-20  justify-between mb-5">
+                              <div className="h-full">
+                                <h2>Postman</h2>
+                              </div>
+                              <div className="w-8/12 ">
+                                <div className="flex gap-2 m-2">
+                                  <span className="col-span-1 w-[78px]">
+                                    Collection
+                                  </span>
+                                  <Form.Item
+                                    className="col-span-1 "
+                                    name={[field.name, "postman_collection"]}
+                                  >
+                                    <Upload
+                                      {...propsC}
+                                      className="flex gap-4"
+                                      defaultFileList={[
+                                        {
+                                          uid: index,
+                                          name: environments[index]?.postman
+                                            ?.collection?.name
+                                            ? environments[index]?.postman
+                                                ?.collection?.name
+                                            : "",
+                                          status: "done",
+
+                                          percent: 33,
+                                        },
+                                      ]}
+                                      fileList={[
+                                        {
+                                          uid: index,
+                                          name: environments[index]?.postman
+                                            ?.collection?.name
+                                            ? environments[index]?.postman
+                                                ?.collection?.name
+                                            : "",
+                                          status: "done",
+
+                                          percent: 33,
+                                        },
+                                      ]}
+                                      beforeUpload={(file) => {
+                                        return new Promise((resolve) => {
+                                          const reader = new FileReader();
+                                          reader.readAsDataURL(file);
+                                          reader.onload = (e) => {
+                                            try {
+                                              store.dispatch(
+                                                setEnvironments([
+                                                  ...environments?.map(
+                                                    (env, i) => {
+                                                      if (i === index) {
+                                                        return {
+                                                          ...environments[
+                                                            index
+                                                          ],
+                                                          postman: {
+                                                            ...environments[
+                                                              index
+                                                            ].postman,
+                                                            collection: {
+                                                              name: file.name,
+                                                              content:
+                                                                e.target.result.split(
+                                                                  ","
+                                                                )[1],
+                                                            },
+                                                          },
+                                                        };
+                                                      }
+                                                      return env;
+                                                    }
+                                                  ),
+                                                ])
+                                              );
+                                            } catch (error) {
+                                              console.error(
+                                                "Lỗi khi đọc file JSON:",
+                                                error
+                                              );
+                                            }
+                                          };
+                                        });
+                                      }}
+                                    >
+                                      <Button>
+                                        <Icon type="upload" /> Upload
+                                      </Button>
+                                    </Upload>
+                                  </Form.Item>
+                                  {environments[index].postman?.collection
+                                    ?.content && (
+                                    <Button
+                                      onClick={(e) => {
+                                        exportData(
+                                          environments[index].postman
+                                            ?.collection?.content,
+                                          environments[index].postman
+                                            ?.collection?.name
+                                        );
+                                      }}
+                                    >
+                                      Download
+                                    </Button>
                                   )}
-                                />
-                              </Form.Item>
-                            </div>
-                          </div>
-                          {/* -------------------------------- */}
-                          <div className="flex flex-row w-full h-20  justify-between mb-5">
-                            <div className="h-full">
-                              <h2>Postman</h2>
-                            </div>
-                            <div className="w-8/12 ">
-                              <div className="flex gap-2 m-2">
-                                <span className="col-span-1 w-[78px]">
-                                  Collection
-                                </span>
-                                <Form.Item
-                                  className="col-span-1 "
-                                  name={[field.name, "postman_collection"]}
-                                >
-                                  <Upload
-                                    {...propsC}
-                                    className="flex gap-4"
-                                    defaultFileList={[...fileListC]}
-                                    fileList={[...fileListC]}
-                                    beforeUpload={(file) => {
-                                      setFileListC([file]);
-                                      return new Promise((resolve) => {
-                                        const reader = new FileReader();
-                                        reader.readAsDataURL(file);
-                                        reader.onload = (e) => {
-                                          try {
-                                            environments[index].postman = {
-                                              ...environments[index].postman,
-                                              collection: {
-                                                name: file.name,
-                                                content:
-                                                  e.target.result.split(",")[1],
-                                              },
-                                            };
-                                          } catch (error) {
-                                            console.error(
-                                              "Lỗi khi đọc file JSON:",
-                                              error
-                                            );
-                                          }
-                                        };
-                                      });
-                                    }}
+                                </div>
+                                <div className="flex gap-2 m-2">
+                                  <span className="col-span-1">
+                                    Environment
+                                  </span>
+                                  <Form.Item
+                                    className="col-span-1"
+                                    name={[field.name, "postman_environment"]}
                                   >
-                                    <Button>
-                                      <Icon type="upload" /> Upload
+                                    <Upload
+                                      {...propsE}
+                                      className="flex gap-4"
+                                      defaultFileList={[
+                                        {
+                                          uid: index,
+                                          name: environments[index]?.postman
+                                            ?.environment?.name
+                                            ? environments[index]?.postman
+                                                ?.environment?.name
+                                            : undefined,
+                                          status: "done",
+                                        },
+                                      ]}
+                                      fileList={[
+                                        {
+                                          uid: index,
+                                          name: environments[index]?.postman
+                                            ?.environment?.name
+                                            ? environments[index]?.postman
+                                                ?.environment?.name
+                                            : "",
+                                          status: "done",
+                                        },
+                                      ]}
+                                      beforeUpload={(file) => {
+                                        return new Promise((resolve) => {
+                                          const reader = new FileReader();
+                                          reader.readAsDataURL(file);
+                                          reader.onload = (e) => {
+                                            try {
+                                              store.dispatch(
+                                                setEnvironments([
+                                                  ...environments?.map(
+                                                    (env, i) => {
+                                                      if (i === index) {
+                                                        return {
+                                                          ...environments[
+                                                            index
+                                                          ],
+                                                          postman: {
+                                                            ...environments[
+                                                              index
+                                                            ].postman,
+                                                            environment: {
+                                                              name: file.name,
+                                                              content:
+                                                                e.target.result.split(
+                                                                  ","
+                                                                )[1],
+                                                            },
+                                                          },
+                                                        };
+                                                      }
+                                                      return env;
+                                                    }
+                                                  ),
+                                                ])
+                                              );
+                                            } catch (error) {
+                                              console.error(
+                                                "Lỗi khi đọc file JSON:",
+                                                error
+                                              );
+                                            }
+                                          };
+                                        });
+                                      }}
+                                    >
+                                      <Button>
+                                        <Icon type="upload" /> Upload
+                                      </Button>
+                                    </Upload>
+                                  </Form.Item>
+                                  {environments[index].postman?.environment
+                                    ?.content && (
+                                    <Button
+                                      onClick={(e) => {
+                                        exportData(
+                                          environments[index].postman
+                                            ?.environment?.content,
+                                          environments[index].postman
+                                            ?.environment?.name
+                                        );
+                                      }}
+                                    >
+                                      Download
                                     </Button>
-                                  </Upload>
-                                </Form.Item>
-                                {environments[index].postman?.collection
-                                  ?.content && (
-                                  <Button
-                                    onClick={(e) => {
-                                      exportData(
-                                        environments[index].postman?.collection
-                                          ?.content,
-                                        environments[index].postman?.collection
-                                          ?.name
-                                      );
-                                    }}
-                                  >
-                                    Download
-                                  </Button>
-                                )}
-                              </div>
-                              <div className="flex gap-2 m-2">
-                                <span className="col-span-1">Environment</span>
-                                <Form.Item
-                                  className="col-span-1"
-                                  name={[field.name, "postman_environment"]}
-                                >
-                                  <Upload
-                                    {...propsE}
-                                    className="flex gap-4"
-                                    defaultFileList={[...fileListE]}
-                                    fileList={[...fileListE]}
-                                    beforeUpload={(file) => {
-                                      setFileListE([file]);
-                                      return new Promise((resolve) => {
-                                        const reader = new FileReader();
-                                        reader.readAsDataURL(file);
-                                        reader.onload = (e) => {
-                                          try {
-                                            environments[index].postman = {
-                                              ...environments[index].postman,
-                                              environment: {
-                                                name: file.name,
-                                                content:
-                                                  e.target.result.split(",")[1],
-                                              },
-                                            };
-                                          } catch (error) {
-                                            console.error(
-                                              "Lỗi khi đọc file JSON:",
-                                              error
-                                            );
-                                          }
-                                        };
-                                      });
-                                    }}
-                                  >
-                                    <Button>
-                                      <Icon type="upload" /> Upload
-                                    </Button>
-                                  </Upload>
-                                </Form.Item>
-                                {environments[index].postman?.environment
-                                  ?.content && (
-                                  <Button
-                                    onClick={(e) => {
-                                      exportData(
-                                        environments[index].postman?.environment
-                                          ?.content,
-                                        environments[index].postman?.environment
-                                          ?.name
-                                      );
-                                    }}
-                                  >
-                                    Download
-                                  </Button>
-                                )}
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </Card>
-                      ))}
+                          </Card>
+                        );
+                      })}
                       {/* -------------------------------- */}
                       <div className="flex items-center">
-                        <Input
-                          value={inputValue}
-                          onChange={(e) => setInputValue(e.target.value)}
-                          onPressEnter={() => handleAddEnvironment(add)}
-                          placeholder="Enter environment name"
-                          style={{ marginRight: 8 }}
-                        />
                         <Button
                           type="dashed"
                           onClick={() => handleAddEnvironment(add)}
@@ -981,7 +1051,7 @@ export default function Newwebapp() {
               disabled={false}
               onClick={() => {
                 // check();
-                form.submit();
+                // form.submit();
               }}
             >
               {service_id ? "Update" : "Save"}
@@ -990,18 +1060,13 @@ export default function Newwebapp() {
               className="text-gray-400 pointer-events-auto border border-solid border-gray-400  "
               onClick={async () => {
                 localStorage.setItem("build", true);
-                let res;
-                // const fetch = async () => {
-                res = await apiCaller({
+                let res = await apiCaller({
                   request: vmsApi.createService({
                     ...service,
                     environments: environments,
                   }),
                 });
-                console.log("🚀 ~ fetch ~ res:", res);
                 setServiceId(res.id);
-                // };
-                // fetch();
                 if (environments.length === 1) {
                   navigate(
                     `/ocean?service=${res.id}&env=${environments[0].name}`
@@ -1009,7 +1074,6 @@ export default function Newwebapp() {
                 } else {
                   setIsModalOpenEnv(true);
                 }
-                console.log(environments);
               }}
             >
               Build
@@ -1030,7 +1094,6 @@ export default function Newwebapp() {
                 }}
               >
                 {environments.map((val, idx) => {
-                  console.log("🚀 ~ {environments.map ~ val:", val);
                   return (
                     <Radio key={idx} value={val.name}>
                       {val.name}

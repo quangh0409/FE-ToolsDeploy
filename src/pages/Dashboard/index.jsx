@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button, Input, Table } from "antd";
 import {
   CheckCircleTwoTone,
@@ -14,8 +14,11 @@ import { store } from "../../redux/store";
 import { addVm } from "../../redux/reducer/user";
 import apiCaller from "../../apis/apiCaller";
 import ticketApi from "../../apis/ticket.api";
+import Standard from "../../components/Standard";
 
 export default function Dashboard() {
+  const countRef = useRef(null);
+  const [timer, setTimer] = useState(new Date());
   const navigate = useNavigate();
   const location = useLocation();
   const [vms, setVms] = useState([]);
@@ -23,12 +26,16 @@ export default function Dashboard() {
   const [search, setSearch] = useState();
   const vms_ids = useSelector((state) => state.user.ticket.vms_ids);
   const ticket_id = useSelector((state) => state.user.ticket.id);
+  // countRef.current = setInterval(() => {
+  //   setTimer(new Date());
+  // }, 1000);
   useEffect(() => {
     if (vms_ids.length > 0) {
       const fetch = async () => {
         const res = await apiCaller({
           request: vmsApi.getVmsByIds(vms_ids),
         });
+        console.log("🚀 ~ fetch ~ res:", res);
         setVms(res);
         if (res) {
           setLoading(false);
@@ -39,19 +46,35 @@ export default function Dashboard() {
       fetch();
     }
   }, [vms_ids]);
-
   const columns = [
+    {
+      title: "CLOUD PLATFORM",
+      key: "cloud_platform",
+      render: (record, index) => {
+        return (
+          <div className="flex items-center justify-center">
+            {record.cloud_platform?.includes("gcp") ? (
+              <img className="w-12 bg-white" src="/images/logoGCP.png" />
+            ) : record.cloud_platform?.includes("generic") ? (
+              <img className="w-12 bg-white" src="/images/logoAzure.png" />
+            ) : (
+              "N/A"
+            )}
+            {/* <div>{record.os}</div> */}
+          </div>
+        );
+      },
+    },
     {
       title: "OS",
       key: "os",
-      width: 230,
       render: (record, index) => {
         return (
-          <div style={{width: "max-content"}} className="flex items-center">
+          <div className="flex items-center">
             {record.os?.includes("Ubuntu") && (
               <img className="w-8" src="/images/logoUbuntu.png" />
             )}
-            <span>{record.os}</span>
+            <div>{record.os}</div>
           </div>
         );
       },
@@ -63,12 +86,13 @@ export default function Dashboard() {
       key: "host",
       render: (text) => (
         <div
+          className="flex"
           onClick={() => {
             const vm = vms.find((vm) => {
               return vm.host === text;
             });
             store.dispatch(addVm(vm.id));
-            navigate(`/service?vm=${vm.id}`);
+            navigate(`/vm-instance?vm=${vm.id}`);
           }}
         >
           <GlobalOutlined />
@@ -98,16 +122,51 @@ export default function Dashboard() {
     },
     {
       title: "LAST CONNECT",
-      dataIndex: "last_connect",
       key: "last_connect",
-      render: (text) => <div>{new Date(text).toLocaleDateString()}</div>,
+      render: (record, index) => {
+        return (
+          <div>
+            {new Date(record.last_connect).toLocaleString("en-US", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              hour: "numeric",
+              minute: "numeric",
+              second: "numeric",
+              timeZone: "Asia/Ho_Chi_Minh",
+            })}
+          </div>
+        );
+      },
+    },
+    {
+      title: "WebApps",
+      key: "webapps",
+      render: (record, index) => {
+        return <div>{record.services.length} source code</div>;
+      },
+    },
+    {
+      title: "Containers",
+      key: "containers",
+      render: (record, index) => {
+        return <div>{record.containers}</div>;
+      },
+    },
+    {
+      title: "Images",
+      key: "images",
+      render: (record, index) => {
+        return <div>{record.images}</div>;
+      },
     },
     {
       width: 100,
       title: "Setting",
       key: "setting",
       render: (record, index) => {
-        console.log("🚀 ~ Dashboard ~ record:", record)
+        console.log("🚀 ~ Dashboard ~ record:", record);
         return (
           <SettingOutlined
             onClick={() => {
@@ -149,7 +208,11 @@ export default function Dashboard() {
       last_connect: vm.last_connect,
       key: index,
       id: vm.id,
-      os: vm.operating_system
+      os: vm.operating_system,
+      services: vm.services,
+      containers: vm?.containers | 0,
+      images: vm?.images | 0,
+      cloud_platform: vm?.kernel,
     };
   });
   const dataTable =
@@ -208,13 +271,14 @@ export default function Dashboard() {
           />
         </div>
         <div>
-          <div className="mt-11 col-span-1 border rounded-lg h-full overflow-auto">
+          <div className="mt-11 col-span-1 border rounded-lg h-full overflow-auto min-w-[1281px]">
             <Table
               pagination={false}
               dataSource={dataTable}
               columns={columns}
               scroll={{ y: 421 }}
               loading={loading}
+              className=""
             />
           </div>
         </div>

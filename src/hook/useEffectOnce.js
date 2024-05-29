@@ -7,5 +7,5 @@ export default function useEffectOnce(fn, arr) {
       fn();
       ref.current = true;
     }
-  }, [arr]);
+  }, arr);
 }

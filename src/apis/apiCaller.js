@@ -2,10 +2,11 @@ export default async function apiCaller({
   request,
   errorHandler = defaultErrorHandler,
 }) {
+  let response;
   try {
     // store.dispatch(loadingHandler(true));
-    const response = await request();
-    return response;
+    response = await request();
+    return response?.data || response;
   } catch (error) {
     // if (error.ec === 419 || error.ec === 420) {
     //   localStorage.removeItem("token");
@@ -15,11 +16,12 @@ export default async function apiCaller({
     //   store.dispatch(updateLoginState(false));
     //   store.dispatch(tokenHandler(true));
     // }
+    console.log("🚀 ~ response:", response)
     errorHandler(error);
+    return response;
   } finally {
     // store.dispatch(loadingHandler(false));
   }
-  return null;
 }
 
 function defaultErrorHandler(error) {

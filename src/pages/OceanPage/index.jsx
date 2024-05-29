@@ -34,10 +34,9 @@ export default function OceanPage() {
   //     request: vmsApi.getRecordById(record.id),
   //   });
   //   if (res) {
-  //     console.log("d vao");
   //     store.dispatch(setRecord(res));
   //   }
-  // }, 1000);
+  // }, 3000);
   useEffect(() => {
     const fetch = async () => {
       const res = await apiCaller({
@@ -48,12 +47,10 @@ export default function OceanPage() {
         setPostmanStatus(true);
       }
     };
-    if (
-      record.status !== "SUCCESSFULLY" && !postmanStatus
-    ) {
+    if (record.status === "SUCCESSFULLY" && !postmanStatus) {
       fetch();
     }
-  }, [record,postmanStatus]);
+  }, [record, postmanStatus]);
   const onChange = (value) => {
     setCurrent(value);
   };
@@ -293,7 +290,7 @@ export default function OceanPage() {
                 <img className="h-4" src="/images/stopwatch.png" alt="logo" />
                 {log?.end_time
                   ? timeDifference(log?.start_time, log?.end_time)
-                  : timeDifference(log?.start_time, timer)}
+                  : timeDifference(log?.start_time | new Date(), timer)}
               </span>
             </p>
           ),
@@ -350,6 +347,14 @@ export default function OceanPage() {
           store.dispatch(setRecord(data));
         }
       });
+      socket.on(
+        `logPlanCiCd-${localStorage.getItem("UserId")}-deploy`,
+        (data) => {
+          if (!postmanStatus) {
+            store.dispatch(setRecord(data));
+          }
+        }
+      );
     };
     const fetchRecord = async () => {
       const res = await apiCaller({

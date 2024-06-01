@@ -2,14 +2,19 @@ version: '3.8'
 
 services:
   frontend:
-    container_name: frontend 
+    container_name: frontend
     hostname: frontend
     build:
       context: .
       dockerfile: ./Dockerfile
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - /etc/ssl/certs/toolsdeploy.crt:/etc/ssl/certs/toolsdeploy.crt
+      - /etc/ssl/private/toolsdeploy.key:/etc/ssl/private/toolsdeploy.key
+#      - /etc/ssl/decrypt/toolsdeploy.decypt.key:/etc/ssl/private/toolsdeploy.key
     restart: always
     ports:
-      - 8081:80
+      - 8081:443
     image: docker.io/vutrongquang/frontend
     networks:
       - FE_ToolsDeploy

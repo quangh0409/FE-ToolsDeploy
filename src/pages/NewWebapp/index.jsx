@@ -435,9 +435,17 @@ export default function Newwebapp() {
                                   <Input
                                     value={environments[index].name}
                                     onChange={(e) => {
-                                      environments[index].name = e.target.value;
                                       store.dispatch(
-                                        setEnvironments([...environments])
+                                        setEnvironments([
+                                          ...environments.map((env, idx) => {
+                                            if (idx === index) {
+                                              return {
+                                                ...env,
+                                                name: e.target.value,
+                                              };
+                                            }
+                                          }),
+                                        ])
                                       );
                                     }}
                                   />
@@ -464,13 +472,20 @@ export default function Newwebapp() {
                                     placeholder={"no choice"}
                                     className="w-full h-full rounded-lg "
                                     onChange={(v, op) => {
-                                      environments[index].vm = op.lable;
-                                      console.log(vms);
                                       setVms(
                                         vms.filter((vm) => vm.id !== op.lable)
                                       );
                                       store.dispatch(
-                                        setEnvironments([...environments])
+                                        setEnvironments([
+                                          ...environments.map((env, idx) => {
+                                            if (idx === index) {
+                                              return {
+                                                ...env,
+                                                vm: op.lable,
+                                              };
+                                            }
+                                          }),
+                                        ])
                                       );
                                     }}
                                     options={itemsVM}
@@ -497,9 +512,18 @@ export default function Newwebapp() {
                                     placeholder={"no choice"}
                                     className="w-full h-full rounded-lg "
                                     onChange={(v, op) => {
-                                      environments[index].branch = v;
                                       store.dispatch(
-                                        setEnvironments([...environments])
+                                        setEnvironments([
+                                          ...environments.map((env, idx) => {
+                                            if (idx === index) {
+                                              return {
+                                                ...env,
+                                                branch: v,
+                                              };
+                                            }
+                                            return env;
+                                          }),
+                                        ])
                                       );
                                       const fetch = async () => {
                                         const docker = await apiCaller({
@@ -545,19 +569,23 @@ export default function Newwebapp() {
                                       width: "100%",
                                     }}
                                     onChange={(value, ops) => {
-                                      console.log(ops);
-                                      environments[index].docker_file = ops.map(
-                                        (op) => {
-                                          return {
-                                            location: op.desc,
-                                            name: op.label,
-                                            content: op.value,
-                                          };
-                                        }
-                                      );
-
                                       store.dispatch(
-                                        setEnvironments([...environments])
+                                        setEnvironments([
+                                          ...environments.map((env, idx) => {
+                                            if (idx === index) {
+                                              return {
+                                                ...env,
+                                                docker_file: ops.map((op) => {
+                                                  return {
+                                                    location: op.desc,
+                                                    name: op.label,
+                                                    content: op.value,
+                                                  };
+                                                }),
+                                              };
+                                            }
+                                          }),
+                                        ])
                                       );
                                     }}
                                     options={dockerConfig[
@@ -740,18 +768,25 @@ export default function Newwebapp() {
                                       width: "100%",
                                     }}
                                     onChange={(value, ops) => {
-                                      console.log(ops);
-                                      environments[index].docker_compose =
-                                        ops.map((op) => {
-                                          return {
-                                            location: op.desc,
-                                            name: op.label,
-                                            content: op.value,
-                                          };
-                                        });
-
                                       store.dispatch(
-                                        setEnvironments([...environments])
+                                        setEnvironments([
+                                          ...environments.map((env, idx) => {
+                                            if (idx === index) {
+                                              return {
+                                                ...env,
+                                                docker_compose: ops.map(
+                                                  (op) => {
+                                                    return {
+                                                      location: op.desc,
+                                                      name: op.label,
+                                                      content: op.value,
+                                                    };
+                                                  }
+                                                ),
+                                              };
+                                            }
+                                          }),
+                                        ])
                                       );
                                     }}
                                     options={dockerConfig[

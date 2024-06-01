@@ -11,3 +11,9 @@ services:
     ports:
       - 8081:80
     image: docker.io/vutrongquang/frontend
+    networks:
+      - FE_ToolsDeploy
+
+networks:
+  FE_ToolsDeploy:
+    name: FE_ToolsDeploy

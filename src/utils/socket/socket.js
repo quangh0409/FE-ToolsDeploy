@@ -1,10 +1,6 @@
 import { io } from "socket.io-client";
 const host = process.env.REACT_APP_CA_BE_FE_HOST
-  ? process.env.REACT_APP_CA_BE_FE_HOST
-  : "103.166.185.48";
 const port = process.env.REACT_APP_CA_BE_FE_PORT
-  ? process.env.REACT_APP_CA_BE_FE_PORT
-  : "8080";
 const socket = io(`http://${host}:${port}`, {
   autoConnect: true,
   transports: ['websocket'], // Sử dụng WebSocket để giảm thiểu mất kết nối

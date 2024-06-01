@@ -22,8 +22,7 @@ export default function SignInPage() {
   });
 
   const handleLoginWithGithub = () => {
-    const client_id = process.env.REACT_APP_CA_GIT_CLIENT_ID ? process.env.REACT_APP_CA_GIT_CLIENT_ID : "66602684d99f3683ebe0"
-    // const client_id = "66602684d99f3683ebe0";
+    const client_id = process.env.REACT_APP_CA_GIT_CLIENT_ID
     window.location.assign(
       `https://github.com/login/oauth/authorize?client_id=${client_id}`
     );

@@ -2,9 +2,10 @@ import axios from "axios";
 
 const host = process.env.REACT_APP_CA_BE_FE_HOST;
 const port = process.env.REACT_APP_CA_BE_FE_PORT;
+const baseURL = process.env.REACT_APP_CA_BE_FE_baseURL;
 const axiosServer = axios.create({
-  // baseURL: "http:///api/v1/",
-  baseURL: `https://${host}:${port}/api/v1/`,
+  baseURL: `https://${baseURL}/api/v1/`,
+  // baseURL: `https://${host}:${port}/api/v1/`,
 });
 axiosServer.interceptors.request.use(async (config) => {
   const accessToken = localStorage.getItem("accessToken");

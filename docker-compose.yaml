@@ -7,14 +7,15 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - /etc/ssl/certs/toolsdeploy.crt:/etc/ssl/certs/toolsdeploy.crt
-      - /etc/ssl/private/toolsdeploy.key:/etc/ssl/private/toolsdeploy.key
+ #   volumes:
+#      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+#      - /etc/ssl/certs/toolsdeploy.crt:/etc/ssl/certs/toolsdeploy.crt
+#      - /etc/ssl/private/toolsdeploy.key:/etc/ssl/private/toolsdeploy.key
 #      - /etc/ssl/decrypt/toolsdeploy.decypt.key:/etc/ssl/private/toolsdeploy.key
     restart: always
     ports:
-      - 8081:443
+#      - 8081:443
+      - 8081:80
     image: docker.io/vutrongquang/frontend
     networks:
       - FE_ToolsDeploy

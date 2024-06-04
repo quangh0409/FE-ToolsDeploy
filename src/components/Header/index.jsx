@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MenuCustom, { getItem } from "../MenuCustom";
 import {
+  FileDoneOutlined,
   GithubOutlined,
   GlobalOutlined,
   LogoutOutlined,
@@ -11,12 +12,13 @@ import {
 } from "@ant-design/icons";
 import { useSelector } from "react-redux";
 import useEffectOnce from "../../hook/useEffectOnce";
-import { Form, Input, Modal, Radio, message } from "antd";
+import { Avatar, Form, Input, Modal, Radio, message } from "antd";
 import apiCaller from "../../apis/apiCaller";
 import authApi from "../../apis/auth.api";
 import Standard from "../Standard";
 import { store } from "../../redux/store";
 import { setEnvironments } from "../../redux/reducer/user";
+import "./style.css";
 
 export default function Header() {
   const uri = useLocation();
@@ -24,6 +26,7 @@ export default function Header() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const fullname = useSelector((state) => state.user.fullname);
+  const avatar = useSelector((state) => state.user.avatar);
   const vm = params.get("vm");
   const path = uri.pathname;
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,8 +35,48 @@ export default function Header() {
   const [oldPassword, setOldPassword] = useState();
   const [newPassword, setNewPassword] = useState();
   const [isOpen, setIsOpen] = useState(false);
+  const handle1 = (e) => {
+    if (e.key === "logout") {
+      localStorage.clear();
+      navigate("/");
+    }
+    if (e.key === "setting") {
+      setIsModalOpen(true);
+    }
+    if (e.key === "git") {
+      vm ? navigate(`/connectGithub?vm=${vm}`) : navigate(`/connectGithub`);
+    }
+    if (e.key === "standard") {
+      setIsOpen(true);
+    }
+  };
 
-  const nodeRight = () => {
+  const handle2 = (e) => {
+    if (path === "/dashboard") {
+      navigate("/dashboard/VM-connect");
+    } else {
+      navigate(`/connectGithub?vm=${vm}`);
+      store.dispatch(
+        setEnvironments([
+          [
+            {
+              name: "",
+              vm: "",
+              branch: "",
+              docker_file: [],
+              docker_compose: [],
+              postman: {
+                collection: {},
+                environment: {},
+              },
+            },
+          ],
+        ])
+      );
+    }
+  };
+
+  const nodeLeft = () => {
     if (uri.pathname === "/") {
       return (
         <img className="col-span-2" src="/images/logo-bg-w.png" alt="logo" />
@@ -65,7 +108,7 @@ export default function Header() {
     );
   };
 
-  const nodeLeft = () => {
+  const nodeRight = () => {
     if (uri.pathname === "/") {
       return (
         <>
@@ -87,53 +130,15 @@ export default function Header() {
             items={NewItems}
             width={90}
             className={"rounded-lg"}
-            onClick={() => {
-              if (path === "/dashboard") {
-                navigate("/dashboard/VM-connect");
-              } else {
-                navigate(`/connectGithub?vm=${vm}`);
-                store.dispatch(
-                  setEnvironments([
-                    [
-                      {
-                        name: "",
-                        vm: "",
-                        branch: "",
-                        docker_file: [],
-                        docker_compose: [],
-                        postman: {
-                          collection: {},
-                          environment: {},
-                        },
-                      },
-                    ],
-                  ])
-                );
-              }
-            }}
+            onClick={handle2}
           />
         </div>
-        <div className="col-span-4 flex  justify-center">
+        <div className="col-span-4 flex  justify-center items-center">
           <MenuCustom
             items={items}
             width={"w-48"}
-            onClick={(e) => {
-              if (e.key === "logout") {
-                localStorage.clear();
-                navigate("/");
-              }
-              if (e.key === "setting") {
-                setIsModalOpen(true);
-              }
-              if (e.key === "git") {
-                vm
-                  ? navigate(`/connectGithub?vm=${vm}`)
-                  : navigate(`/connectGithub`);
-              }
-              if (e.key === "standard") {
-                setIsOpen(true);
-              }
-            }}
+            className={"avatar_cs"}
+            onClick={handle1}
           />
         </div>
       </>
@@ -141,13 +146,18 @@ export default function Header() {
   };
 
   const items = [
-    getItem(`${fullname}`, "sub4", <UserOutlined />, [
-      getItem(`${fullname}`, "9", <UserOutlined />),
-      getItem("Change Password", "setting", <SettingOutlined />),
-      getItem("New Standard", "standard", <SettingOutlined />),
-      getItem("Your Github", "git", <GithubOutlined />),
-      getItem("Logout", "logout", <LogoutOutlined />),
-    ]),
+    getItem(
+      `${fullname}`,
+      "sub4",
+      <img className="w-8 rounded-full" src={avatar} />,
+      [
+        getItem(`${fullname}`, "9", <UserOutlined />),
+        getItem("Change Password", "setting", <SettingOutlined />),
+        getItem("New Standard", "standard", <FileDoneOutlined />),
+        getItem("Your Github", "git", <GithubOutlined />),
+        getItem("Logout", "logout", <LogoutOutlined />),
+      ]
+    ),
   ];
 
   const NewItems =
@@ -167,11 +177,11 @@ export default function Header() {
     <>
       <div className="flex h-20 justify-between">
         <div className="grid grid-cols-4 w-96 items-center justify-center ml-3">
-          {nodeRight()}
+          {nodeLeft()}
         </div>
 
         <div className=" grid grid-cols-6 w-72 mr-3 text-center items-center justify-center">
-          {nodeLeft()}
+          {nodeRight()}
         </div>
       </div>
       <Modal

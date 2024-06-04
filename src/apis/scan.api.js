@@ -7,6 +7,12 @@ const scanApi = {
     });
     return response;
   },
+  scanImage: (image) => async () => {
+    const response = await axiosServer.post("scan/scan-image", {
+      image: image,
+    });
+    return response;
+  },
 };
 
 export default scanApi;

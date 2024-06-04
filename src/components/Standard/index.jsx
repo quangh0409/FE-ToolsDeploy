@@ -113,7 +113,7 @@ export default function Standard() {
       {isNew && (
         <div>
           <div className="m-6">
-            <Form form={form} onFinish={onFinish}>
+            <Form form={form} onFinish={onFinish} labelCol={{ span: 3 }} labelAlign="left">
               <Form.Item
                 name="name"
                 label="NAME"

@@ -1,10 +1,10 @@
-import { Button, Collapse, Divider, Steps, Table } from "antd";
+import { Button, Collapse, Divider, Modal, Steps, Table } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import socket from "../../utils/socket/socket";
 import useEffectOnce from "../../hook/useEffectOnce";
 import { ClockCircleOutlined, LoadingOutlined } from "@ant-design/icons";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { store } from "../../redux/store";
 import ResultTrivy from "../../components/ResultTrivy";
 import apiCaller from "../../apis/apiCaller";
@@ -13,7 +13,7 @@ import { setRecord } from "../../redux/reducer/record";
 
 export default function OceanPage() {
   const [current, setCurrent] = useState(0);
-
+  const negative = useNavigate();
   const [service, setService] = useState();
   const [postman, setPostman] = useState();
   const [postmanStatus, setPostmanStatus] = useState(false);
@@ -26,6 +26,8 @@ export default function OceanPage() {
   const env_name = params.get("env");
   const record_id = params.get("record");
   const record = useSelector((state) => state.record.record);
+
+  // console.log(window.location.href)
   countRef.current = setInterval(() => {
     setTimer(new Date());
   }, 1000);
@@ -38,18 +40,18 @@ export default function OceanPage() {
   //   }
   // }, 3000);
   useEffect(() => {
-    const fetch = async () => {
-      const res = await apiCaller({
-        request: vmsApi.getRecordById(record.id),
-      });
-      if (res) {
-        store.dispatch(setRecord(res));
-        setPostmanStatus(true);
-      }
-    };
-    if (record.status === "SUCCESSFULLY" && !postmanStatus) {
-      fetch();
-    }
+    // const fetch = async () => {
+    //   const res = await apiCaller({
+    //     request: vmsApi.getRecordById(record.id),
+    //   });
+    //   if (res) {
+    //     store.dispatch(setRecord(res));
+    //     setPostmanStatus(true);
+    //   }
+    // };
+    // if (record.status === "SUCCESSFULLY" && !postmanStatus) {
+    //   fetch();
+    // }
   }, [record, postmanStatus]);
   const onChange = (value) => {
     setCurrent(value);
@@ -353,6 +355,11 @@ export default function OceanPage() {
           if (!postmanStatus) {
             store.dispatch(setRecord(data));
           }
+          if (data.status === "SUCCESSFULLY") {
+            negative(
+              `/ocean?service=${service_id}&env=${env_name}&name=${service?.name}&record=${record.id}`
+            );
+          }
         }
       );
     };
@@ -508,12 +515,20 @@ export default function OceanPage() {
         {Object.keys(record?.ocean || {})[current] && (
           <Collapse items={items[current]} />
         )}
-        <iframe
-          // src="./images/test.html"
-          loading={postman ? false : true}
-          className="h-[800px] w-full"
-          srcDoc={postman}
-        ></iframe>
+        <Modal
+          open={!!postman}
+          footer={false}
+          onCancel={() => setPostman(undefined)}
+          closeIcon={true}
+          width={1500}
+        >
+          <iframe
+            // src="./images/test.html"
+            loading={"eager"}
+            className="h-[800px] w-full mt-8"
+            srcDoc={postman}
+          ></iframe>
+        </Modal>
       </div>
     </>
   );

@@ -33,7 +33,7 @@ export default function Dashboard() {
     if (vms_ids.length > 0) {
       const fetch = async () => {
         const res = await apiCaller({
-          request: vmsApi.getVmsByIds(vms_ids),
+          request: vmsApi.getVmsByIds(vms_ids, ""),
         });
         console.log("🚀 ~ fetch ~ res:", res);
         setVms(res);
@@ -245,13 +245,13 @@ export default function Dashboard() {
               console.log(e.target.value);
               if (e.key === "Enter") {
                 const res = await apiCaller({
-                  request: vmsApi.findVmsByHost(e.target.value),
+                  request: vmsApi.getVmsByIds(vms_ids, e.target.value),
                 });
                 setVms(res);
               }
               if (e.target.value === "") {
                 const res = await apiCaller({
-                  request: vmsApi.getVmsByIds(vms_ids),
+                  request: vmsApi.getVmsByIds(vms_ids, ""),
                 });
                 setVms(res);
               }

@@ -4,13 +4,14 @@ import {
   CheckOutlined,
   ClockCircleOutlined,
   CopyOutlined,
+  DeleteOutlined,
   ExclamationCircleOutlined,
   GlobalOutlined,
   LinkOutlined,
   MergeOutlined,
   SyncOutlined,
 } from "@ant-design/icons";
-import { Button, Modal, Table, Tabs } from "antd";
+import { Button, Modal, Table, Tabs, message } from "antd";
 import apiCaller from "../../apis/apiCaller";
 import vmsApi from "../../apis/vms.api";
 import githubApi from "../../apis/github.api";
@@ -34,6 +35,7 @@ export default function ServicePageDetail(props) {
   const [images, setImages] = useState([]);
   const [service, setService] = useState();
   const [host, setHost] = useState();
+  const [vm, setVm] = useState();
   const [records, setRecords] = useState([]);
   const [github, setGithub] = useState();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -101,6 +103,34 @@ export default function ServicePageDetail(props) {
         );
       },
     },
+    {
+      title: "Actions",
+      key: "actios",
+      render: (record, index) => {
+
+        return (
+          <div>
+            <DeleteOutlined
+              onClick={async () => {
+                const res = await apiCaller({
+                  request: vmsApi.actionsImagesOfVmById(
+                    vm,
+                    record.ID
+                  ),
+                });
+                if (res?.code == 0) {
+                  message.info(res.message);
+                } else {
+                  message.error(res.message);
+                }
+
+                setImages(res.images);
+              }}
+            />
+          </div>
+        );
+      },
+    },
   ];
 
   useEffectOnce(() => {
@@ -124,6 +154,7 @@ export default function ServicePageDetail(props) {
       service?.environment.forEach((env) => {
         if (env.name === service_env) {
           setHost(env.vm.host);
+          setVm(env.vm.id);
         }
       });
     };

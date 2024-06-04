@@ -15,7 +15,7 @@ const ticketApi = {
         standard_ids: response.data.standard_ids,
       })
     );
-    localStorage.setItem("token", response.data.github.access_token);
+    localStorage.setItem("token", response.data?.github?.access_token);
     return response;
   },
   UpdateTicket: (vms_ids) => async () => {

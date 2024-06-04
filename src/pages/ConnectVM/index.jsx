@@ -27,10 +27,6 @@ export default function ConnectVM() {
   const vm = params.get("vm");
   const [form] = Form.useForm();
 
-  const [logInstallHadolint, setLogInstallHadolint] = useState([]);
-  const [logInstallTrivy, setLogInstallTrivy] = useState([]);
-  const [logInstallDocker, setLogInstallDocker] = useState([]);
-
   const [hostVM, setHostVM] = useState();
   const [userVM, setUserVM] = useState();
   const [passVM, setPassVM] = useState();

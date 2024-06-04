@@ -10,6 +10,8 @@ export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [emailV1, setEmailV1] = useState("");
   const [password, setPassword] = useState("");
+  const [fullname, setFullname] = useState("");
+  const [type, setType] = useState("LOGIN");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [form] = Form.useForm();
@@ -22,21 +24,33 @@ export default function SignInPage() {
   });
 
   const handleLoginWithGithub = () => {
-    const client_id = process.env.REACT_APP_CA_GIT_CLIENT_ID
+    const client_id = process.env.REACT_APP_CA_GIT_CLIENT_ID;
     window.location.assign(
       `https://github.com/login/oauth/authorize?client_id=${client_id}`
     );
   };
-  const handleLogin = async () => {
-    const res = await apiCaller({
-      request: authApi.login(email, password),
-    });
-
-    if (res.accessToken) {
-      navigate("/dashboard");
-      socket.connect();
+  const handleSubmit = async () => {
+    if (type === "LOGIN") {
+      const res = await apiCaller({
+        request: authApi.login(email, password),
+      });
+      if (res.accessToken) {
+        navigate("/dashboard");
+        socket.connect();
+      } else {
+        message.error(res.errors[0].message || res.description);
+      }
     } else {
-      message.error("Error login");
+      const res = await apiCaller({
+        request: authApi.signUpNoGit(email, password, fullname),
+      });
+      if (res.accessToken) {
+        message.info("Sign up success!");
+        navigate("/dashboard");
+        socket.connect();
+      } else {
+        message.error("Error Sign up");
+      }
     }
   };
   return (
@@ -44,7 +58,9 @@ export default function SignInPage() {
       <div className="h-svh">
         <div className="flex flex-col mt-52 ml-7">
           <div className="text-3xl w-96 h-10 pl-6 text-center">
-            Sign in to ToolsDeploy
+            {type === "LOGIN"
+              ? "Sign in to ToolsDeploy"
+              : "Sign up to ToolsDeploy"}
           </div>
           <div className="text-xl w-96 h-8 pl-6 text-center">or</div>
 
@@ -56,16 +72,31 @@ export default function SignInPage() {
               <img className="col-span-1" src="/images/github.png" alt="logo" />
               <div className="col-span-2 text-center ">Github</div>
             </div>
-            {/* <div className="col-span-2 grid grid-cols-3 items-center justify-center border-black border-solid border hover:bg-slate-500 m-3">
-              <img className="col-span-1" src="/images/gitlab.png" alt="logo" />
-              <div className="col-span-2 text-center ">Gitlab</div>
-            </div>
-            <div className="col-span-2 grid grid-cols-3 items-center justify-center border-black border-solid border hover:bg-slate-500 m-3">
-              <img className="col-span-1" src="/images/google.png" alt="logo" />
-              <div className="col-span-2 text-center ">Google</div>
-            </div> */}
           </div>
-          <Form form={form} onFinish={handleLogin}>
+          <Form form={form} onFinish={handleSubmit}>
+            {type === "SIGNUP" ? (
+              <>
+                <div className="pl-6 font-medium">Fullname</div>
+                <Form.Item
+                  className="-m-3"
+                  name="fullname"
+                  rules={[
+                    { required: true, message: "Please input your fullname!" },
+                  ]}
+                >
+                  <Input
+                    className="w-96 m-6"
+                    value={fullname}
+                    onChange={(e) => {
+                      e.preventDefault();
+                      setFullname(e.target.value);
+                    }}
+                  />
+                </Form.Item>
+              </>
+            ) : (
+              <></>
+            )}
             <div className="pl-6 font-medium">Email</div>
             <Form.Item
               className="-m-3"
@@ -108,6 +139,7 @@ export default function SignInPage() {
                 className="w-96 m-6"
                 value={password}
                 onChange={(e) => {
+                  e.preventDefault();
                   setPassword(e.target.value);
                 }}
                 visibilityToggle={{
@@ -116,27 +148,41 @@ export default function SignInPage() {
                 }}
               />
             </Form.Item>
-            <div className="flex justify-between w-96">
-              <Radio.Button
-                className="pl-6 "
-                value="default"
-                onClick={() => {
-                  form.submit();
-                }}
-              >
-                Sign in
-              </Radio.Button>
+
+            <div className="flex justify-between w-96 pl-3">
               <div
                 className="underline underline-offset-1 cursor-pointer"
                 onClick={async () => {
-                  // await apiCaller({
-                  //   request: authApi["forgot-password"]()
-                  // })
+                  if (type === "LOGIN") {
+                    setType("SIGNUP");
+                  } else {
+                    setType("LOGIN");
+                  }
+                }}
+              >
+                {type === "LOGIN"
+                  ? "Need an account? Sign up"
+                  : "Already have an account? Sign in"}
+              </div>
+              <div
+                className="underline underline-offset-1 cursor-pointer"
+                onClick={async () => {
                   setIsModalOpen(true);
                 }}
               >
                 forgot-password
               </div>
+            </div>
+            <div>
+              <Radio.Button
+                className="pl-6 m-3"
+                value="default"
+                onClick={() => {
+                  form.submit();
+                }}
+              >
+                {type === "LOGIN" ? "Sign in" : "Sign up"}
+              </Radio.Button>
             </div>
           </Form>
 

@@ -32,6 +32,7 @@ axiosServer.interceptors.response.use(
     const { status, data } = error.response;
     if (data.code === "TOKEN_EXPIRED" && status === 401) {
       localStorage.clear();
+      window.location.href = "/";
     }
     return error.response;
   }

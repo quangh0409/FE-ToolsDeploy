@@ -51,7 +51,6 @@ export default function Newwebapp() {
   const service_t = useSelector((state) => state.user.service);
   const [fields, setFields] = useState();
   const [form] = Form.useForm();
-  const [inputValue, setInputValue] = useState("");
   // const [environments, setEnvironments] = useState([
   //   {
   //     name: "",
@@ -67,6 +66,7 @@ export default function Newwebapp() {
   // ]);
 
   const environments = useSelector((state) => state.user.environments);
+  console.log("🚀 ~ Newwebapp ~ environments:", environments);
 
   const [dockerConfig, setDockerConfig] = useState([
     {
@@ -221,18 +221,24 @@ export default function Newwebapp() {
 
   const handleAddEnvironment = (add) => {
     add();
-    const env = {
-      name: inputValue,
-      vm: "",
-      branch: "",
-      docker_file: [],
-      docker_compose: [],
-    };
+    const env = [
+      {
+        name: "",
+        vm: "",
+        branch: "",
+        docker_file: [],
+        docker_compose: [],
+        postman: {
+          collection: {},
+          environment: {},
+        },
+      },
+    ];
     store.dispatch(setEnvironments([...environments, env]));
   };
   const handleRemoveCard = (remove, index) => {
     remove(index);
-    const vmsr = vmsT.find((vm) => vm.id === environments[index].vm);
+    const vmsr = vmsT.find((vm) => vm.id === environments[index]?.vm);
     setVms([...vms, vmsr]);
     const newEnvs = [...environments];
     newEnvs.splice(index, 1);
@@ -407,7 +413,7 @@ export default function Newwebapp() {
                         return (
                           <Card
                             size="small"
-                            title={"Environment: " + environments[index].name}
+                            title={"Environment: " + environments[index]?.name}
                             key={field.key}
                             extra={
                               <CloseOutlined
@@ -433,7 +439,7 @@ export default function Newwebapp() {
                                   name={[field.name, "name_env"]}
                                 >
                                   <Input
-                                    value={environments[index].name}
+                                    value={environments[index]?.name}
                                     onChange={(e) => {
                                       store.dispatch(
                                         setEnvironments([
@@ -443,6 +449,8 @@ export default function Newwebapp() {
                                                 ...env,
                                                 name: e.target.value,
                                               };
+                                            } else {
+                                              return env;
                                             }
                                           }),
                                         ])
@@ -473,7 +481,7 @@ export default function Newwebapp() {
                                     className="w-full h-full rounded-lg "
                                     onChange={(v, op) => {
                                       setVms(
-                                        vms.filter((vm) => vm.id !== op.lable)
+                                        vms.filter((vm) => vm?.id !== op.lable)
                                       );
                                       store.dispatch(
                                         setEnvironments([
@@ -483,6 +491,8 @@ export default function Newwebapp() {
                                                 ...env,
                                                 vm: op.lable,
                                               };
+                                            } else {
+                                              return env;
                                             }
                                           }),
                                         ])
@@ -583,6 +593,8 @@ export default function Newwebapp() {
                                                   };
                                                 }),
                                               };
+                                            } else {
+                                              return env;
                                             }
                                           }),
                                         ])
@@ -784,6 +796,8 @@ export default function Newwebapp() {
                                                   }
                                                 ),
                                               };
+                                            } else {
+                                              return env;
                                             }
                                           }),
                                         ])
@@ -912,7 +926,7 @@ export default function Newwebapp() {
                                                           postman: {
                                                             ...environments[
                                                               index
-                                                            ].postman,
+                                                            ]?.postman,
                                                             collection: {
                                                               name: file.name,
                                                               content:
@@ -943,14 +957,14 @@ export default function Newwebapp() {
                                       </Button>
                                     </Upload>
                                   </Form.Item>
-                                  {environments[index].postman?.collection
+                                  {environments[index]?.postman?.collection
                                     ?.content && (
                                     <Button
                                       onClick={(e) => {
                                         exportData(
-                                          environments[index].postman
+                                          environments[index]?.postman
                                             ?.collection?.content,
-                                          environments[index].postman
+                                          environments[index]?.postman
                                             ?.collection?.name
                                         );
                                       }}
@@ -1010,7 +1024,7 @@ export default function Newwebapp() {
                                                           postman: {
                                                             ...environments[
                                                               index
-                                                            ].postman,
+                                                            ]?.postman,
                                                             environment: {
                                                               name: file.name,
                                                               content:
@@ -1041,14 +1055,14 @@ export default function Newwebapp() {
                                       </Button>
                                     </Upload>
                                   </Form.Item>
-                                  {environments[index].postman?.environment
+                                  {environments[index]?.postman?.environment
                                     ?.content && (
                                     <Button
                                       onClick={(e) => {
                                         exportData(
-                                          environments[index].postman
+                                          environments[index]?.postman
                                             ?.environment?.content,
-                                          environments[index].postman
+                                          environments[index]?.postman
                                             ?.environment?.name
                                         );
                                       }}
@@ -1130,8 +1144,8 @@ export default function Newwebapp() {
               >
                 {environments.map((val, idx) => {
                   return (
-                    <Radio key={idx} value={val.name}>
-                      {val.name}
+                    <Radio key={idx} value={val?.name}>
+                      {val?.name}
                     </Radio>
                   );
                 })}

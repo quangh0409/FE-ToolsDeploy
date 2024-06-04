@@ -20,7 +20,7 @@ export default function ConnectGit() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const vm = params.get("vm");
-  const git_user = useSelector((state) => state.user.ticket.github.git_user);
+  const git_user = useSelector((state) => state.user.ticket.github?.git_user);
   useEffect(() => {
     const fecth = async () => {
       try {
@@ -40,7 +40,9 @@ export default function ConnectGit() {
         message.error("");
       }
     };
-    fecth();
+    if (!!git_user) {
+      fecth();
+    }
   }, []);
 
   const handleInputChange = (e) => {
@@ -52,97 +54,122 @@ export default function ConnectGit() {
   };
   return (
     <>
-      <div className="grid grid-cols-3 w-svw h-screen">
-        <div className="col-span-2 ml-20 h-full">
-          <div>
-            <h2 className="text-3xl mt-10">Create a new Web Service</h2>
-            <h2>
-              Connect your Git repository or use an existing public repository
-              URL.
-            </h2>
-          </div>
-          <div className="p-2 border border-solid border-gray-400 rounded-lg h-fit mt-14 ">
+      {!!git_user && (
+        <div className="grid grid-cols-3 w-svw h-screen">
+          <div className="col-span-2 ml-20 h-full">
             <div>
+              <h2 className="text-3xl mt-10">Create a new Web Service</h2>
+              <h2>
+                Connect your Git repository or use an existing public repository
+                URL.
+              </h2>
+            </div>
+            <div className="p-2 border border-solid border-gray-400 rounded-lg h-fit mt-14 ">
               <div>
-                <h2 className="text-2xl mb-3">Connect a repository</h2>
-              </div>
-              <Input
-                placeholder="Enter your username"
-                prefix={
-                  <SearchOutlined
-                    className="site-form-item-icon"
-                    onClick={() => {}}
-                  />
-                }
-                value={repoName}
-                onChange={handleInputChange}
-                //   allowClear
-                suffix={
-                  <Button
-                    className="text-gray-400 pointer-events-auto border-0 "
-                    onClick={handleClearInput}
-                  >
-                    Clear
-                  </Button>
-                }
-              />
-            </div>
-            <div className="border-solid mt-2 border-gray-400 rounded-lg max-h-96 scroll-mx-2 overflow-auto">
-              {repos.map((repo, idx) => {
-                return (
-                  <div
-                    className="flex flex-row h-12 border border-solid border-gray-400 items-center justify-between"
-                    key={idx}
-                  >
-                    <div className=" h-full flex flex-row items-center ">
-                      <img
-                        className="h-full"
-                        src="/images/github.png"
-                        alt="logo"
-                      />
-                      <div className="underline ">
-                        <a href={repo.html_url}>{repo.full_name}</a>
-                      </div>
-                    </div>
+                <div>
+                  <h2 className="text-2xl mb-3">Connect a repository</h2>
+                </div>
+                <Input
+                  placeholder="Enter your username"
+                  prefix={
+                    <SearchOutlined
+                      className="site-form-item-icon"
+                      onClick={() => {}}
+                    />
+                  }
+                  value={repoName}
+                  onChange={handleInputChange}
+                  //   allowClear
+                  suffix={
                     <Button
-                      className=" pointer-events-auto text-blue-500"
-                      onClick={() => {
-                        navigate(
-                          `/new-webapp?repo=${repo.name}&user=${repo.owner.login}&clone_url=${repo.clone_url}&vm=${vm}`
-                        );
-                      }}
+                      className="text-gray-400 pointer-events-auto border-0 "
+                      onClick={handleClearInput}
                     >
-                      connect
+                      Clear
                     </Button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-        <div className="col-span-1 p-8 mt-28">
-          <div className=" mt-4 ">
-            <div className=" h-full items-center ">
-              <div className="flex items-center font-semibold">
-                <img className="h-8" src="/images/github.png" alt="logo" />{" "}
-                GitHub
+                  }
+                />
               </div>
-              <a
-                className="m-1 underline underline-offset-1 mr-2 ml-2 "
-                href={`https://github.com/${git_user}?tab=repositories`}
-              >
-                <UserOutlined />
-                <a className="m-1">@{git_user}</a>
-                <ExportOutlined className="" />
-              </a>
-              <span className="antialiased font-sans font-normal text-sm leading-6 select-none text-gray-500">
-                .
-              </span>
-              <span>{repos.length} repos</span>
+              <div className="border-solid mt-2 border-gray-400 rounded-lg max-h-96 scroll-mx-2 overflow-auto">
+                {repos.map((repo, idx) => {
+                  return (
+                    <div
+                      className="flex flex-row h-12 border border-solid border-gray-400 items-center justify-between"
+                      key={idx}
+                    >
+                      <div className=" h-full flex flex-row items-center ">
+                        <img
+                          className="h-full"
+                          src="/images/github.png"
+                          alt="logo"
+                        />
+                        <div className="underline ">
+                          <a href={repo.html_url}>{repo.full_name}</a>
+                        </div>
+                      </div>
+                      <Button
+                        className=" pointer-events-auto text-blue-500"
+                        onClick={() => {
+                          navigate(
+                            `/new-webapp?repo=${repo.name}&user=${repo.owner.login}&clone_url=${repo.clone_url}&vm=${vm}`
+                          );
+                        }}
+                      >
+                        connect
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+          <div className="col-span-1 p-8 mt-28">
+            <div className=" mt-4 ">
+              <div className=" h-full items-center ">
+                <div className="flex items-center font-semibold">
+                  <img className="h-8" src="/images/github.png" alt="logo" />{" "}
+                  GitHub
+                </div>
+                <a
+                  className="m-1 underline underline-offset-1 mr-2 ml-2 "
+                  href={`https://github.com/${git_user}?tab=repositories`}
+                >
+                  <UserOutlined />
+                  <a className="m-1">@{git_user}</a>
+                  <ExportOutlined className="" />
+                </a>
+                <span className="antialiased font-sans font-normal text-sm leading-6 select-none text-gray-500">
+                  .
+                </span>
+                <span>{repos.length} repos</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
+      {!git_user && (
+        <>
+          <div id="title" className="flex items-center justify-center flex-col m-6 gap-4">
+            <div>
+              You haven't connected your GitHub yet. Please add your GitHub to
+              the system!
+            </div>
+            <div>
+              <Button
+                onClick={() => {
+                  const client_id = process.env.REACT_APP_CA_GIT_CLIENT_ID;
+                  localStorage.setItem("connect_github", 1);
+                  window.location.assign(
+                    `https://github.com/login/oauth/authorize?client_id=${client_id}`
+                  );
+                }}
+              >
+                Connect Github
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }

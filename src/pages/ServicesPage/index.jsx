@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Input, Table } from "antd";
+import { Button, Input, Table, message } from "antd";
 import {
   CheckCircleTwoTone,
   GlobalOutlined,
@@ -8,6 +8,7 @@ import {
   CaretLeftOutlined,
   DeleteOutlined,
   SyncOutlined,
+  RedoOutlined,
 } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import useEffectOnce from "../../hook/useEffectOnce";
@@ -63,6 +64,21 @@ export default function ServicePage() {
     setReload(false);
   }, [vm, reload]);
 
+  const handleActionContainer = async (vms, container, type) => {
+    const res = await apiCaller({
+      request: vmsApi.actionsContainerByByVmsIdAndContainerId(
+        vms,
+        container,
+        type
+      ),
+    });
+    if (res?.code) {
+      message.error("Error System");
+    } else {
+      setContaniners(res);
+      message.info(`${type} successfully`);
+    }
+  };
   const columns = {
     services: [
       {
@@ -217,6 +233,44 @@ export default function ServicePage() {
         key: "PIDs",
         render: (record, index) => <div>{record.PIDs}</div>,
       },
+      {
+        title: "Ports",
+        key: "Ports",
+        render: (record, index) => <div>{record.Ports}</div>,
+      },
+      {
+        title: "Image",
+        key: "Image",
+        render: (record, index) => <div>{record.Image}</div>,
+      },
+      {
+        title: "Status",
+        key: "Status",
+        render: (record, index) => <div>{record.Status}</div>,
+      },
+      {
+        title: "Actions",
+        // key: "PIDs",
+        render: (record, index) => (
+          <div className="flex gap-2">
+            <CaretLeftOutlined
+              onClick={() => {
+                handleActionContainer(vm, record.container_id, "stop");
+              }}
+            />
+            <RedoOutlined
+              onClick={() => {
+                handleActionContainer(vm, record.container_id, "restart");
+              }}
+            />
+            <DeleteOutlined
+              onClick={() => {
+                handleActionContainer(vm, record.container_id, "delete");
+              }}
+            />
+          </div>
+        ),
+      },
     ],
     images: [
       {
@@ -255,52 +309,40 @@ export default function ServicePage() {
               })}
             </div>
           );
-        }
+        },
       },
       {
         title: "SIZE",
         dataIndex: "Size",
         key: "size",
       },
-      // {
-      //   title: "SCAN IMAGE",
-      //   key: "scan",
-      //   render: (record, index) => {
-      //     return (
-      //       <div
-      //         onClick={() => {
-      //           dispatch(addloading(index?.key));
-      //         }}
-      //       >
-      //         <Button
-      //           onClick={async () => {
-      //             const res = await apiCaller({
-      //               request: vmsApi.scanImageOfService(
-      //                 service_id,
-      //                 service_env,
-      //                 record.Repository
-      //               ),
-      //             });
-  
-      //             if (res) {
-      //               console.log(res);
-      //               dispatch(addloading(null));
-      //               setResultScan(res?.Results);
-      //               setIsModalOpen(true);
-      //             }
-      //           }}
-      //         >
-      //           <SyncOutlined spin={indexScan === index?.key ? true : false} />
-      //         </Button>
-      //       </div>
-      //     );
-      //   },
-      // },
+      {
+        title: "Actions",
+        key: "actios",
+        render: (record, index) => (
+          <div>
+            <DeleteOutlined
+              onClick={async () => {
+                const res = await apiCaller({
+                  request: vmsApi.actionsImagesOfVmById(vm, record.ID),
+                });
+                if (res?.code == 0) {
+                  message.info(res.message);
+                } else {
+                  message.error(res.message);
+                }
+
+                setImages(res.images);
+              }}
+            />
+          </div>
+        ),
+      },
     ],
   };
 
   const dataSource = {
-    services: services.map((s, index) => {
+    services: services?.map((s, index) => {
       return {
         id: s.id,
         service_name: s.name,
@@ -315,7 +357,7 @@ export default function ServicePage() {
         environment: s.environment,
       };
     }),
-    containers: contaniners.map((c, index) => {
+    containers: contaniners?.map((c, index) => {
       return {
         container_id: c.ID,
         name: c.Name,
@@ -325,6 +367,9 @@ export default function ServicePage() {
         BlockIO: c.BlockIO,
         NetIO: c.NetIO,
         PIDs: c.PIDs,
+        Ports: c.Ports,
+        Image: c.Image,
+        Status: c.Status,
       };
     }),
     images: images?.map((i, index) => {
@@ -357,6 +402,7 @@ export default function ServicePage() {
       </div>
     );
   };
+  console.log(`${type}`, dataSource[`${type}`].length);
   return (
     <>
       <div className="ml-24 mr-24 h-full">
@@ -384,16 +430,40 @@ export default function ServicePage() {
               setSearch(e.target.value);
               console.log(e.target.value);
               if (e.key === "Enter") {
-                const res = await apiCaller({
-                  request: vmsApi.findServiceInVmsByName(vm, e.target.value),
-                });
-                setServices(res);
+                if (type === "services") {
+                  const res = await apiCaller({
+                    request: vmsApi.findServiceInVmsByName(vm, e.target.value),
+                  });
+                  setServices(res);
+                } else if (type === "containers") {
+                  const contaniners = await apiCaller({
+                    request: vmsApi.findContaninersOfVmById(vm, search),
+                  });
+                  setContaniners(contaniners);
+                } else if (type === "images") {
+                  const images = await apiCaller({
+                    request: vmsApi.findImagesOfVmById(vm, search),
+                  });
+                  setImages(images);
+                }
               }
               if (e.target.value === "") {
-                const res = await apiCaller({
-                  request: vmsApi.getAllServiceByVMId(vm),
-                });
-                setServices(res);
+                if (type === "services") {
+                  const res = await apiCaller({
+                    request: vmsApi.findServiceInVmsByName(vm, e.target.value),
+                  });
+                  setServices(res);
+                } else if (type === "containers") {
+                  const contaniners = await apiCaller({
+                    request: vmsApi.findContaninersOfVmById(vm, search),
+                  });
+                  setContaniners(contaniners);
+                } else if (type === "images") {
+                  const images = await apiCaller({
+                    request: vmsApi.findImagesOfVmById(vm, search),
+                  });
+                  setImages(images);
+                }
               }
             }}
             suffix={
@@ -443,6 +513,7 @@ export default function ServicePage() {
           <div className="mt-11 col-span-1 border rounded-lg h-full overflow-auto">
             <Table
               pagination={false}
+              loading={dataSource[`${type}`].length === 0 ? true : false}
               dataSource={dataSource[`${type}`]}
               columns={columns[`${type}`]}
               scroll={{ y: 421 }}

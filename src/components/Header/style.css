@@ -1,0 +1,4 @@
+.avatar_cs > li > div {
+    display: flex !important;
+    align-items: center !important;
+}

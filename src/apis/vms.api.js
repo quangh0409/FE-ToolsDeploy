@@ -18,8 +18,13 @@ const vmsApi = {
     });
     return response;
   },
-  getVmsByIds: (vms_ids) => async () => {
-    const response = await axiosServer.post(`vms/ids`, { ids: vms_ids });
+  getVmsByIds: (vms_ids, host) => async () => {
+    const response = await axiosServer.post(
+      `vms/ids?host=${host ? host : ""}`,
+      {
+        ids: vms_ids,
+      }
+    );
     return response;
   },
   getVmsById: (vms) => async () => {
@@ -156,6 +161,17 @@ const vmsApi = {
         pass: pass,
       }
     );
+    return response;
+  },
+  actionsContainerByByVmsIdAndContainerId:
+    (vms, contaniner, action) => async () => {
+      const response = await axiosServer.get(
+        `vms/${vms}/contaniners/${contaniner}?action=${action}`
+      );
+      return response;
+    },
+  actionsImagesOfVmById: (vms, image) => async () => {
+    const response = await axiosServer.delete(`vms/${vms}/images/${image}`);
     return response;
   },
 };

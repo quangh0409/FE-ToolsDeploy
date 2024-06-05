@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import MenuCustom, { getItem } from "../MenuCustom";
 import {
   FileDoneOutlined,
+  FileImageOutlined,
+  FunctionOutlined,
   GithubOutlined,
   GlobalOutlined,
   LogoutOutlined,
@@ -11,14 +13,17 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { useSelector } from "react-redux";
-import useEffectOnce from "../../hook/useEffectOnce";
-import { Avatar, Form, Input, Modal, Radio, message } from "antd";
+import TemplateDetailPage from "../Scan";
+import { Avatar, Button, Form, Input, Modal, Radio, message } from "antd";
 import apiCaller from "../../apis/apiCaller";
 import authApi from "../../apis/auth.api";
+import scanApi from "../../apis/scan.api";
 import Standard from "../Standard";
 import { store } from "../../redux/store";
 import { setEnvironments } from "../../redux/reducer/user";
+
 import "./style.css";
+import ResultTrivy from "../ResultTrivy";
 
 export default function Header() {
   const uri = useLocation();
@@ -30,11 +35,18 @@ export default function Header() {
   const vm = params.get("vm");
   const path = uri.pathname;
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalScanSyntaxOpen, setIsModaScanSyntaxOpen] = useState(false);
+  const [isModalImagesOpen, setIsModaImagesOpen] = useState(false);
   const [form] = Form.useForm();
+  const [formv1] = Form.useForm();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [oldPassword, setOldPassword] = useState();
   const [newPassword, setNewPassword] = useState();
   const [isOpen, setIsOpen] = useState(false);
+  const [contentfile, setContentfile] = useState();
+  const [resultScanSyntax, setResultScanSyntax] = useState();
+  const [resultScan, setResultScan] = useState();
+  const [errorLine, setErrorLine] = useState();
   const handle1 = (e) => {
     if (e.key === "logout") {
       localStorage.clear();
@@ -48,6 +60,12 @@ export default function Header() {
     }
     if (e.key === "standard") {
       setIsOpen(true);
+    }
+    if (e.key === "dockerfile") {
+      setIsModaScanSyntaxOpen(true);
+    }
+    if (e.key === "image") {
+      setIsModaImagesOpen(true);
     }
   };
 
@@ -153,6 +171,8 @@ export default function Header() {
       [
         getItem(`${fullname}`, "9", <UserOutlined />),
         getItem("Change Password", "setting", <SettingOutlined />),
+        getItem("Scan Dockerfile", "dockerfile", <FunctionOutlined />),
+        getItem("Scan Image", "image", <FileImageOutlined />),
         getItem("New Standard", "standard", <FileDoneOutlined />),
         getItem("Your Github", "git", <GithubOutlined />),
         getItem("Logout", "logout", <LogoutOutlined />),
@@ -270,6 +290,113 @@ export default function Header() {
         width={1500}
       >
         <Standard />
+      </Modal>
+      <Modal
+        open={isModalScanSyntaxOpen}
+        footer={false}
+        onCancel={() => setIsModaScanSyntaxOpen(false)}
+        closeIcon={false}
+        width={1500}
+      >
+        <TemplateDetailPage
+          contentfile={contentfile}
+          setContentfile={setContentfile}
+          resultScanSyntax={resultScanSyntax}
+          errorLine={errorLine}
+        />
+        <div className="flex justify-between mt-5">
+          <div className="flex ">
+            <Button
+              className="mr-3"
+              onClick={async () => {
+                const res = await apiCaller({
+                  request: scanApi.scanSyxtax(contentfile.content),
+                });
+                const lines = res.map((val) => {
+                  if (val.level === "error") return val.line;
+                });
+                setErrorLine(lines);
+                setResultScanSyntax(res);
+              }}
+            >
+              Scan
+            </Button>
+            <Button
+              onClick={() => {
+                if (!contentfile?.name || contentfile?.name === "") {
+                  alert("Please enter name file");
+                }
+                setIsModaScanSyntaxOpen(false);
+              }}
+            >
+              Save
+            </Button>
+          </div>
+          <Button
+            onClick={() => {
+              setIsModaScanSyntaxOpen(false);
+              setContentfile({
+                name: "",
+                content: "",
+                type: "",
+              });
+            }}
+          >
+            Cancel
+          </Button>
+        </div>
+      </Modal>
+      <Modal
+        open={isModalImagesOpen}
+        footer={false}
+        onCancel={() => setIsModaImagesOpen(false)}
+        closeIcon={true}
+        width={1200}
+      >
+        <div className="m-6">
+          <Form
+            form={form}
+            onFinish={async (e) => {
+              console.log("🚀 ~ onFinish={ ~ e:", e);
+              const res = await apiCaller({
+                request: scanApi.scanImage(e.name_image),
+              });
+              console.log(res);
+              if (!res?.code) {
+                setResultScan(res?.Results);
+                message.info("Scan successfully");
+              } else {
+                message.error(res.errors[0].message || res.description);
+              }
+            }}
+            className="flex justify-between"
+          >
+            <Form.Item
+              name="name_image"
+              rules={[
+                { required: true, message: "Please input your image!" },
+                {
+                  validator: (rule, value) => {
+                    if (
+                      !value ||
+                      /^docker\.io\/[a-z0-9-_]+\/[a-z0-9-_]+$/.test(value)
+                    ) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject("Invalid docker Image Names");
+                  },
+                },
+              ]}
+            >
+              <Input
+                placeholder="docker.io/repository/name_image"
+                className="w-[900px]"
+              ></Input>
+            </Form.Item>
+            <Button htmlType="submit">Scan</Button>
+          </Form>
+        </div>
+        {resultScan && <ResultTrivy Results={resultScan} y={500} />}
       </Modal>
     </>
   );

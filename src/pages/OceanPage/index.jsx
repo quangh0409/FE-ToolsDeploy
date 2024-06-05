@@ -17,9 +17,9 @@ export default function OceanPage() {
   const [service, setService] = useState();
   const [postman, setPostman] = useState();
   const [postmanStatus, setPostmanStatus] = useState(false);
+  const [isModal, setisModal] = useState(false);
   const [timer, setTimer] = useState(new Date());
   const countRef = useRef(null);
-  const countRefRecord = useRef(null);
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const service_id = params.get("service");
@@ -27,32 +27,19 @@ export default function OceanPage() {
   const record_id = params.get("record");
   const record = useSelector((state) => state.record.record);
 
-  // console.log(window.location.href)
-  countRef.current = setInterval(() => {
-    setTimer(new Date());
-  }, 1000);
-  // countRefRecord.current = setInterval(async () => {
-  //   const res = await apiCaller({
-  //     request: vmsApi.getRecordById(record.id),
-  //   });
-  //   if (res) {
-  //     store.dispatch(setRecord(res));
-  //   }
-  // }, 3000);
+  // countRef.current = setInterval(() => {
+  //   setTimer(new Date());
+  // }, 1000);
   useEffect(() => {
-    // const fetch = async () => {
-    //   const res = await apiCaller({
-    //     request: vmsApi.getRecordById(record.id),
-    //   });
-    //   if (res) {
-    //     store.dispatch(setRecord(res));
-    //     setPostmanStatus(true);
-    //   }
-    // };
-    // if (record.status === "SUCCESSFULLY" && !postmanStatus) {
-    //   fetch();
-    // }
-  }, [record, postmanStatus]);
+    const fetch = async () => {
+      if (record.status === "SUCCESSFULLY") {
+        localStorage.setItem("build", true);
+        setPostmanStatus(true);
+        setisModal(true);
+      }
+    };
+    fetch();
+  }, [record]);
   const onChange = (value) => {
     setCurrent(value);
   };
@@ -314,22 +301,34 @@ export default function OceanPage() {
   ];
   useEffect(() => {
     if (postmanStatus) {
-      const env = service?.environment.find((env) => env.name === env_name);
+      const env = service?.environment.find((env) => {
+        return env.name === env_name;
+      });
+      console.log("🚀 ~ env ~ env:", env);
       const fecth = async () => {
-        const res = await apiCaller({
-          request: vmsApi.runPostman(
-            env?.postman?.collection?.content,
-            env?.postman?.environment?.content,
-            service?.name,
-            env_name,
-            env?.branch
-          ),
-        });
-        setPostman(res);
+        if (
+          env?.postman?.collection?.content &&
+          env?.postman?.environment?.content &&
+          env?.branch &&
+          service?.name
+        ) {
+          const res = await apiCaller({
+            request: vmsApi.runPostman(
+              env?.postman?.collection?.content,
+              env?.postman?.environment?.content,
+              service?.name,
+              env_name,
+              env?.branch
+            ),
+          });
+          setPostman(res);
+          setPostmanStatus(false);
+        }
       };
       fecth();
     }
-  }, [postmanStatus]);
+  }, [postmanStatus, record]);
+
   useEffectOnce(() => {
     const fetch = async () => {
       const res = await apiCaller({
@@ -356,6 +355,7 @@ export default function OceanPage() {
             store.dispatch(setRecord(data));
           }
           if (data.status === "SUCCESSFULLY") {
+            setPostmanStatus(true);
             negative(
               `/ocean?service=${service_id}&env=${env_name}&name=${service?.name}&record=${record.id}`
             );
@@ -368,11 +368,31 @@ export default function OceanPage() {
         request: vmsApi.getRecordById(record_id),
       });
       store.dispatch(setRecord(res));
-      const service = await apiCaller({
+      const serviceR = await apiCaller({
         request: vmsApi.getServiceById(service_id),
       });
-      setService(service);
-      setPostmanStatus(true);
+      setService(serviceR);
+      const env = serviceR?.environment.find((env) => {
+        return env.name === env_name;
+      });
+      console.log("🚀 ~ env ~ env:", env);
+      const fecthE = async () => {
+        if (env) {
+          const res = await apiCaller({
+            request: vmsApi.runPostman(
+              env?.postman?.collection?.content,
+              env?.postman?.environment?.content,
+              serviceR?.name,
+              env_name,
+              env?.branch
+            ),
+          });
+          setPostman(res);
+        }
+      };
+      if (res.status === "SUCCESSFULLY") {
+        fecthE();
+      }
     };
 
     if (record_id) {
@@ -442,6 +462,7 @@ export default function OceanPage() {
               )}
               <div className="flex justify-end gap-3">
                 <Button
+                  disabled={localStorage.getItem("build") === "false"}
                   onClick={() => {
                     // const vm = vms.find((vm) => {
                     //   return vm.host === record.host;
@@ -515,19 +536,30 @@ export default function OceanPage() {
         {Object.keys(record?.ocean || {})[current] && (
           <Collapse items={items[current]} />
         )}
+
         <Modal
-          open={!!postman}
+          open={postmanStatus || !!postman}
           footer={false}
-          onCancel={() => setPostman(undefined)}
+          onCancel={() => {
+            setPostmanStatus(false);
+            setPostman(undefined);
+          }}
           closeIcon={true}
           width={1500}
         >
-          <iframe
-            // src="./images/test.html"
-            loading={"eager"}
-            className="h-[800px] w-full mt-8"
-            srcDoc={postman}
-          ></iframe>
+          {postmanStatus && !!postman === false ? (
+            <div className="flex justify-center">
+              <img className="w-7" src="/images/loading.gif" />{" "}
+              <p>Running Postman test</p>
+            </div>
+          ) : (
+            <iframe
+              // src="./images/test.html"
+              loading={"eager"}
+              className="h-[800px] w-full mt-8"
+              srcDoc={postman}
+            ></iframe>
+          )}
         </Modal>
       </div>
     </>

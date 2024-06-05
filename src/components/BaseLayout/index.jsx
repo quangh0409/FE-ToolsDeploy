@@ -20,6 +20,7 @@ export default function BaseLayout(props) {
       }
     };
     fetch();
+    socket.connect();
     socket.on(
       `webhooks-${localStorage.getItem("UserId")}`,
       (user_id, service, env) => {

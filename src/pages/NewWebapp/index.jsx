@@ -291,7 +291,7 @@ export default function Newwebapp() {
                     }),
                   });
                   if (res) {
-                    navigate(`/service?vm=${environments[0].vm}`);
+                    navigate(`/vm-instance?vm=${environments[0].vm}`);
                   }
                 };
                 const fetchU = async () => {
@@ -312,9 +312,10 @@ export default function Newwebapp() {
                     ),
                   });
                   if (res) {
-                    navigate(`/service?vm=${environments[0].vm.id}`);
+                    navigate(`/vm-instance?vm=${environments[0].vm.id}`);
                   }
                 };
+                console.log("🚀 ~ service_id:", service_id);
                 service_id ? fetchU() : fetchC();
 
                 console.log({
@@ -482,6 +483,10 @@ export default function Newwebapp() {
                                     onChange={(v, op) => {
                                       setVms(
                                         vms.filter((vm) => vm?.id !== op.lable)
+                                      );
+                                      console.log(
+                                        "🚀 ~ {fields.map ~ op.lable:",
+                                        op.lable
                                       );
                                       store.dispatch(
                                         setEnvironments([
@@ -1099,8 +1104,7 @@ export default function Newwebapp() {
               className="text-green-400 pointer-events-auto border border-solid border-green-400  "
               disabled={false}
               onClick={() => {
-                // check();
-                // form.submit();
+                form.submit();
               }}
             >
               {service_id ? "Update" : "Save"}

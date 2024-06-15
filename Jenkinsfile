@@ -11,7 +11,7 @@ node {
         sh "cat $ssh_key_remote > ssh_id_rsa"
         sh "chmod 400 ssh_id_rsa"
         sh "ssh -o StrictHostKeyChecking=no -i ssh_id_rsa -p 2222 quangvt@103.166.185.48 'git clone https://github.com/quangh0409/FE-ToolsDeploy.git 2> /dev/null || (rm -rf FE-ToolsDeploy ; git clone https://github.com/quangh0409/FE-ToolsDeploy.git) '"
-        sh "ssh -o StrictHostKeyChecking=no -i ssh_id_rsa -p 2222 quangvt@103.166.185.48 'cd FE-ToolsDeploy && git checkout dev'"
+        sh "ssh -o StrictHostKeyChecking=no -i ssh_id_rsa -p 2222 quangvt@103.166.185.48 'cd FE-ToolsDeploy && git checkout deploy_http'"
     }
   }
 //   stage("ScanSyntax"){

@@ -2,11 +2,12 @@ import axios from "axios";
 import axiosServer from "./axios";
 
 const vmsApi = {
-  createVMS: (hostVM, userVM, passVM, standardVM) => async () => {
+  createVMS: (hostVM, portVM,userVM, passVM, standardVM) => async () => {
     const response = await axiosServer.post(`vms/`, {
       host: hostVM,
       user: userVM,
       pass: passVM,
+      port: portVM,
       standard: standardVM,
     });
     return response;
@@ -151,12 +152,13 @@ const vmsApi = {
     });
     return response;
   },
-  compareStandardBeforeCreate: (standard, host, user, pass) => async () => {
+  compareStandardBeforeCreate: (standard, host, port, user, pass) => async () => {
     const response = await axiosServer.post(
       `vms/standards/compare-before-create-vms`,
       {
         standard: standard,
         host: host,
+        port: port,
         user: user,
         pass: pass,
       }

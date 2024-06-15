@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import socket from "../../utils/socket/socket";
 import useEffectOnce from "../../hook/useEffectOnce";
+import { LoadingOutlined } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Button,
@@ -19,6 +20,13 @@ import "./style.css";
 import apiCaller from "../../apis/apiCaller";
 import ticketApi from "../../apis/ticket.api";
 import { useSelector } from "react-redux";
+import { Tour } from "antd";
+import { store } from "../../redux/store";
+import {
+  setTourConnectVM,
+  setTourPipeline,
+  setTourYourGit,
+} from "../../redux/reducer/user";
 
 export default function ConnectVM() {
   const navigate = useNavigate();
@@ -30,27 +38,84 @@ export default function ConnectVM() {
   const [hostVM, setHostVM] = useState();
   const [userVM, setUserVM] = useState();
   const [passVM, setPassVM] = useState();
+  const [portVM, setPortVM] = useState();
   const [standardVM, setStandardVM] = useState();
   const [standardCompoareVM, setStandardCompoareVM] = useState();
   const [vmId, setVmId] = useState();
+
+  const tourPipeline = useSelector((state) => state.user?.tour?.pipeline);
+  const tourConnectVM = useSelector((state) => state.user?.tour?.connectVM);
 
   const [versionDocker, setVersionDocker] = useState();
   const [versionHadolint, setVersionHadolint] = useState();
   const [versionTrivy, setVersionTrivy] = useState();
   const [isOpen, setIsOpen] = useState(false);
   const [reload, setReload] = useState(false);
+  const [statusDocker, setStatusDocker] = useState(false);
+  const [statusHadolint, setStatusHadolint] = useState(false);
+  const [statusTrivy, setStatusTrivy] = useState(false);
   const [infoVms, setInfoVms] = useState();
   const token = localStorage.getItem("accessToken");
   const [fields, setFields] = useState();
   const [standards, SetStandards] = useState([]);
   const standard_ids = useSelector((state) => state.user.ticket.standard_ids);
+
+  const refCaseSecond1 = useRef(null);
+  const refCaseSecond2 = useRef(null);
+  const refCaseSecond3 = useRef(null);
+  const refCaseSecond4 = useRef(null);
+  const refCaseSecond5 = useRef(null);
+
+  const stepsCaseSecond = [
+    {
+      title: "Host",
+      description: "Enter your host",
+      target: () => refCaseSecond1.current,
+      placement: "topLeft",
+    },
+    {
+      title: "Port",
+      description: "Enter your port, default 22",
+      target: () => refCaseSecond2.current,
+      placement: "bottomLeft",
+    },
+    {
+      title: "User",
+      description: "Enter your username",
+      target: () => refCaseSecond3.current,
+      placement: "bottomLeft",
+    },
+    {
+      title: "Pass",
+      description: "Enter your pass",
+      target: () => refCaseSecond4.current,
+      placement: "bottom",
+    },
+    {
+      title: "Standard",
+      description: (
+        <>
+          <div>Choose your standard</div>
+          <Button
+            onClick={() => {
+              store.dispatch(setTourConnectVM(false));
+              store.dispatch(setTourYourGit(true));
+            }}
+          >
+            Next step
+          </Button>
+        </>
+      ),
+      target: () => refCaseSecond5.current,
+      placement: "leftBottom",
+    },
+  ];
+
   const conicColors = {
     "0%": "red",
     "50%": "yellow", // Corrected spelling
     "100%": "green", // Corrected spelling
   };
-  const [stepsCount, setStepsCount] = React.useState(5);
-  const [stepsGap, setStepsGap] = React.useState(7);
   useEffect(() => {
     setVersionDocker(infoVms?.set_up?.docker);
     setVersionHadolint(infoVms?.set_up?.hadolint);
@@ -117,6 +182,10 @@ export default function ConnectVM() {
             name: ["password"],
             value: res.pass,
           },
+          {
+            name: ["port"],
+            value: res.port,
+          },
         ]);
         const compare = await apiCaller({
           request: vmsApi.compareStandard(res.standard, res.id),
@@ -135,6 +204,7 @@ export default function ConnectVM() {
     setReload(false);
   }, [vm, reload]);
   const installDocker = async (e) => {
+    setStatusDocker(true);
     const res = await apiCaller({
       request: vmsApi.installDocker(vm),
     });
@@ -143,9 +213,11 @@ export default function ConnectVM() {
     } else {
       message.info(res?.message);
     }
+    setStatusDocker(false);
     setReload(true);
   };
   const installHadolint = async (e) => {
+    setStatusHadolint(true);
     const res = await apiCaller({
       request: vmsApi.installHadolint(vm),
     });
@@ -154,9 +226,11 @@ export default function ConnectVM() {
     } else {
       message.info(res?.message);
     }
+    setStatusHadolint(false);
     setReload(true);
   };
   const installTrivy = async (e) => {
+    setStatusTrivy(true);
     const res = await apiCaller({
       request: vmsApi.installTrivy(vm),
     });
@@ -165,13 +239,14 @@ export default function ConnectVM() {
     } else {
       message.info(res?.message);
     }
+    setStatusTrivy(false);
     setReload(true);
   };
 
   const handleRegister = () => {
     const fetchC = async () => {
       const vmT = await apiCaller({
-        request: vmsApi.createVMS(hostVM, userVM, passVM, standardVM),
+        request: vmsApi.createVMS(hostVM, portVM, userVM, passVM, standardVM),
       });
       if (vmT?.code) {
         message.error(`${vmT?.errors[0].message} ${vmT.errors[0].value}`);
@@ -211,6 +286,7 @@ export default function ConnectVM() {
 
   const cards = {
     docker: {
+      status: statusDocker,
       fn: installDocker,
       title: "Docker",
       logo: "/images/logoDocker.png",
@@ -218,6 +294,7 @@ export default function ConnectVM() {
       des: "Docker là nền tảng phát triển phần mềm cho phép bạn đóng gói và chạy ứng dụng trong một môi trường cô lập gọi là container. Đảm bảo tính nhất quán giữa các môi trường phát triển và triển khai, giúp tăng tốc độ phát hành sản phẩm và giảm thiểu rủi ro.",
     },
     hadolint: {
+      status: statusHadolint,
       fn: installHadolint,
       title: "Hadolint",
       logo: "/images/logoHadolint.png",
@@ -225,6 +302,7 @@ export default function ConnectVM() {
       des: "Hadolint là công cụ kiểm tra và phân tích Dockerfile để đảm bảo chúng tuân thủ các best practices và tiêu chuẩn an toàn. Cải thiện chất lượng code và bảo mật của Dockerfile, giúp quá trình integration và deployment diễn ra suôn sẻ hơn.",
     },
     trivy: {
+      status: statusTrivy,
       fn: installTrivy,
       title: "Trivy",
       logo: "/images/logoTrivy.png",
@@ -245,70 +323,117 @@ export default function ConnectVM() {
           onFinish={handleRegister}
           fields={fields}
         >
-          <div className="grid gap-3 grid-cols-3">
-            <Form.Item
-              label="Host"
-              name="host"
-              rules={[
-                { required: true, message: "Please input your host!" },
-                {
-                  validator: (rule, value) => {
-                    if (
-                      !value ||
-                      /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
-                        value
-                      )
-                    ) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject("Invalid IP address");
+          <div className="grid gap-3 grid-cols-4">
+            <div className="flex" ref={refCaseSecond1}>
+              <Form.Item
+                label="Host"
+                name="host"
+                rules={[
+                  { required: true, message: "Please input your host!" },
+                  {
+                    validator: (rule, value) => {
+                      if (
+                        !value ||
+                        /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
+                          value
+                        )
+                      ) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject("Invalid IP address");
+                    },
                   },
-                },
-              ]}
-            >
-              <Input
-                placeholder="0.0.0.0"
-                className="w-40"
-                // defaultValue={hostVM}
-                disabled={fields ? true : false}
-                // value={hostVM}
-                onChange={(e) => {
-                  const newValue = e.target.value;
-                  setHostVM(newValue);
-                }}
-              />
-            </Form.Item>
-            <Form.Item
-              label="User"
-              name="username"
-              rules={[{ required: true, message: "Please input your user!" }]}
-            >
-              <Input
-                placeholder="user name"
-                className="w-40"
-                onChange={(e) => {
-                  setUserVM(e.target.value);
-                }}
-              />
-            </Form.Item>
-            <Form.Item
-              label="Pass"
-              name="password"
-              rules={[{ required: true, message: "Please input your pass!" }]}
-            >
-              <Input
-                placeholder="user name"
-                className="w-40"
-                onChange={(e) => {
-                  setPassVM(e.target.value);
-                }}
-                type="password"
-              />
-            </Form.Item>
+                ]}
+              >
+                <Input
+                  placeholder="0.0.0.0"
+                  className="w-40"
+                  // defaultValue={hostVM}
+                  disabled={fields ? true : false}
+                  // value={hostVM}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    setHostVM(newValue);
+                  }}
+                />
+              </Form.Item>
+            </div>
+            <div ref={refCaseSecond2}>
+              <Form.Item
+                label="Port"
+                name="port"
+                rules={[
+                  { required: true, message: "Please input your port!" },
+                  {
+                    validator: (rule, value) => {
+                      if (typeof value === "string" && isNaN(Number(value))) {
+                        return Promise.reject("Invalid your port");
+                      }
+
+                      if (
+                        !value ||
+                        (Number.parseInt(value) >= 0 &&
+                          Number.parseInt(value) <= 65535)
+                      ) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject("Invalid your port");
+                    },
+                  },
+                ]}
+              >
+                <Input
+                  // ref={refCaseSecond2}
+                  placeholder="Default 22"
+                  className="w-40"
+                  // defaultValue={hostVM}
+                  disabled={fields ? true : false}
+                  // value={hostVM}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    setPortVM(newValue);
+                  }}
+                />
+              </Form.Item>
+            </div>
+            <div ref={refCaseSecond3}>
+              <Form.Item
+                label="User"
+                name="username"
+                rules={[{ required: true, message: "Please input your user!" }]}
+              >
+                <Input
+                  // ref={refCaseSecond3}
+                  placeholder="user name"
+                  className="w-40"
+                  onChange={(e) => {
+                    setUserVM(e.target.value);
+                  }}
+                />
+              </Form.Item>
+            </div>
+            <div ref={refCaseSecond4}>
+              <Form.Item
+                label="Pass"
+                name="password"
+                rules={[{ required: true, message: "Please input your pass!" }]}
+              >
+                <Input
+                  // ref={refCaseSecond4}
+                  placeholder="user name"
+                  className="w-40"
+                  onChange={(e) => {
+                    setPassVM(e.target.value);
+                  }}
+                  type="password"
+                />
+              </Form.Item>
+            </div>
           </div>
           <div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" >
+                <div ref={refCaseSecond5}>
                 <Form.Item
                   name={"standard"}
                   label={"Standard"}
@@ -317,12 +442,14 @@ export default function ConnectVM() {
                   ]}
                 >
                   <Select
+                    // ref={refCaseSecond5}
                     style={{ width: 200 }}
                     onChange={async (value) => {
                       const res = await apiCaller({
                         request: vmsApi.compareStandardBeforeCreate(
                           value,
                           hostVM,
+                          portVM,
                           userVM,
                           passVM
                         ),
@@ -343,6 +470,7 @@ export default function ConnectVM() {
                     })}
                   />
                 </Form.Item>
+                </div>
                 {standardCompoareVM && (
                   <Flex gap="small" wrap>
                     <Progress
@@ -379,8 +507,8 @@ export default function ConnectVM() {
                             ? "text-red-500"
                             : Number.parseFloat(standardCompoareVM?.rate_ram) >=
                               1
-                            ? "text-yellow-500"
-                            : "text-green-500"
+                            ? "text-green-500"
+                            : "text-yellow-500"
                         }`}
                       >
                         Ram{" "}
@@ -418,8 +546,8 @@ export default function ConnectVM() {
                             ? "text-red-500"
                             : Number.parseFloat(standardCompoareVM?.rate_cpu) >=
                               1
-                            ? "text-yellow-500"
-                            : "text-green-500"
+                            ? "text-green-500"
+                            : "text-yellow-500"
                         }`}
                       >
                         Cpu{" "}
@@ -458,8 +586,8 @@ export default function ConnectVM() {
                             : Number.parseFloat(
                                 standardCompoareVM?.rate_core
                               ) >= 1
-                            ? "text-yellow-500"
-                            : "text-green-500"
+                            ? "text-green-500"
+                            : "text-yellow-500"
                         }`}
                       >
                         Core{" "}
@@ -516,7 +644,10 @@ export default function ConnectVM() {
                       </div>
                       <Progress
                         percent={
-                          Number.parseFloat(standardCompoareVM?.rate_os) * 100
+                          Number.parseFloat(standardCompoareVM?.rate_os) < 1
+                            ? Number.parseFloat(standardCompoareVM?.rate_os) *
+                              100
+                            : 100
                         }
                         strokeColor={conicColors}
                         status={`${
@@ -589,7 +720,10 @@ export default function ConnectVM() {
             {vm ? (
               <Button htmlType="submit">Update</Button>
             ) : (
-              <Button htmlType="submit" disabled={!standardVM ? true : false}>
+              <Button
+                htmlType="submit"
+                disabled={standardCompoareVM?.rate_total < 1 ? true : false}
+              >
                 Register
               </Button>
             )}
@@ -747,7 +881,10 @@ export default function ConnectVM() {
                     <div className="text-justify">{cards[key]?.des}</div>
                     <div className="text-center mt-3">
                       {version === "" ? (
-                        <Button onClick={cards[key]?.fn}>Install</Button>
+                        <Button onClick={cards[key]?.fn}>
+                          {cards[key]?.status ? <LoadingOutlined /> : <></>}
+                          Install
+                        </Button>
                       ) : (
                         <div onClick={cards[key]?.fn}>{version}</div>
                       )}
@@ -761,6 +898,23 @@ export default function ConnectVM() {
           Cancel
         </Button>
       </Modal>
+      <Tour
+        open={tourConnectVM}
+        mask={false}
+        type="primary"
+        onClose={() => {
+          store.dispatch(setTourConnectVM(false));
+        }}
+        onFinish={() => {
+          store.dispatch(setTourConnectVM(false));
+        }}
+        steps={stepsCaseSecond}
+        indicatorsRender={(current, total) => (
+          <span>
+            {current + 1} / {total}
+          </span>
+        )}
+      />
     </>
   );
 }

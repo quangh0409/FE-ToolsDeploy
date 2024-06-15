@@ -15,8 +15,10 @@ import { addVm } from "../../redux/reducer/user";
 import apiCaller from "../../apis/apiCaller";
 import ticketApi from "../../apis/ticket.api";
 import Standard from "../../components/Standard";
+import {Tour } from "antd";
 
 export default function Dashboard() {
+  const [open, setOpen] = useState(false);
   const countRef = useRef(null);
   const [timer, setTimer] = useState(new Date());
   const navigate = useNavigate();
@@ -26,6 +28,28 @@ export default function Dashboard() {
   const [search, setSearch] = useState();
   const vms_ids = useSelector((state) => state.user.ticket.vms_ids);
   const ticket_id = useSelector((state) => state.user.ticket.id);
+
+  const ref1 = useRef(null);
+  const ref2 = useRef(null);
+  const ref3 = useRef(null);
+  const steps = [
+    {
+      title: "Upload File",
+      description: "Put your files here.",
+      target: () => ref1.current,
+    },
+    {
+      title: "Save",
+      description: "Save your changes.",
+      target: () => ref2.current,
+    },
+    {
+      title: "Other Actions",
+      description: "Click to see other actions.",
+      target: () => ref3.current,
+    },
+  ];
+
   // countRef.current = setInterval(() => {
   //   setTimer(new Date());
   // }, 1000);
@@ -44,6 +68,8 @@ export default function Dashboard() {
         }
       };
       fetch();
+    } else {
+      setLoading(false);
     }
   }, [vms_ids]);
   const columns = [
@@ -52,7 +78,16 @@ export default function Dashboard() {
       key: "cloud_platform",
       render: (record, index) => {
         return (
-          <div className="flex items-center justify-center">
+          <div
+            className="flex items-center justify-center cursor-pointer"
+            onClick={() => {
+              const vm = vms.find((vm) => {
+                return vm.host === record.host;
+              });
+              store.dispatch(addVm(vm.id));
+              navigate(`/vm-instance?vm=${vm.id}`);
+            }}
+          >
             {record.cloud_platform?.includes("gcp") ? (
               <img className="w-12 bg-white" src="/images/logoGCP.png" />
             ) : record.cloud_platform?.includes("generic") ? (
@@ -70,7 +105,16 @@ export default function Dashboard() {
       key: "os",
       render: (record, index) => {
         return (
-          <div className="flex items-center">
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => {
+              const vm = vms.find((vm) => {
+                return vm.host === record.host;
+              });
+              store.dispatch(addVm(vm.id));
+              navigate(`/vm-instance?vm=${vm.id}`);
+            }}
+          >
             {record.os?.includes("Ubuntu") && (
               <img className="w-8" src="/images/logoUbuntu.png" />
             )}
@@ -86,7 +130,7 @@ export default function Dashboard() {
       key: "host",
       render: (text) => (
         <div
-          className="flex"
+          className="flex cursor-pointer"
           onClick={() => {
             const vm = vms.find((vm) => {
               return vm.host === text;
@@ -141,21 +185,21 @@ export default function Dashboard() {
       },
     },
     {
-      title: "WebApps",
+      title: "WEBAPPS",
       key: "webapps",
       render: (record, index) => {
         return <div>{record.services.length} source code</div>;
       },
     },
     {
-      title: "Containers",
+      title: "CONTAINERS",
       key: "containers",
       render: (record, index) => {
         return <div>{record.containers}</div>;
       },
     },
     {
-      title: "Images",
+      title: "IMAGES",
       key: "images",
       render: (record, index) => {
         return <div>{record.images}</div>;
@@ -163,12 +207,13 @@ export default function Dashboard() {
     },
     {
       width: 100,
-      title: "Setting",
+      title: "SETTING",
       key: "setting",
       render: (record, index) => {
         console.log("🚀 ~ Dashboard ~ record:", record);
         return (
-          <SettingOutlined
+          <div  ref={ref1}>
+            <SettingOutlined
             onClick={() => {
               const vm = vms.find((vm) => {
                 return vm.host === record.host;
@@ -176,12 +221,13 @@ export default function Dashboard() {
               navigate(`/dashboard/VM-connect?vm=${vm.id}`);
             }}
           />
+          </div>
         );
       },
     },
     {
       width: 100,
-      title: "Delete",
+      title: "DELETE",
       key: "delete",
       render: (record, index) => {
         return (
@@ -225,6 +271,16 @@ export default function Dashboard() {
 
   return (
     <>
+      {/* <Tour
+        open={open}
+        onClose={() => setOpen(false)}
+        steps={steps}
+        indicatorsRender={(current, total) => (
+          <span>
+            {current + 1} / {total}
+          </span>
+        )}
+      /> */}
       <div className="ml-24 mr-24 h-full">
         <div className="text-3xl font-medium">VM Instances</div>
         <div className="mt-9">

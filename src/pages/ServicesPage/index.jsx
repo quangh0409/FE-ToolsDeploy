@@ -136,7 +136,7 @@ export default function ServicePage() {
       },
       {
         width: 100,
-        title: "Setting",
+        title: "SETTING",
         key: "setting",
         render: (record, index) => {
           return (
@@ -153,7 +153,7 @@ export default function ServicePage() {
       },
       {
         width: 100,
-        title: "Re Build",
+        title: "RE BUILD",
         key: "re_build",
         render: (record, index) => {
           return (
@@ -173,7 +173,7 @@ export default function ServicePage() {
       },
       {
         width: 100,
-        title: "Delete",
+        title: "DELETE",
         key: "delete",
         render: (record, index) => {
           return (
@@ -234,22 +234,22 @@ export default function ServicePage() {
         render: (record, index) => <div>{record.PIDs}</div>,
       },
       {
-        title: "Ports",
+        title: "PORTS",
         key: "Ports",
         render: (record, index) => <div>{record.Ports}</div>,
       },
       {
-        title: "Image",
+        title: "IMAGE",
         key: "Image",
         render: (record, index) => <div>{record.Image}</div>,
       },
       {
-        title: "Status",
+        title: "STATUS",
         key: "Status",
         render: (record, index) => <div>{record.Status}</div>,
       },
       {
-        title: "Actions",
+        title: "ACTIONS",
         // key: "PIDs",
         render: (record, index) => (
           <div className="flex gap-2">
@@ -317,7 +317,7 @@ export default function ServicePage() {
         key: "size",
       },
       {
-        title: "Actions",
+        title: "ACTIONS",
         key: "actios",
         render: (record, index) => (
           <div>

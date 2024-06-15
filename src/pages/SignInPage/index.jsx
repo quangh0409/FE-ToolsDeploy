@@ -34,22 +34,22 @@ export default function SignInPage() {
       const res = await apiCaller({
         request: authApi.login(email, password),
       });
-      if (res.accessToken) {
+      if (res?.code) {
+        message.error(res.errors[0].message || res.description);
+      } else {
         navigate("/dashboard");
         socket.connect();
-      } else {
-        message.error(res.errors[0].message || res.description);
       }
     } else {
       const res = await apiCaller({
         request: authApi.signUpNoGit(email, password, fullname),
       });
-      if (res.accessToken) {
+      if (res?.code) {
+        message.error("Error Sign up");
+      } else {
         message.info("Sign up success!");
         navigate("/dashboard");
         socket.connect();
-      } else {
-        message.error("Error Sign up");
       }
     }
   };

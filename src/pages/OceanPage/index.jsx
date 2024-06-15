@@ -1,4 +1,13 @@
-import { Button, Collapse, Divider, Modal, Steps, Table } from "antd";
+import {
+  Button,
+  Collapse,
+  Divider,
+  Modal,
+  Steps,
+  Table,
+  Upload,
+  message,
+} from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import socket from "../../utils/socket/socket";
@@ -10,12 +19,18 @@ import ResultTrivy from "../../components/ResultTrivy";
 import apiCaller from "../../apis/apiCaller";
 import vmsApi from "../../apis/vms.api";
 import { setRecord } from "../../redux/reducer/record";
+import Icon from "@ant-design/icons/lib/components/Icon";
 
 export default function OceanPage() {
   const [current, setCurrent] = useState(0);
   const negative = useNavigate();
   const [service, setService] = useState();
   const [postman, setPostman] = useState();
+  const [postmanNew, setPostmanNew] = useState({
+    isAddPostman: false,
+    html: undefined,
+    loading: false,
+  });
   const [postmanStatus, setPostmanStatus] = useState(false);
   const [isModal, setisModal] = useState(false);
   const [timer, setTimer] = useState(new Date());
@@ -26,10 +41,44 @@ export default function OceanPage() {
   const env_name = params.get("env");
   const record_id = params.get("record");
   const record = useSelector((state) => state.record.record);
+  const [fileListC, setFileListC] = useState([
+    // {
+    //   uid: 1,
+    //   // name: "",
+    // },
+  ]);
+  const [fileListE, setFileListE] = useState([
+    // {
+    //   uid: 1,
+    // },
+  ]);
+  countRef.current = setInterval(() => {
+    setTimer(new Date());
+  }, 1000);
 
-  // countRef.current = setInterval(() => {
-  //   setTimer(new Date());
-  // }, 1000);
+  const propsC = {
+    name: "file",
+    action: "//jsonplaceholder.typicode.com/posts/",
+    onChange(info) {
+      if (info.file.status === "done") {
+        message.success(`${info.file.name} file uploaded successfully`);
+      } else if (info.file.status === "error") {
+        message.error(`${info.file.name} file upload failed.`);
+      }
+    },
+  };
+  const propsE = {
+    name: "file",
+    action: "//jsonplaceholder.typicode.com/posts/",
+    onChange(info) {
+      if (info.file.status === "done") {
+        message.success(`${info.file.name} file uploaded successfully`);
+      } else if (info.file.status === "error") {
+        message.error(`${info.file.name} file upload failed.`);
+      }
+    },
+  };
+
   useEffect(() => {
     const fetch = async () => {
       if (record.status === "SUCCESSFULLY") {
@@ -304,7 +353,6 @@ export default function OceanPage() {
       const env = service?.environment.find((env) => {
         return env.name === env_name;
       });
-      console.log("🚀 ~ env ~ env:", env);
       const fecth = async () => {
         if (
           env?.postman?.collection?.content &&
@@ -323,6 +371,8 @@ export default function OceanPage() {
           });
           setPostman(res);
           setPostmanStatus(false);
+        } else {
+          setPostmanNew({ ...postmanNew, isAddPostman: true });
         }
       };
       fecth();
@@ -537,7 +587,7 @@ export default function OceanPage() {
           <Collapse items={items[current]} />
         )}
 
-        <Modal
+        {/* <Modal
           open={postmanStatus || !!postman}
           footer={false}
           onCancel={() => {
@@ -560,6 +610,144 @@ export default function OceanPage() {
               srcDoc={postman}
             ></iframe>
           )}
+        </Modal> */}
+
+        <Modal
+          open={postmanNew.isAddPostman}
+          footer={false}
+          onCancel={() => {
+            setPostmanNew({ ...postmanNew, isAddPostman: false });
+          }}
+          closeIcon={true}
+          width={postmanNew?.html ? 1500 : 800}
+        >
+          <div className="w-full mb-5">
+            <div className="h-full mb-5">
+              <h2>Do you want to test postman api ?</h2>
+            </div>
+            <div className="w-8/12 ">
+              <div className="flex gap-2 m-2">
+                <span className="col-span-1 w-[78px]">Collection</span>
+                <Upload
+                  {...propsC}
+                  // defaultFileList={[...fileListC]}
+                  fileList={[...fileListC]}
+                  className="flex gap-4"
+                  beforeUpload={(file) => {
+                    return new Promise((resolve) => {
+                      const reader = new FileReader();
+                      reader.readAsDataURL(file);
+                      reader.onload = (e) => {
+                        try {
+                          setFileListC([
+                            {
+                              ...file,
+                              name: file.name,
+                              content: e.target.result.split(",")[1],
+                            },
+                          ]);
+                        } catch (error) {
+                          console.error("Lỗi khi đọc file JSON:", error);
+                        }
+                      };
+                    });
+                  }}
+                >
+                  <Button>
+                    <Icon type="upload" /> Upload
+                  </Button>
+                </Upload>
+              </div>
+              <div className="flex gap-2 m-2">
+                <span className="col-span-1">Environment</span>
+                <Upload
+                  {...propsE}
+                  className="flex gap-4"
+                  // defaultFileList={[...fileListE]}
+                  fileList={[...fileListE]}
+                  beforeUpload={(file) => {
+                    return new Promise((resolve) => {
+                      const reader = new FileReader();
+                      reader.readAsDataURL(file);
+                      reader.onload = (e) => {
+                        try {
+                          setFileListE([
+                            {
+                              ...file,
+                              name: file.name,
+                              content: e.target.result.split(",")[1],
+                            },
+                          ]);
+                        } catch (error) {
+                          console.error("Lỗi khi đọc file JSON:", error);
+                        }
+                      };
+                    });
+                  }}
+                >
+                  <Button>
+                    <Icon type="upload" /> Upload
+                  </Button>
+                </Upload>
+              </div>
+            </div>
+            <div className="flex justify-end text-center">
+              {postmanNew.loading ? (
+                <div className="flex">
+                  <img className="w-5" src="/images/loading.gif" />
+                  <p>Running postman test...</p>
+                </div>
+              ) : (
+                <></>
+              )}
+              <div>
+                <Button
+                  onClick={async () => {
+                    setPostmanNew({ ...postmanNew, loading: true });
+                    const env = service?.environment.find((env) => {
+                      return env.name === env_name;
+                    });
+                    if (env?.branch && service?.name) {
+                      const res = await apiCaller({
+                        request: vmsApi.runPostman(
+                          fileListC[0]?.content,
+                          fileListE[0]?.content,
+                          service?.name,
+                          env_name,
+                          env?.branch
+                        ),
+                      });
+                      if (res?.code) {
+                        message.error(res.errors[0]?.message);
+                        setPostmanNew({
+                          ...postmanNew,
+                          loading: false,
+                        });
+                      } else {
+                        setPostmanNew({
+                          ...postmanNew,
+                          html: res,
+                          loading: false,
+                        });
+                      }
+                    }
+                  }}
+                >
+                  Test
+                </Button>
+              </div>
+            </div>
+            {postmanNew?.html ? (
+              <iframe
+                // src="./images/test.html"
+                loading={"eager"}
+                className="h-[800px] w-full mt-8"
+                srcDoc={postmanNew.html}
+              ></iframe>
+            ) : (
+              <></>
+            )}
+          </div>
         </Modal>
       </div>
     </>

@@ -11,7 +11,7 @@ const authApi = {
     localStorage.setItem("accessToken", response.data.accessToken);
     localStorage.setItem("refreshToken", response.data.refreshToken);
     localStorage.setItem("UserId", response.data.id);
-    store.dispatch(addAvatar(response.data.avatar));
+    store.dispatch(addAvatar(response.data?.avatar));
     store.dispatch(addFullname(response.data.fullname));
     store.dispatch(addUserId(response.data.id));
     return response;
@@ -34,7 +34,7 @@ const authApi = {
     localStorage.setItem("accessToken", response.data.accessToken);
     localStorage.setItem("refreshToken", response.data.refreshToken);
     localStorage.setItem("UserId", response.data.id);
-    store.dispatch(addAvatar(response.data.avatar));
+    store.dispatch(addAvatar(response.data?.avatar));
     store.dispatch(addFullname(response.data.fullname));
     store.dispatch(addUserId(response.data.id));
     return response;
@@ -49,7 +49,7 @@ const authApi = {
     localStorage.setItem("accessToken", response.data.accessToken);
     localStorage.setItem("refreshToken", response.data.refreshToken);
     localStorage.setItem("UserId", response.data.id);
-    store.dispatch(addAvatar(response.data.avatar));
+    store.dispatch(addAvatar(response.data?.avatar));
     store.dispatch(addFullname(response.data.fullname));
     store.dispatch(addUserId(response.data.id));
     return response;

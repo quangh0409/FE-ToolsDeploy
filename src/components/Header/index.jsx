@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MenuCustom, { getItem } from "../MenuCustom";
 import {
@@ -14,16 +14,26 @@ import {
 } from "@ant-design/icons";
 import { useSelector } from "react-redux";
 import TemplateDetailPage from "../Scan";
-import { Avatar, Button, Form, Input, Modal, Radio, message } from "antd";
+import { Button, Form, Input, Modal, Radio, message } from "antd";
 import apiCaller from "../../apis/apiCaller";
 import authApi from "../../apis/auth.api";
 import scanApi from "../../apis/scan.api";
 import Standard from "../Standard";
 import { store } from "../../redux/store";
-import { setEnvironments } from "../../redux/reducer/user";
+import {
+  setEnvironments,
+  setTourConnectVM,
+  setTourDashboard,
+  setTourHeader,
+  setTourPipeline,
+  setTourStepYourGit,
+  setTourYourGit,
+} from "../../redux/reducer/user";
 
 import "./style.css";
 import ResultTrivy from "../ResultTrivy";
+import { Tour } from "antd";
+import useEffectOnce from "../../hook/useEffectOnce";
 
 export default function Header() {
   const uri = useLocation();
@@ -31,14 +41,16 @@ export default function Header() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const fullname = useSelector((state) => state.user.fullname);
-  const avatar = useSelector((state) => state.user.avatar);
+  const avatar = useSelector((state) => state.user?.avatar);
+  const tourHeader = useSelector((state) => state.user?.tour?.header);
+  const tourPipeline = useSelector((state) => state.user?.tour?.pipeline);
+  const tourYourGit = useSelector((state) => state.user?.tour?.yourGit);
   const vm = params.get("vm");
   const path = uri.pathname;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalScanSyntaxOpen, setIsModaScanSyntaxOpen] = useState(false);
   const [isModalImagesOpen, setIsModaImagesOpen] = useState(false);
   const [form] = Form.useForm();
-  const [formv1] = Form.useForm();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [oldPassword, setOldPassword] = useState();
   const [newPassword, setNewPassword] = useState();
@@ -47,24 +59,263 @@ export default function Header() {
   const [resultScanSyntax, setResultScanSyntax] = useState();
   const [resultScan, setResultScan] = useState();
   const [errorLine, setErrorLine] = useState();
+  const [openTour, setOpenTour] = useState(false);
+
+  useEffectOnce(() => {
+    if (
+      localStorage.getItem("accessToken") &&
+      localStorage.getItem("accessToken") !== "undefined" &&
+      path === "/dashboard"
+    ) {
+      setOpenTour(true);
+    }
+  }, [localStorage.getItem("accessToken")]);
+
+  const refCaseOne1 = useRef(null);
+  const refCaseOne2 = useRef(null);
+  const refCaseOne3 = useRef(null);
+  const refCaseOne4 = useRef(null);
+  const refCaseOne5 = useRef(null);
+
+  const refCaseSecond1 = useRef(null);
+  const refCaseSecond2 = useRef(null);
+  const refCaseSecond3 = useRef(null);
+
+  const ref3 = useRef(null);
+  const stepsCaseOne = [
+    {
+      title: "Create your standard",
+      description: (
+        <>
+          <div>
+            Set standards for your VM-instance, to ensure the quality of the
+            cloud platform matches the code you want to deploy
+          </div>
+          <div>
+            <div>
+              <img src="/images/tourStandard.png" />
+            </div>
+          </div>
+        </>
+      ),
+      target: () => refCaseOne1.current,
+    },
+    {
+      title: "New connect to your VM-instance",
+      description: (
+        <>
+          <div>
+            Add a cloud platform so the software can be remote and deploy and
+            deploy the CI/CD pipeline
+          </div>
+          <div>
+            <div>
+              <img src="/images/tourNewVM.png" />
+            </div>
+          </div>
+        </>
+      ),
+
+      target: () => refCaseOne2.current,
+    },
+    {
+      title: "Scan Dockerfile",
+      description: (
+        <>
+          <div>
+            This function will check the dockerfile syntax and give error
+            descriptions if any
+          </div>
+          <div>
+            <div>
+              <img src="/images/tourScanDockerfile.png" />
+            </div>
+          </div>
+        </>
+      ),
+
+      target: () => refCaseOne3.current,
+    },
+    {
+      title: "Scan Image",
+      description: (
+        <>
+          <div>This function will check library security in images</div>
+          <div>
+            <div>
+              <img src="/images/tourScanImage.png" />
+            </div>
+          </div>
+        </>
+      ),
+
+      target: () => refCaseOne4.current,
+    },
+    {
+      title: "Your Github",
+      description: (
+        <>
+          <div>
+            This function displays a list of repositories, where you can select
+            resources to deploy and CI/CD pipeline
+          </div>
+          <p>
+            Please configure in the direction below so that the software can
+            receive and write code changes from your Github:
+          </p>
+          <p>
+            Step 1: Access Github, Choose repository which you want to deploy
+            and CI/CD pipeline, below choose setting/webhook
+          </p>
+          <p>Step 2: Configure as shown below on the right</p>
+          <p>Note:(End point) https://smee.io/NEsyf7sKQOTJ8tOk/</p>
+          <div className="grid grid-cols-3">
+            <div className="col-span-1">
+              <img className="w-full" src="/images/tourGit.png" />
+            </div>
+            <div className="col-span-2">
+              <img src="/images/exConfigWebhook.png" alt="#" />
+            </div>
+          </div>
+        </>
+      ),
+
+      target: () => refCaseOne5.current,
+    },
+  ];
+
+  const stepsCaseSecond = [
+    {
+      title: "Create your standard",
+      description: (
+        <>
+          <div>
+            Set standards for your VM-instance, to ensure the quality of the
+            cloud platform matches the code you want to deploy
+          </div>
+          <div>
+            <div>
+              <img src="/images/tourStandard.png" />
+            </div>
+          </div>
+        </>
+      ),
+      target: () => refCaseSecond1.current,
+    },
+    {
+      title: "New connect to your VM-instance",
+      description: (
+        <>
+          <div>
+            Add a cloud platform so the software can be remote and deploy and
+            deploy the CI/CD pipeline
+          </div>
+          <div>
+            <div>
+              <img src="/images/tourNewVM.png" />
+            </div>
+          </div>
+        </>
+      ),
+
+      target: () => refCaseSecond2.current,
+    },
+  ];
+
+  const stepsCaseSecondStep3 = [
+    {
+      title: "Your Github",
+      description: (
+        <>
+          <div>
+            This function displays a list of repositories, where you can select
+            resources to deploy and CI/CD pipeline
+          </div>
+          <p>
+            Please configure in the direction below so that the software can
+            receive and write code changes from your Github:
+          </p>
+          <p>
+            Step 1: Access Github, Choose repository which you want to deploy
+            and CI/CD pipeline, below choose setting/webhook
+          </p>
+          <p>Step 2: Configure as shown below on the right</p>
+          <p>Note:(End point) https://smee.io/NEsyf7sKQOTJ8tOk/</p>
+          <div className="grid grid-cols-3">
+            <div className="col-span-1">
+              <img className="w-full" src="/images/tourGit.png" />
+            </div>
+            <div className="col-span-2">
+              <img src="/images/exConfigWebhook.png" alt="#" />
+            </div>
+          </div>
+        </>
+      ),
+      target: () => refCaseSecond3.current,
+    },
+  ];
+
+  const stepsOne = [
+    {
+      title: "Welcome to ToolsDeploy",
+      description: (
+        <>
+          <div>
+            This is a tool to help you deploy and integrate CI/CD for your
+            resource
+          </div>
+          <div>Do you want to continue with the instructions for use?</div>
+          <div className="flex justify-between">
+            <Button
+              onClick={() => {
+                setOpenTour(false);
+                store.dispatch(setTourHeader(true));
+              }}
+            >
+              Each function one by one
+            </Button>
+            <Button
+              onClick={() => {
+                setOpenTour(false);
+                store.dispatch(setTourPipeline(true));
+              }}
+            >
+              Deploy & pipeline CI/CD
+            </Button>
+          </div>
+        </>
+      ),
+      // prevButtonProps: { children: <Button>ok</Button> },
+      // cover: <Button>ok</Button>,
+      target: () => ref3.current,
+    },
+  ];
+
   const handle1 = (e) => {
     if (e.key === "logout") {
       localStorage.clear();
+
       navigate("/");
     }
     if (e.key === "setting") {
       setIsModalOpen(true);
     }
     if (e.key === "git") {
+      store.dispatch(setTourHeader(false));
+      store.dispatch(setTourYourGit(false));
+      store.dispatch(setTourStepYourGit(true));
       vm ? navigate(`/connectGithub?vm=${vm}`) : navigate(`/connectGithub`);
     }
     if (e.key === "standard") {
+      store.dispatch(setTourHeader(false));
       setIsOpen(true);
     }
     if (e.key === "dockerfile") {
+      store.dispatch(setTourHeader(false));
       setIsModaScanSyntaxOpen(true);
     }
     if (e.key === "image") {
+      store.dispatch(setTourHeader(false));
       setIsModaImagesOpen(true);
     }
   };
@@ -72,6 +323,8 @@ export default function Header() {
   const handle2 = (e) => {
     if (path === "/dashboard") {
       navigate("/dashboard/VM-connect");
+      store.dispatch(setTourPipeline(false));
+      store.dispatch(setTourConnectVM(true));
     } else {
       navigate(`/connectGithub?vm=${vm}`);
       store.dispatch(
@@ -113,6 +366,7 @@ export default function Header() {
         <img className="col-span-2" src="/images/logo-bg-w.png" alt="logo" />
         <div className="col-span-2 grid grid-cols-6">
           <div
+            ref={ref3}
             className="col-span-4 text-2xl ml-3 text-center border-black border-solid border-r"
             onClick={() => {
               navigate("/dashboard");
@@ -126,48 +380,15 @@ export default function Header() {
     );
   };
 
-  const nodeRight = () => {
-    if (uri.pathname === "/") {
-      return (
-        <>
-          <div className="col-span-4"></div>
-          <div
-            onClick={() => {
-              navigate("/dashboard");
-            }}
-          >
-            Dashboard
-          </div>
-        </>
-      );
-    }
-    return (
-      <>
-        <div className="col-span-2 border-black border-solid border rounded-lg ">
-          <MenuCustom
-            items={NewItems}
-            width={90}
-            className={"rounded-lg"}
-            onClick={handle2}
-          />
-        </div>
-        <div className="col-span-4 flex  justify-center items-center">
-          <MenuCustom
-            items={items}
-            width={"w-48"}
-            className={"avatar_cs"}
-            onClick={handle1}
-          />
-        </div>
-      </>
-    );
-  };
-
   const items = [
     getItem(
       `${fullname}`,
       "sub4",
-      <img className="w-8 rounded-full" src={avatar} />,
+      avatar ? (
+        <img className="w-8 rounded-full" src={avatar} />
+      ) : (
+        <UserOutlined />
+      ),
       [
         getItem(`${fullname}`, "9", <UserOutlined />),
         getItem("Change Password", "setting", <SettingOutlined />),
@@ -195,15 +416,125 @@ export default function Header() {
 
   return (
     <>
+      {/* <Divider /> */}
       <div className="flex h-20 justify-between">
         <div className="grid grid-cols-4 w-96 items-center justify-center ml-3">
           {nodeLeft()}
         </div>
 
         <div className=" grid grid-cols-6 w-72 mr-3 text-center items-center justify-center">
-          {nodeRight()}
+          {uri.pathname === "/" ? (
+            <>
+              <div className="col-span-4"></div>
+              <div
+                onClick={() => {
+                  navigate("/dashboard");
+                }}
+              >
+                Dashboard
+              </div>
+            </>
+          ) : (
+            <>
+              <div
+                className="col-span-2 border-black border-solid border rounded-lg "
+                ref={refCaseOne2}
+              >
+                <div ref={refCaseSecond2}>
+                  <MenuCustom
+                    items={NewItems}
+                    width={90}
+                    className={"rounded-lg"}
+                    onClick={handle2}
+                  />
+                </div>
+              </div>
+
+              <div
+                className="col-span-4 flex  justify-center items-center"
+                ref={refCaseOne1}
+              >
+                <div ref={refCaseOne3}>
+                  <div ref={refCaseOne4}>
+                    <div ref={refCaseOne5}>
+                      <div ref={refCaseSecond1}>
+                        <div ref={refCaseSecond3}>
+                          <MenuCustom
+                            items={items}
+                            width={"w-48"}
+                            className={"avatar_cs"}
+                            onClick={handle1}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
+      <Tour
+        open={tourHeader}
+        mask={false}
+        type="primary"
+        onClose={() => {
+          store.dispatch(setTourHeader(false));
+        }}
+        onFinish={() => {
+          store.dispatch(setTourHeader(false));
+        }}
+        steps={stepsCaseOne}
+        indicatorsRender={(current, total) => (
+          <span>
+            {current + 1} / {total}
+          </span>
+        )}
+      />
+      <Tour
+        open={tourPipeline}
+        mask={false}
+        type="primary"
+        onClose={() => {
+          store.dispatch(setTourPipeline(false));
+        }}
+        onFinish={() => {
+          store.dispatch(setTourPipeline(false));
+          // store.dispatch(setTourDashboard(true));
+        }}
+        steps={stepsCaseSecond}
+        indicatorsRender={(current, total) => (
+          <span>
+            {current + 1} / {total}
+          </span>
+        )}
+      />
+      <Tour
+        open={tourYourGit}
+        mask={false}
+        type="primary"
+        onClose={() => {
+          store.dispatch(setTourYourGit(false));
+        }}
+        onFinish={() => {
+          store.dispatch(setTourYourGit(false));
+        }}
+        steps={stepsCaseSecondStep3}
+        indicatorsRender={(current, total) => (
+          <span>
+            {current + 1} / {total}
+          </span>
+        )}
+      />
+      <Tour
+        open={openTour}
+        mask={false}
+        type="primary"
+        onClose={() => setOpenTour(false)}
+        onFinish={() => {}}
+        steps={stepsOne}
+      />
       <Modal
         open={isModalOpen}
         footer={false}
@@ -288,6 +619,7 @@ export default function Header() {
         onCancel={() => setIsOpen(false)}
         closeIcon={true}
         width={1500}
+        zIndex={10000}
       >
         <Standard />
       </Modal>

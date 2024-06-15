@@ -4,12 +4,15 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { Button, Input, message } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import useEffectOnce from "../../hook/useEffectOnce";
 import githubApi from "../../apis/github.api";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import apiCaller from "../../apis/apiCaller";
+import { Tour } from "antd";
+import { setTourStepYourGit, setTourWebapp } from "../../redux/reducer/user";
+import { store } from "../../redux/store";
 
 export default function ConnectGit() {
   const [repos, setRepos] = useState([]);
@@ -21,6 +24,19 @@ export default function ConnectGit() {
   const params = new URLSearchParams(location.search);
   const vm = params.get("vm");
   const git_user = useSelector((state) => state.user.ticket.github?.git_user);
+  const tourStepYourGit = useSelector((state) => state.user?.tour?.stepYourGit);
+
+  const refCaseSecond1 = useRef(null);
+
+  const stepsCaseSecond = [
+    {
+      title: "Choose repository",
+      description: "Click button Connect",
+      target: () => refCaseSecond1.current,
+      placement: "bottomRight",
+    },
+  ];
+
   useEffect(() => {
     const fecth = async () => {
       try {
@@ -54,6 +70,23 @@ export default function ConnectGit() {
   };
   return (
     <>
+      <Tour
+        open={tourStepYourGit && repos}
+        mask={false}
+        type="primary"
+        onClose={() => {
+          store.dispatch(setTourStepYourGit(false));
+        }}
+        onFinish={() => {
+          store.dispatch(setTourStepYourGit(false));
+        }}
+        steps={stepsCaseSecond}
+        indicatorsRender={(current, total) => (
+          <span>
+            {current + 1} / {total}
+          </span>
+        )}
+      />
       {!!git_user && (
         <div className="grid grid-cols-3 w-svw h-screen">
           <div className="col-span-2 ml-20 h-full">
@@ -64,7 +97,10 @@ export default function ConnectGit() {
                 URL.
               </h2>
             </div>
-            <div className="p-2 border border-solid border-gray-400 rounded-lg h-fit mt-14 ">
+            <div
+              className="p-2 border border-solid border-gray-400 rounded-lg h-fit mt-14 "
+              
+            >
               <div>
                 <div>
                   <h2 className="text-2xl mb-3">Connect a repository</h2>
@@ -90,7 +126,7 @@ export default function ConnectGit() {
                   }
                 />
               </div>
-              <div className="border-solid mt-2 border-gray-400 rounded-lg max-h-96 scroll-mx-2 overflow-auto">
+              <div className="border-solid mt-2 border-gray-400 rounded-lg max-h-96 scroll-mx-2 overflow-auto" ref={refCaseSecond1}>
                 {repos.map((repo, idx) => {
                   return (
                     <div
@@ -108,8 +144,11 @@ export default function ConnectGit() {
                         </div>
                       </div>
                       <Button
+                        ref={refCaseSecond1}
                         className=" pointer-events-auto text-blue-500"
                         onClick={() => {
+                          store.dispatch(setTourStepYourGit(false));
+                          store.dispatch(setTourWebapp(true));
                           navigate(
                             `/new-webapp?repo=${repo.name}&user=${repo.owner.login}&clone_url=${repo.clone_url}&vm=${vm}`
                           );
@@ -149,7 +188,10 @@ export default function ConnectGit() {
       )}
       {!git_user && (
         <>
-          <div id="title" className="flex items-center justify-center flex-col m-6 gap-4">
+          <div
+            id="title"
+            className="flex items-center justify-center flex-col m-6 gap-4"
+          >
             <div>
               You haven't connected your GitHub yet. Please add your GitHub to
               the system!

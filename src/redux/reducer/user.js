@@ -1,6 +1,15 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
+  tour: {
+    webApp: false,
+    yourGit: false,
+    stepYourGit: false,
+    connectVM: false,
+    pipeline: false,
+    header: false,
+    dashboard: false,
+  },
   access_token_git: "",
   fullname: "",
   user_git: "",
@@ -84,6 +93,27 @@ export const user = createSlice({
     setEnvironments: (state, action) => {
       state.environments = action.payload;
     },
+    setTourHeader: (state, action) => {
+      state.tour.header = action.payload;
+    },
+    setTourDashboard: (state, action) => {
+      state.tour.dashboard = action.payload;
+    },
+    setTourPipeline: (state, action) => {
+      state.tour.pipeline = action.payload;
+    },
+    setTourConnectVM: (state, action) => {
+      state.tour.connectVM = action.payload;
+    },
+    setTourWebapp: (state, action) => {
+      state.tour.webApp = action.payload;
+    },
+    setTourYourGit: (state, action) => {
+      state.tour.yourGit = action.payload;
+    },
+    setTourStepYourGit: (state, action) => {
+      state.tour.stepYourGit = action.payload;
+    },
   },
 });
 
@@ -97,6 +127,13 @@ export const {
   addVm,
   addUserId,
   setEnvironments,
+  setTourHeader,
+  setTourDashboard,
+  setTourPipeline,
+  setTourConnectVM,
+  setTourWebapp,
+  setTourYourGit,
+  setTourStepYourGit
 } = user.actions;
 
 export default user.reducer;

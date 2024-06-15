@@ -9,7 +9,7 @@ import {
   Space,
   Upload,
 } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { CloseOutlined, PlusOutlined } from "@ant-design/icons";
 import useEffectOnce from "../../hook/useEffectOnce";
@@ -18,11 +18,16 @@ import TemplateDetailPage from "../../components/Scan";
 import { useDispatch, useSelector } from "react-redux";
 import vmsApi from "../../apis/vms.api";
 import { store } from "../../redux/store";
-import { addService, setEnvironments } from "../../redux/reducer/user";
+import {
+  addService,
+  setEnvironments,
+  setTourWebapp,
+} from "../../redux/reducer/user";
 import scanApi from "../../apis/scan.api";
 import apiCaller from "../../apis/apiCaller";
 import { message } from "antd";
 import Icon from "@ant-design/icons/lib/components/Icon";
+import { Tour } from "antd";
 export default function Newwebapp() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -32,6 +37,86 @@ export default function Newwebapp() {
   const source = params.get("clone_url");
   const vm = params.get("vm");
   const service_id = params.get("service");
+
+  const tourWebapp = useSelector((state) => state.user?.tour?.webApp);
+
+  const refCaseSecond1 = useRef(null);
+  const refCaseSecond2 = useRef(null);
+  const refCaseSecond3 = useRef(null);
+  const refCaseSecond4 = useRef(null);
+  const refCaseSecond5 = useRef(null);
+  const refCaseSecond6 = useRef(null);
+  const refCaseSecond7 = useRef(null);
+  const refCaseSecond8 = useRef(null);
+  const refCaseSecond9 = useRef(null);
+  const refCaseSecond10 = useRef(null);
+  const refCaseSecond11 = useRef(null);
+  const refCaseSecond12 = useRef(null);
+
+  const stepsCaseSecond = [
+    {
+      title: "Name WeppApp",
+      description: "Enter name webapp",
+      target: () => refCaseSecond1.current,
+    },
+    {
+      title: "Architecture",
+      description: "Choose architecture",
+      target: () => refCaseSecond2.current,
+    },
+    {
+      title: "Language",
+      description: "Choose language",
+      target: () => refCaseSecond3.current,
+    },
+    {
+      title: "Environment name",
+      description: "Enter emv name",
+      target: () => refCaseSecond4.current,
+    },
+    {
+      title: "VM-instance",
+      description: "Choose VM-instance for deploy",
+      target: () => refCaseSecond5.current,
+    },
+    {
+      title: "Branch",
+      description: "Choose branch",
+      target: () => refCaseSecond6.current,
+    },
+    {
+      title: "Dockerfile",
+      description: "Choose Dockerfile",
+      target: () => refCaseSecond7.current,
+    },
+    {
+      title: "docker-compose",
+      description: "Choose docker-compose.yaml",
+      target: () => refCaseSecond8.current,
+    },
+    {
+      title: "Postman",
+      description: "Upload file test api after deploy",
+      target: () => refCaseSecond9.current,
+    },
+    {
+      title: "Add environment",
+      description: "This function allows you to add a deployment environment",
+      target: () => refCaseSecond10.current,
+    },
+    {
+      title: "Save",
+      description:
+        "This function only saves the information you filled in above, but does not execute the pipeline",
+      target: () => refCaseSecond11.current,
+    },
+    {
+      title: "Build",
+      description:
+        "This function simultaneously saves the above information and runs the CI/CD pipeline",
+      target: () => refCaseSecond12.current,
+    },
+  ];
 
   const [branches, setBranches] = useState([{}]);
   const [languages, setLanguages] = useState([{}]);
@@ -51,19 +136,6 @@ export default function Newwebapp() {
   const service_t = useSelector((state) => state.user.service);
   const [fields, setFields] = useState();
   const [form] = Form.useForm();
-  // const [environments, setEnvironments] = useState([
-  //   {
-  //     name: "",
-  //     vm: "",
-  //     branch: "",
-  //     docker_file: [],
-  //     docker_compose: [],
-  //     postman: {
-  //       collection: {},
-  //       environment: {},
-  //     },
-  //   },
-  // ]);
 
   const environments = useSelector((state) => state.user.environments);
   console.log("🚀 ~ Newwebapp ~ environments:", environments);
@@ -269,6 +341,23 @@ export default function Newwebapp() {
   };
   return (
     <>
+      <Tour
+        open={tourWebapp}
+        mask={false}
+        type="primary"
+        onClose={() => {
+          store.dispatch(setTourWebapp(false));
+        }}
+        onFinish={() => {
+          store.dispatch(setTourWebapp(false));
+        }}
+        steps={stepsCaseSecond}
+        indicatorsRender={(current, total) => (
+          <span>
+            {current + 1} / {total}
+          </span>
+        )}
+      />
       <div>
         <div className="ml-20 max-h-max">
           <h2 className="text-3xl mt-5">
@@ -315,7 +404,6 @@ export default function Newwebapp() {
                     navigate(`/vm-instance?vm=${environments[0].vm.id}`);
                   }
                 };
-                console.log("🚀 ~ service_id:", service_id);
                 service_id ? fetchU() : fetchC();
 
                 console.log({
@@ -329,7 +417,7 @@ export default function Newwebapp() {
             >
               <div className="flex flex-row w-full h-12  justify-between mb-5">
                 <div className="h-full">
-                  <h2>Name</h2>
+                  <h2 ref={refCaseSecond1}>Name</h2>
                 </div>
                 <div className="w-8/12 h-full">
                   <Form.Item
@@ -353,7 +441,7 @@ export default function Newwebapp() {
               </div>
               <div className="flex flex-row w-full h-12  justify-between mb-5">
                 <div className="h-full">
-                  <h2>Architectura</h2>
+                  <h2 ref={refCaseSecond2}>Architecture</h2>
                 </div>
                 <div className="w-8/12 h-full">
                   <Form.Item
@@ -378,7 +466,7 @@ export default function Newwebapp() {
               </div>
               <div className="flex flex-row w-full h-12  justify-between mb-5">
                 <div className="h-full">
-                  <h2>Language</h2>
+                  <h2 ref={refCaseSecond3}>Language</h2>
                 </div>
                 <div className="w-8/12 h-full ">
                   <Form.Item
@@ -425,7 +513,7 @@ export default function Newwebapp() {
                             {/* -------------------------------- */}
                             <div className="flex flex-row w-full h-12  justify-between mb-5">
                               <div className="h-full">
-                                <h2>Name</h2>
+                                <h2 ref={refCaseSecond4}>Name</h2>
                               </div>
                               <div className="w-8/12 h-full ">
                                 <Form.Item
@@ -464,7 +552,7 @@ export default function Newwebapp() {
                             {/* -------------------------------- */}
                             <div className="flex flex-row w-full h-12  justify-between mb-5">
                               <div className="h-full">
-                                <h2>VM instance</h2>
+                                <h2 ref={refCaseSecond5}>VM instance</h2>
                               </div>
                               <div className="w-8/12 h-full ">
                                 <Form.Item
@@ -483,10 +571,6 @@ export default function Newwebapp() {
                                     onChange={(v, op) => {
                                       setVms(
                                         vms.filter((vm) => vm?.id !== op.lable)
-                                      );
-                                      console.log(
-                                        "🚀 ~ {fields.map ~ op.lable:",
-                                        op.lable
                                       );
                                       store.dispatch(
                                         setEnvironments([
@@ -511,7 +595,7 @@ export default function Newwebapp() {
                             {/* -------------------------------- */}
                             <div className="flex flex-row w-full h-12  justify-between mb-5">
                               <div className="h-full">
-                                <h2>Branch</h2>
+                                <h2 ref={refCaseSecond6}>Branch</h2>
                               </div>
                               <div className="w-8/12 h-full ">
                                 <Form.Item
@@ -565,7 +649,7 @@ export default function Newwebapp() {
                             {/* -------------------------------- */}
                             <div className="flex flex-row w-full h-12  justify-between mb-5">
                               <div className="h-full">
-                                <h2>Dockerfile</h2>
+                                <h2 ref={refCaseSecond7}>Dockerfile</h2>
                               </div>
                               <div className="w-8/12 h-full ">
                                 <Form.Item
@@ -592,7 +676,7 @@ export default function Newwebapp() {
                                                 ...env,
                                                 docker_file: ops.map((op) => {
                                                   return {
-                                                    location: op.desc,
+                                                    path: op.desc,
                                                     name: op.label,
                                                     content: op.value,
                                                   };
@@ -611,7 +695,7 @@ export default function Newwebapp() {
                                       return {
                                         label: d.name,
                                         value: d.content,
-                                        desc: d?.path ? d?.path : d?.location,
+                                        desc: d?.path ? d?.path : d?.path,
                                       };
                                     })}
                                     optionRender={(option, info) => (
@@ -632,6 +716,7 @@ export default function Newwebapp() {
                                               setContentfile({
                                                 name: option.data.desc,
                                                 content: option.data.value,
+                                                type: "DOCKERFILE",
                                               });
                                               e.stopPropagation();
                                             }}
@@ -711,34 +796,221 @@ export default function Newwebapp() {
                                           ) {
                                             alert("Please enter name file");
                                           } else {
-                                            const check = dockerConfig[
-                                              index
-                                            ].docker_file?.findIndex(
-                                              (f, idx) => {
-                                                console.log(f.path);
-                                                if (
-                                                  contentfile.name === f.path
-                                                ) {
-                                                  dockerConfig[
-                                                    index
-                                                  ].docker_file[idx].content =
-                                                    contentfile.content;
-                                                  return true;
-                                                }
-                                              }
-                                            );
-
-                                            if (check !== 0) {
-                                              const t =
-                                                contentfile.name.split("/");
-                                              dockerConfig[
+                                            if (
+                                              contentfile?.type === "DOCKERFILE"
+                                            ) {
+                                              const check = dockerConfig[
                                                 index
-                                              ].docker_file.push({
-                                                name: t[t.length - 1],
-                                                path: contentfile.name,
-                                                content: contentfile.content,
-                                              });
+                                              ].docker_file?.findIndex(
+                                                (f, idx) => {
+                                                  if (
+                                                    contentfile.name === f.path
+                                                  ) {
+                                                    setDockerConfig(
+                                                      dockerConfig.map(
+                                                        (dc, idx) => {
+                                                          if (idx === index) {
+                                                            const t =
+                                                              contentfile.name.split(
+                                                                "/"
+                                                              );
+                                                            return {
+                                                              docker_compose:
+                                                                dc.docker_compose,
+                                                              docker_file:
+                                                                dc.docker_file.map(
+                                                                  (f, i) => {
+                                                                    if (
+                                                                      f.path ===
+                                                                      contentfile.name
+                                                                    ) {
+                                                                      return {
+                                                                        name: t[
+                                                                          t.length -
+                                                                            1
+                                                                        ],
+                                                                        path: contentfile.name,
+                                                                        content:
+                                                                          contentfile.content,
+                                                                      };
+                                                                    }
+                                                                    return f;
+                                                                  }
+                                                                ),
+                                                            };
+                                                          }
+                                                        }
+                                                      )
+                                                    );
+                                                    return true;
+                                                  }
+                                                }
+                                              );
+
+                                              if (check !== 0) {
+                                                const t =
+                                                  contentfile.name.split("/");
+                                                setDockerConfig(
+                                                  dockerConfig.map(
+                                                    (dc, idx) => {
+                                                      if (idx === index) {
+                                                        return {
+                                                          docker_compose:
+                                                            dc.docker_compose,
+                                                          docker_file: [
+                                                            ...dc.docker_file,
+                                                            {
+                                                              name: t[
+                                                                t.length - 1
+                                                              ],
+                                                              path: contentfile.name,
+                                                              content:
+                                                                contentfile.content,
+                                                            },
+                                                          ],
+                                                        };
+                                                      }
+                                                    }
+                                                  )
+                                                );
+                                                // dockerConfig[
+                                                //   index
+                                                // ].docker_file.push({
+                                                //   name: t[t.length - 1],
+                                                //   location: contentfile.name,
+                                                //   content: contentfile.content,
+                                                // });
+                                              }
+
+                                              store.dispatch(
+                                                setEnvironments([
+                                                  ...environments.map(
+                                                    (env, idx) => {
+                                                      const dockerfile_t =
+                                                        env?.docker_file?.map(
+                                                          (file) => {
+                                                            if (
+                                                              file?.path ===
+                                                              contentfile.name
+                                                            ) {
+                                                              return {
+                                                                ...file,
+                                                                content:
+                                                                  contentfile.content,
+                                                              };
+                                                            }
+                                                            return file;
+                                                          }
+                                                        );
+                                                      if (idx === index) {
+                                                        return {
+                                                          ...env,
+                                                          docker_file:
+                                                            dockerfile_t,
+                                                        };
+                                                      } else {
+                                                        return env;
+                                                      }
+                                                    }
+                                                  ),
+                                                ])
+                                              );
+                                            } else {
+                                              const check = dockerConfig[
+                                                index
+                                              ].docker_compose?.findIndex(
+                                                (f, idx) => {
+                                                  if (
+                                                    contentfile.name === f.path
+                                                  ) {
+                                                    setDockerConfig(
+                                                      dockerConfig.map(
+                                                        (dc, idx) => {
+                                                          if (idx === index) {
+                                                            const t =
+                                                              contentfile.name.split(
+                                                                "/"
+                                                              );
+                                                            return {
+                                                              docker_file:
+                                                                dc.docker_file,
+                                                              docker_compose:
+                                                                dc.docker_compose.map(
+                                                                  (f, i) => {
+                                                                    if (
+                                                                      f.path ===
+                                                                      contentfile.name
+                                                                    ) {
+                                                                      return {
+                                                                        name: t[
+                                                                          t.length -
+                                                                            1
+                                                                        ],
+                                                                        path: contentfile.name,
+                                                                        content:
+                                                                          contentfile.content,
+                                                                      };
+                                                                    }
+                                                                    return f;
+                                                                  }
+                                                                ),
+                                                            };
+                                                          }
+                                                        }
+                                                      )
+                                                    );
+                                                    return true;
+                                                  }
+                                                }
+                                              );
+
+                                              if (check !== 0) {
+                                                const t =
+                                                  contentfile.name.split("/");
+                                                dockerConfig[
+                                                  index
+                                                ].docker_compose?.push({
+                                                  name: t[t.length - 1],
+                                                  path: contentfile.name,
+                                                  content: contentfile.content,
+                                                });
+                                              }
+
+                                              store.dispatch(
+                                                setEnvironments([
+                                                  ...environments.map(
+                                                    (env, idx) => {
+                                                      const dockerfile_t =
+                                                        env?.docker_compose?.map(
+                                                          (file) => {
+                                                            if (
+                                                              file?.path ===
+                                                              contentfile.name
+                                                            ) {
+                                                              return {
+                                                                ...file,
+                                                                content:
+                                                                  contentfile.content,
+                                                              };
+                                                            }
+                                                            return file;
+                                                          }
+                                                        );
+                                                      if (idx === index) {
+                                                        return {
+                                                          ...env,
+                                                          docker_compose:
+                                                            dockerfile_t,
+                                                        };
+                                                      } else {
+                                                        return env;
+                                                      }
+                                                    }
+                                                  ),
+                                                ])
+                                              );
                                             }
+
                                             setIsModalOpen(false);
                                           }
                                         }}
@@ -765,7 +1037,7 @@ export default function Newwebapp() {
                             {/* -------------------------------- */}
                             <div className="flex flex-row w-full h-12  justify-between mb-5">
                               <div className="h-full">
-                                <h2>Docker-compose</h2>
+                                <h2 ref={refCaseSecond8}>Docker-compose</h2>
                               </div>
                               <div className="w-8/12 h-full ">
                                 <Form.Item
@@ -794,7 +1066,7 @@ export default function Newwebapp() {
                                                 docker_compose: ops.map(
                                                   (op) => {
                                                     return {
-                                                      location: op.desc,
+                                                      path: op.desc,
                                                       name: op.label,
                                                       content: op.value,
                                                     };
@@ -814,7 +1086,7 @@ export default function Newwebapp() {
                                       return {
                                         label: d.name,
                                         value: d.content,
-                                        desc: d?.path ? d?.path : d?.location,
+                                        desc: d?.path ? d?.path : d?.path,
                                       };
                                     })}
                                     optionRender={(option) => (
@@ -835,6 +1107,7 @@ export default function Newwebapp() {
                                               setContentfile({
                                                 name: option.data.desc,
                                                 content: option.data.value,
+                                                type: "DOCKERCOMPOSE",
                                               });
                                               e.stopPropagation();
                                             }}
@@ -858,6 +1131,11 @@ export default function Newwebapp() {
                                             className="w-full"
                                             onClick={(e) => {
                                               setIsModalOpen(true);
+                                              setContentfile({
+                                                name: "",
+                                                content: "",
+                                                type: "DOCKERCOMPOSE",
+                                              });
                                               e.stopPropagation();
                                             }}
                                           >
@@ -873,7 +1151,7 @@ export default function Newwebapp() {
                             {/* -------------------------------- */}
                             <div className="flex flex-row w-full h-20  justify-between mb-5">
                               <div className="h-full">
-                                <h2>Postman</h2>
+                                <h2 ref={refCaseSecond9}>Postman</h2>
                               </div>
                               <div className="w-8/12 ">
                                 <div className="flex gap-2 m-2">
@@ -1082,7 +1360,7 @@ export default function Newwebapp() {
                         );
                       })}
                       {/* -------------------------------- */}
-                      <div className="flex items-center">
+                      <div className="flex items-center" ref={refCaseSecond10}>
                         <Button
                           type="dashed"
                           onClick={() => handleAddEnvironment(add)}
@@ -1098,8 +1376,9 @@ export default function Newwebapp() {
             </Form>
           </div>
           {/* -------------------------------- */}
-          <div className="mt-20 flex gap-3">
+          <div className="mt-20 flex gap-3" >
             <Button
+            ref={refCaseSecond11}
               htmlType="submit"
               className="text-green-400 pointer-events-auto border border-solid border-green-400  "
               disabled={false}
@@ -1111,21 +1390,56 @@ export default function Newwebapp() {
             </Button>
             <Button
               className="text-gray-400 pointer-events-auto border border-solid border-gray-400  "
+              ref={refCaseSecond12}
               onClick={async () => {
                 localStorage.setItem("build", true);
-                let res = await apiCaller({
-                  request: vmsApi.createService({
-                    ...service,
-                    environments: environments,
-                  }),
-                });
-                setServiceId(res.id);
-                if (environments.length === 1) {
-                  navigate(
-                    `/ocean?service=${res.id}&env=${environments[0].name}`
-                  );
+                const fetchC = async () => {
+                  let res = await apiCaller({
+                    request: vmsApi.createService({
+                      ...service,
+                      environments: environments,
+                    }),
+                  });
+                  setServiceId(res.id);
+                  if (environments.length === 1) {
+                    navigate(
+                      `/ocean?service=${res.id}&env=${environments[0].name}`
+                    );
+                  } else {
+                    setIsModalOpenEnv(true);
+                  }
+                };
+
+                const fetchU = async (service_id) => {
+                  let res = await apiCaller({
+                    request: vmsApi.updateService(
+                      {
+                        ...service,
+                        environments: environments.map((env) => {
+                          return {
+                            ...env,
+                            vm: env.vm.id,
+                          };
+                        }),
+                        environment: undefined,
+                      },
+                      service_id
+                    ),
+                  });
+                  setServiceId(res.id);
+                  if (environments.length === 1) {
+                    navigate(
+                      `/ocean?service=${res.id}&env=${environments[0].name}`
+                    );
+                  } else {
+                    setIsModalOpenEnv(true);
+                  }
+                };
+
+                if (service_id) {
+                  fetchU(service_id);
                 } else {
-                  setIsModalOpenEnv(true);
+                  fetchC();
                 }
               }}
             >

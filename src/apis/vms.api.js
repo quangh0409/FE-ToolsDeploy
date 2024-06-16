@@ -2,7 +2,7 @@ import axios from "axios";
 import axiosServer from "./axios";
 
 const vmsApi = {
-  createVMS: (hostVM, portVM,userVM, passVM, standardVM) => async () => {
+  createVMS: (hostVM, portVM, userVM, passVM, standardVM) => async () => {
     const response = await axiosServer.post(`vms/`, {
       host: hostVM,
       user: userVM,
@@ -25,6 +25,12 @@ const vmsApi = {
       {
         ids: vms_ids,
       }
+    );
+    return response;
+  },
+  findTemplate: (language, architecture, type) => async () => {
+    const response = await axiosServer.get(
+      `vms/templates?language=${language}&architecture=${architecture}&type=${type}`
     );
     return response;
   },
@@ -152,19 +158,20 @@ const vmsApi = {
     });
     return response;
   },
-  compareStandardBeforeCreate: (standard, host, port, user, pass) => async () => {
-    const response = await axiosServer.post(
-      `vms/standards/compare-before-create-vms`,
-      {
-        standard: standard,
-        host: host,
-        port: port,
-        user: user,
-        pass: pass,
-      }
-    );
-    return response;
-  },
+  compareStandardBeforeCreate:
+    (standard, host, port, user, pass) => async () => {
+      const response = await axiosServer.post(
+        `vms/standards/compare-before-create-vms`,
+        {
+          standard: standard,
+          host: host,
+          port: port,
+          user: user,
+          pass: pass,
+        }
+      );
+      return response;
+    },
   actionsContainerByByVmsIdAndContainerId:
     (vms, contaniner, action) => async () => {
       const response = await axiosServer.get(

@@ -61,7 +61,7 @@ export default function Header() {
   const [errorLine, setErrorLine] = useState();
   const [openTour, setOpenTour] = useState(false);
 
-  useEffectOnce(() => {
+  useEffect(() => {
     if (
       localStorage.getItem("accessToken") &&
       localStorage.getItem("accessToken") !== "undefined" &&
@@ -69,7 +69,7 @@ export default function Header() {
     ) {
       setOpenTour(true);
     }
-  }, [localStorage.getItem("accessToken")]);
+  }, [path]);
 
   const refCaseOne1 = useRef(null);
   const refCaseOne2 = useRef(null);

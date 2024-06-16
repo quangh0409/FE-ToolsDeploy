@@ -632,10 +632,76 @@ export default function Newwebapp() {
                                               v
                                             ),
                                         });
-                                        dockerConfig[index] = {
-                                          docker_file: docker.dockerfile,
-                                          docker_compose: docker.docker_compose,
-                                        };
+                                        const tempalteDockerfile =
+                                          await apiCaller({
+                                            request: vmsApi.findTemplate(
+                                              service_t?.language,
+                                              service_t?.architectura,
+                                              "Dockerfile"
+                                            ),
+                                          });
+                                        const tempalteDockeCompose =
+                                          await apiCaller({
+                                            request: vmsApi.findTemplate(
+                                              service_t?.language,
+                                              service_t?.architectura,
+                                              "docker-compose"
+                                            ),
+                                          });
+
+                                        if (tempalteDockerfile?.code) {
+                                          dockerConfig[index] = {
+                                            docker_file: docker.dockerfile,
+                                            docker_compose:
+                                              dockerConfig[index]
+                                                .docker_compose,
+                                          };
+                                        } else {
+                                          dockerConfig[index] = {
+                                            docker_file: [
+                                              ...docker.dockerfile,
+                                              ...tempalteDockerfile.map(
+                                                (file) => {
+                                                  return {
+                                                    path: file.name,
+                                                    name: "Template",
+                                                    content: file.content,
+                                                  };
+                                                }
+                                              ),
+                                            ],
+                                            docker_compose:
+                                              dockerConfig[index]
+                                                .docker_compose,
+                                          };
+                                        }
+
+                                        if (tempalteDockeCompose?.code) {
+                                          dockerConfig[index] = {
+                                            docker_file:
+                                              dockerConfig[index].docker_file,
+                                            docker_compose:
+                                              docker.docker_compose,
+                                          };
+                                        } else {
+                                          dockerConfig[index] = {
+                                            docker_file:
+                                              dockerConfig[index].docker_file,
+                                            docker_compose: [
+                                              ...docker.docker_compose,
+                                              ...tempalteDockeCompose.map(
+                                                (file) => {
+                                                  return {
+                                                    path: file.name,
+                                                    name: "Template",
+                                                    content: file.content,
+                                                  };
+                                                }
+                                              ),
+                                            ],
+                                          };
+                                        }
+
                                         setDockerConfig(dockerConfig);
                                         setLoading(true);
                                       };
@@ -668,26 +734,51 @@ export default function Newwebapp() {
                                       width: "100%",
                                     }}
                                     onChange={(value, ops) => {
-                                      store.dispatch(
-                                        setEnvironments([
-                                          ...environments.map((env, idx) => {
-                                            if (idx === index) {
-                                              return {
-                                                ...env,
-                                                docker_file: ops.map((op) => {
-                                                  return {
-                                                    path: op.desc,
-                                                    name: op.label,
-                                                    content: op.value,
-                                                  };
-                                                }),
-                                              };
-                                            } else {
-                                              return env;
-                                            }
-                                          }),
-                                        ])
-                                      );
+                                      const check = ops.filter((op) => {
+                                        console.log(op.desc);
+                                        if (
+                                          /^Dockerfile(\.[a-zA-Z0-9]+)?$/.test(
+                                            op.desc
+                                          )
+                                        ) {
+                                          return false;
+                                        } else {
+                                          return true;
+                                        }
+                                      });
+
+                                      if (check.length > 0) {
+                                        let mess = "";
+
+                                        check.map((c) => {
+                                          mess += c.label;
+                                        });
+
+                                        message.error(
+                                          `File (${mess})naming error and relative path error leading to the file`
+                                        );
+                                      } else {
+                                        store.dispatch(
+                                          setEnvironments([
+                                            ...environments.map((env, idx) => {
+                                              if (idx === index) {
+                                                return {
+                                                  ...env,
+                                                  docker_file: ops.map((op) => {
+                                                    return {
+                                                      path: op.desc,
+                                                      name: op.label,
+                                                      content: op.value,
+                                                    };
+                                                  }),
+                                                };
+                                              } else {
+                                                return env;
+                                              }
+                                            }),
+                                          ])
+                                        );
+                                      }
                                     }}
                                     options={dockerConfig[
                                       index
@@ -1057,28 +1148,53 @@ export default function Newwebapp() {
                                       width: "100%",
                                     }}
                                     onChange={(value, ops) => {
-                                      store.dispatch(
-                                        setEnvironments([
-                                          ...environments.map((env, idx) => {
-                                            if (idx === index) {
-                                              return {
-                                                ...env,
-                                                docker_compose: ops.map(
-                                                  (op) => {
-                                                    return {
-                                                      path: op.desc,
-                                                      name: op.label,
-                                                      content: op.value,
-                                                    };
-                                                  }
-                                                ),
-                                              };
-                                            } else {
-                                              return env;
-                                            }
-                                          }),
-                                        ])
-                                      );
+                                      const check = ops.filter((op) => {
+                                        console.log(op.desc);
+                                        if (
+                                          /^Dockerfile(\.[a-zA-Z0-9]+)?$/.test(
+                                            op.desc
+                                          )
+                                        ) {
+                                          return false;
+                                        } else {
+                                          return true;
+                                        }
+                                      });
+
+                                      if (check.length > 0) {
+                                        let mess = "";
+
+                                        check.map((c) => {
+                                          mess += c.label;
+                                        });
+
+                                        message.error(
+                                          `File (${mess})naming error and relative path error leading to the file`
+                                        );
+                                      } else {
+                                        store.dispatch(
+                                          setEnvironments([
+                                            ...environments.map((env, idx) => {
+                                              if (idx === index) {
+                                                return {
+                                                  ...env,
+                                                  docker_compose: ops.map(
+                                                    (op) => {
+                                                      return {
+                                                        path: op.desc,
+                                                        name: op.label,
+                                                        content: op.value,
+                                                      };
+                                                    }
+                                                  ),
+                                                };
+                                              } else {
+                                                return env;
+                                              }
+                                            }),
+                                          ])
+                                        );
+                                      }
                                     }}
                                     options={dockerConfig[
                                       index
@@ -1376,9 +1492,9 @@ export default function Newwebapp() {
             </Form>
           </div>
           {/* -------------------------------- */}
-          <div className="mt-20 flex gap-3" >
+          <div className="mt-20 flex gap-3">
             <Button
-            ref={refCaseSecond11}
+              ref={refCaseSecond11}
               htmlType="submit"
               className="text-green-400 pointer-events-auto border border-solid border-green-400  "
               disabled={false}

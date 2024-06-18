@@ -1151,7 +1151,7 @@ export default function Newwebapp() {
                                       const check = ops.filter((op) => {
                                         console.log(op.desc);
                                         if (
-                                          /^([a-zA-Z0-9_-]+\/)*docker-compose(\.[a-zA-Z0-9]+)?\.yml$/.test(
+                                          /^([a-zA-Z0-9_-]+\/)*docker-compose(\.[a-zA-Z0-9]+)?\.(yml|yaml)$/.test(
                                             op.desc
                                           )
                                         ) {

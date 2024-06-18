@@ -737,7 +737,7 @@ export default function Newwebapp() {
                                       const check = ops.filter((op) => {
                                         console.log(op.desc);
                                         if (
-                                          /^Dockerfile(\.[a-zA-Z0-9]+)?$/.test(
+                                          /^([a-zA-Z0-9_-]+\/)*Dockerfile(\.[a-zA-Z0-9]+)?$/.test(
                                             op.desc
                                           )
                                         ) {
@@ -1151,7 +1151,7 @@ export default function Newwebapp() {
                                       const check = ops.filter((op) => {
                                         console.log(op.desc);
                                         if (
-                                          /^Dockerfile(\.[a-zA-Z0-9]+)?$/.test(
+                                          /^([a-zA-Z0-9_-]+\/)*docker-compose(\.[a-zA-Z0-9]+)?\.yml$/.test(
                                             op.desc
                                           )
                                         ) {

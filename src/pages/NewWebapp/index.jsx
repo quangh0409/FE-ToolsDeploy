@@ -1039,7 +1039,14 @@ export default function Newwebapp() {
                                               ].docker_compose?.findIndex(
                                                 (f, idx) => {
                                                   if (
-                                                    contentfile.name === f.path
+                                                    (contentfile.oldname ===
+                                                      contentfile.name &&
+                                                      contentfile.name ===
+                                                        f.path) ||
+                                                    (contentfile.oldname !==
+                                                      contentfile.name &&
+                                                      contentfile.oldname ===
+                                                        f.path)
                                                   ) {
                                                     setDockerConfig(
                                                       dockerConfig.map(
@@ -1085,13 +1092,30 @@ export default function Newwebapp() {
                                               if (check !== 0) {
                                                 const t =
                                                   contentfile.name.split("/");
-                                                dockerConfig[
-                                                  index
-                                                ].docker_compose?.push({
-                                                  name: t[t.length - 1],
-                                                  path: contentfile.name,
-                                                  content: contentfile.content,
-                                                });
+                                                  setDockerConfig(
+                                                    dockerConfig.map(
+                                                      (dc, idx) => {
+                                                        if (idx === index) {
+                                                          return {
+                                                            docker_file:
+                                                              dc.docker_file,
+                                                              docker_compose: [
+                                                              ...dc.docker_compose,
+                                                              {
+                                                                name: t[
+                                                                  t.length - 1
+                                                                ],
+                                                                path: contentfile.name,
+                                                                content:
+                                                                  contentfile.content,
+                                                              },
+                                                            ],
+                                                          };
+                                                        }
+                                                      }
+                                                    )
+                                                  );
+                                                
                                               }
 
                                               store.dispatch(

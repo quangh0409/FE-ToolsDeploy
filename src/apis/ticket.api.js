@@ -5,7 +5,7 @@ import axiosServer from "./axios";
 const ticketApi = {
   getTicketDetail: () => async () => {
     const response = await axiosServer.get(`ticket/`);
-    store.dispatch(addAvatar(response.data.user.avatar));
+    store.dispatch(addAvatar(response.data.user?.avatar));
     store.dispatch(addFullname(response.data.user.fullname));
     store.dispatch(
       addTicket({

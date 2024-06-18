@@ -205,6 +205,7 @@ export default function ConnectVM() {
   }, [vm, reload]);
   const installDocker = async (e) => {
     setStatusDocker(true);
+    console.log(vmId);
     const res = await apiCaller({
       request: vmsApi.installDocker(vmId),
     });

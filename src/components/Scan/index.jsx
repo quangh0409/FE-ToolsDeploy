@@ -82,6 +82,7 @@ export default function TemplateDetailPage(props) {
             onChange={(e) => {
               props.setContentfile({
                 name: e.target.value,
+                oldname: props?.contentfile?.oldname,
                 content: props?.contentfile?.content,
                 type: props?.contentfile?.type,
               });

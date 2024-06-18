@@ -206,7 +206,7 @@ export default function ConnectVM() {
   const installDocker = async (e) => {
     setStatusDocker(true);
     const res = await apiCaller({
-      request: vmsApi.installDocker(vm),
+      request: vmsApi.installDocker(vmId),
     });
     if (res?.code) {
       message.error(res.errors[0].message);
@@ -219,7 +219,7 @@ export default function ConnectVM() {
   const installHadolint = async (e) => {
     setStatusHadolint(true);
     const res = await apiCaller({
-      request: vmsApi.installHadolint(vm),
+      request: vmsApi.installHadolint(vmId),
     });
     if (res?.code) {
       message.error(res.errors[0].message);
@@ -232,7 +232,7 @@ export default function ConnectVM() {
   const installTrivy = async (e) => {
     setStatusTrivy(true);
     const res = await apiCaller({
-      request: vmsApi.installTrivy(vm),
+      request: vmsApi.installTrivy(vmId),
     });
     if (res?.code) {
       message.error(res.errors[0].message);
@@ -261,6 +261,7 @@ export default function ConnectVM() {
           });
           navigate("/dashboard");
         } else {
+          console.log("🚀 ~ fetchC ~ vmT.id:", vmT.id);
           setVmId(vmT.id);
           setInfoVms(vmT);
         }
@@ -432,44 +433,47 @@ export default function ConnectVM() {
           </div>
           <div>
             <div>
-              <div className="flex items-center gap-2" >
+              <div className="flex items-center gap-2">
                 <div ref={refCaseSecond5}>
-                <Form.Item
-                  name={"standard"}
-                  label={"Standard"}
-                  rules={[
-                    { required: true, message: "Please input your standard!" },
-                  ]}
-                >
-                  <Select
-                    // ref={refCaseSecond5}
-                    style={{ width: 200 }}
-                    onChange={async (value) => {
-                      const res = await apiCaller({
-                        request: vmsApi.compareStandardBeforeCreate(
-                          value,
-                          hostVM,
-                          portVM,
-                          userVM,
-                          passVM
-                        ),
-                      });
-                      if (res?.code) {
-                        message.error(res.errors[0].message);
-                      } else {
-                        setStandardVM(value);
-                        setStandardCompoareVM(res);
-                      }
-                    }}
-                    options={standards.map((s, index) => {
-                      return {
-                        value: s.id,
-                        label: <>{s.name}</>,
-                        key: index,
-                      };
-                    })}
-                  />
-                </Form.Item>
+                  <Form.Item
+                    name={"standard"}
+                    label={"Standard"}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please input your standard!",
+                      },
+                    ]}
+                  >
+                    <Select
+                      // ref={refCaseSecond5}
+                      style={{ width: 200 }}
+                      onChange={async (value) => {
+                        const res = await apiCaller({
+                          request: vmsApi.compareStandardBeforeCreate(
+                            value,
+                            hostVM,
+                            portVM,
+                            userVM,
+                            passVM
+                          ),
+                        });
+                        if (res?.code) {
+                          message.error(res.errors[0].message);
+                        } else {
+                          setStandardVM(value);
+                          setStandardCompoareVM(res);
+                        }
+                      }}
+                      options={standards.map((s, index) => {
+                        return {
+                          value: s.id,
+                          label: <>{s.name}</>,
+                          key: index,
+                        };
+                      })}
+                    />
+                  </Form.Item>
                 </div>
                 {standardCompoareVM && (
                   <Flex gap="small" wrap>

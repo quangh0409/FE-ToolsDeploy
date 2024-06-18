@@ -21,7 +21,7 @@ function Editor(props) {
   const addRedUnderline = (editor) => {
     const Range = ace.require("ace/range").Range;
     // Clear existing markers
-    markerIds.current.forEach(id => editor.session.removeMarker(id));
+    markerIds.current.forEach((id) => editor.session.removeMarker(id));
     markerIds.current = [];
 
     // Add new markers
@@ -54,11 +54,16 @@ function Editor(props) {
         enableBasicAutocompletion: true,
         enableLiveAutocompletion: true,
       }}
-      value={props?.contentfile?.content }
+      value={props?.contentfile?.content}
       editorProps={{ $blockScrolling: true }}
       onChange={(e) => {
-        console.log("🚀 ~ Editor ~ e:", e)
-        props.setContentfile({ name: props?.contentfile?.name, content: e , type: props?.contentfile?.type});
+        console.log("🚀 ~ Editor ~ e:", e);
+        props.setContentfile({
+          name: props?.contentfile?.name,
+          content: e,
+          type: props?.contentfile?.type,
+          oldname: props?.contentfile?.oldname,
+        });
       }}
       onLoad={(editor) => {
         editorRef.current = editor;

@@ -2,11 +2,13 @@ import React, { useEffect } from "react";
 import Header from "../Header";
 import Footer from "../Footer";
 import socket from "../../utils/socket/socket";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import apiCaller from "../../apis/apiCaller";
 import ticketApi from "../../apis/ticket.api";
 
 export default function BaseLayout(props) {
+  const uri = useLocation();
+  const path = uri.pathname;
   const navigate = useNavigate();
   useEffect(() => {
     socket.connect();
@@ -34,7 +36,7 @@ export default function BaseLayout(props) {
         }
       }
     );
-  }, [localStorage]);
+  }, [localStorage, path]);
 
   return (
     <div className="flex flex-col min-h-[100vh] h-screen">

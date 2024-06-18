@@ -171,10 +171,14 @@ export default function Header() {
           <p>Note:(End point) https://smee.io/NEsyf7sKQOTJ8tOk/</p>
           <div className="grid grid-cols-3">
             <div className="col-span-1">
-              <img className="w-full" src="/images/tourGit.png" />
+              <img className="w-full h-80" src="/images/tourGit.png" />
             </div>
-            <div className="col-span-2">
-              <img src="/images/exConfigWebhook.png" alt="#" />
+            <div className="col-span-2 ">
+              <img
+                className="w-full h-80"
+                src="/images/exConfigWebhook.png"
+                alt="#"
+              />
             </div>
           </div>
         </>
@@ -243,10 +247,10 @@ export default function Header() {
           <p>Note:(End point) https://smee.io/NEsyf7sKQOTJ8tOk/</p>
           <div className="grid grid-cols-3">
             <div className="col-span-1">
-              <img className="w-full" src="/images/tourGit.png" />
+              <img  className="w-full h-80" src="/images/tourGit.png" />
             </div>
             <div className="col-span-2">
-              <img src="/images/exConfigWebhook.png" alt="#" />
+              <img  className="w-full h-80" src="/images/exConfigWebhook.png" alt="#" />
             </div>
           </div>
         </>

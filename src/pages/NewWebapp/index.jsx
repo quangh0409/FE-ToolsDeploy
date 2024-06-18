@@ -734,11 +734,15 @@ export default function Newwebapp() {
                                       width: "100%",
                                     }}
                                     onChange={(value, ops) => {
+                                      console.log(
+                                        "🚀 ~ {fields.map ~ ops:",
+                                        ops
+                                      );
                                       const check = ops.filter((op) => {
-                                        console.log(op.desc);
+                                        console.log(op.label);
                                         if (
                                           /^([a-zA-Z0-9_-]+\/)*Dockerfile(\.[a-zA-Z0-9]+)?$/.test(
-                                            op.desc
+                                            op.label
                                           )
                                         ) {
                                           return false;
@@ -765,10 +769,14 @@ export default function Newwebapp() {
                                                 return {
                                                   ...env,
                                                   docker_file: ops.map((op) => {
+                                                    const name =
+                                                      op.label.split("/");
                                                     return {
-                                                      path: op.desc,
-                                                      name: op.label,
-                                                      content: op.value,
+                                                      location: op.label,
+                                                      name: name[
+                                                        name.length - 1
+                                                      ],
+                                                      content: op.content,
                                                     };
                                                   }),
                                                 };
@@ -782,11 +790,23 @@ export default function Newwebapp() {
                                     }}
                                     options={dockerConfig[
                                       index
-                                    ]?.docker_file.map((d) => {
+                                    ]?.docker_file.map((d, i) => {
+                                      console.log(
+                                        "🚀 ~ ]?.docker_file.map ~ d:",
+                                        d
+                                      );
                                       return {
-                                        label: d.name,
-                                        value: d.content,
-                                        desc: d?.path ? d?.path : d?.path,
+                                        key: i,
+                                        label: d?.path ? d?.path : d?.location,
+                                        value: d?.path ? d?.path : d?.location,
+                                        desc: d?.path
+                                          ? `${d.name} (${d?.path})`
+                                          : `${d.name} (${d?.location})`,
+                                        content: d.content,
+                                        disabled:
+                                          !/^([a-zA-Z0-9_-]+\/)*Dockerfile(\.[a-zA-Z0-9]+)?$/.test(
+                                            d?.path ? d?.path : d?.location
+                                          ),
                                       };
                                     })}
                                     optionRender={(option, info) => (
@@ -805,8 +825,9 @@ export default function Newwebapp() {
                                             onClick={async (e) => {
                                               setIsModalOpen(true);
                                               setContentfile({
-                                                name: option.data.desc,
-                                                content: option.data.value,
+                                                name: option.data.label,
+                                                oldname: option.data.label,
+                                                content: option.data.content,
                                                 type: "DOCKERFILE",
                                               });
                                               e.stopPropagation();
@@ -833,6 +854,7 @@ export default function Newwebapp() {
                                               setIsModalOpen(true);
                                               setContentfile({
                                                 name: "",
+                                                oldname: "",
                                                 content: "",
                                                 type: "DOCKERFILE",
                                               });
@@ -881,6 +903,10 @@ export default function Newwebapp() {
                                       </Button>
                                       <Button
                                         onClick={() => {
+                                          console.log(
+                                            "contentfile",
+                                            contentfile
+                                          );
                                           if (
                                             !contentfile?.name ||
                                             contentfile?.name === ""
@@ -895,7 +921,14 @@ export default function Newwebapp() {
                                               ].docker_file?.findIndex(
                                                 (f, idx) => {
                                                   if (
-                                                    contentfile.name === f.path
+                                                    (contentfile.oldname ===
+                                                      contentfile.name &&
+                                                      contentfile.name ===
+                                                        f.path) ||
+                                                    (contentfile.oldname !==
+                                                      contentfile.name &&
+                                                      contentfile.oldname ===
+                                                        f.path)
                                                   ) {
                                                     setDockerConfig(
                                                       dockerConfig.map(
@@ -935,6 +968,7 @@ export default function Newwebapp() {
                                                     );
                                                     return true;
                                                   }
+                                                  return false;
                                                 }
                                               );
 
@@ -964,13 +998,6 @@ export default function Newwebapp() {
                                                     }
                                                   )
                                                 );
-                                                // dockerConfig[
-                                                //   index
-                                                // ].docker_file.push({
-                                                //   name: t[t.length - 1],
-                                                //   location: contentfile.name,
-                                                //   content: contentfile.content,
-                                                // });
                                               }
 
                                               store.dispatch(
@@ -1114,6 +1141,7 @@ export default function Newwebapp() {
                                         setIsModalOpen(false);
                                         setContentfile({
                                           name: "",
+                                          oldname: "",
                                           content: "",
                                           type: "",
                                         });
@@ -1149,10 +1177,10 @@ export default function Newwebapp() {
                                     }}
                                     onChange={(value, ops) => {
                                       const check = ops.filter((op) => {
-                                        console.log(op.desc);
+                                        console.log(op.label);
                                         if (
                                           /^([a-zA-Z0-9_-]+\/)*docker-compose(\.[a-zA-Z0-9]+)?\.(yml|yaml)$/.test(
-                                            op.desc
+                                            op.label
                                           )
                                         ) {
                                           return false;
@@ -1180,10 +1208,14 @@ export default function Newwebapp() {
                                                   ...env,
                                                   docker_compose: ops.map(
                                                     (op) => {
+                                                      const name =
+                                                        op.label.split("/");
                                                       return {
-                                                        path: op.desc,
-                                                        name: op.label,
-                                                        content: op.value,
+                                                        location: op.label,
+                                                        name: name[
+                                                          name.length - 1
+                                                        ],
+                                                        content: op.content,
                                                       };
                                                     }
                                                   ),
@@ -1200,9 +1232,16 @@ export default function Newwebapp() {
                                       index
                                     ]?.docker_compose.map((d) => {
                                       return {
-                                        label: d.name,
-                                        value: d.content,
-                                        desc: d?.path ? d?.path : d?.path,
+                                        label: d?.path ? d?.path : d?.location,
+                                        value: d?.path ? d?.path : d?.location,
+                                        desc: d?.path
+                                          ? `${d.name} (${d?.path})`
+                                          : `${d.name} (${d?.location})`,
+                                          content: d.content,
+                                          disabled:
+                                            !/^([a-zA-Z0-9_-]+\/)*docker-compose(\.[a-zA-Z0-9]+)?\.(yml|yaml)$/.test(
+                                              d?.path ? d?.path : d?.location
+                                            ),
                                       };
                                     })}
                                     optionRender={(option) => (
@@ -1221,8 +1260,9 @@ export default function Newwebapp() {
                                             onClick={(e) => {
                                               setIsModalOpen(true);
                                               setContentfile({
-                                                name: option.data.desc,
-                                                content: option.data.value,
+                                                name: option.data.label,
+                                                oldname: option.data.label,
+                                                content: option.data.content,
                                                 type: "DOCKERCOMPOSE",
                                               });
                                               e.stopPropagation();
@@ -1249,6 +1289,7 @@ export default function Newwebapp() {
                                               setIsModalOpen(true);
                                               setContentfile({
                                                 name: "",
+                                                oldname: "",
                                                 content: "",
                                                 type: "DOCKERCOMPOSE",
                                               });

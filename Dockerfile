@@ -15,6 +15,9 @@ COPY . /app
 
 # Copy the .env file
 COPY .env /app/.env
+ENV REACT_APP_CA_BE_FE_HOST=103.166.185.48
+ENV REACT_APP_CA_BE_FE_PORT=8080
+ENV REACT_APP_CA_GIT_CLIENT_ID=Iv23liUoncWuIkYud15L
 
 # Build the application
 RUN npm run build

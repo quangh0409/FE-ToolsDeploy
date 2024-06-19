@@ -375,7 +375,9 @@ export default function OceanPage() {
           setPostmanNew({ ...postmanNew, isAddPostman: true });
         }
       };
-      fecth();
+      setTimeout(() => {
+        fecth();
+      }, 10000);
     }
   }, [postmanStatus, record]);
 
@@ -526,6 +528,7 @@ export default function OceanPage() {
                 </Button>
                 <Button
                   onClick={() => {
+                    setPostmanStatus(true);
                     const env = service.environment.find(
                       (env) => env.name === env_name
                     );
@@ -587,7 +590,7 @@ export default function OceanPage() {
           <Collapse items={items[current]} />
         )}
 
-        {/* <Modal
+        <Modal
           open={postmanStatus || !!postman}
           footer={false}
           onCancel={() => {
@@ -610,7 +613,7 @@ export default function OceanPage() {
               srcDoc={postman}
             ></iframe>
           )}
-        </Modal> */}
+        </Modal>
 
         <Modal
           open={postmanNew.isAddPostman}

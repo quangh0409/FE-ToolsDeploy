@@ -928,7 +928,10 @@ export default function Newwebapp() {
                                                     (contentfile.oldname !==
                                                       contentfile.name &&
                                                       contentfile.oldname ===
-                                                        f.path)
+                                                        f.path &&
+                                                      !contentfile.oldname.includes(
+                                                        "Template"
+                                                      ))
                                                   ) {
                                                     setDockerConfig(
                                                       dockerConfig.map(
@@ -1046,7 +1049,10 @@ export default function Newwebapp() {
                                                     (contentfile.oldname !==
                                                       contentfile.name &&
                                                       contentfile.oldname ===
-                                                        f.path)
+                                                        f.path &&
+                                                      !contentfile.oldname.includes(
+                                                        "Template"
+                                                      ))
                                                   ) {
                                                     setDockerConfig(
                                                       dockerConfig.map(
@@ -1086,36 +1092,36 @@ export default function Newwebapp() {
                                                     );
                                                     return true;
                                                   }
+                                                  return false;
                                                 }
                                               );
 
                                               if (check !== 0) {
                                                 const t =
                                                   contentfile.name.split("/");
-                                                  setDockerConfig(
-                                                    dockerConfig.map(
-                                                      (dc, idx) => {
-                                                        if (idx === index) {
-                                                          return {
-                                                            docker_file:
-                                                              dc.docker_file,
-                                                              docker_compose: [
-                                                              ...dc.docker_compose,
-                                                              {
-                                                                name: t[
-                                                                  t.length - 1
-                                                                ],
-                                                                path: contentfile.name,
-                                                                content:
-                                                                  contentfile.content,
-                                                              },
-                                                            ],
-                                                          };
-                                                        }
+                                                setDockerConfig(
+                                                  dockerConfig.map(
+                                                    (dc, idx) => {
+                                                      if (idx === index) {
+                                                        return {
+                                                          docker_file:
+                                                            dc.docker_file,
+                                                          docker_compose: [
+                                                            ...dc.docker_compose,
+                                                            {
+                                                              name: t[
+                                                                t.length - 1
+                                                              ],
+                                                              path: contentfile.name,
+                                                              content:
+                                                                contentfile.content,
+                                                            },
+                                                          ],
+                                                        };
                                                       }
-                                                    )
-                                                  );
-                                                
+                                                    }
+                                                  )
+                                                );
                                               }
 
                                               store.dispatch(
@@ -1261,11 +1267,11 @@ export default function Newwebapp() {
                                         desc: d?.path
                                           ? `${d.name} (${d?.path})`
                                           : `${d.name} (${d?.location})`,
-                                          content: d.content,
-                                          disabled:
-                                            !/^([a-zA-Z0-9_-]+\/)*docker-compose(\.[a-zA-Z0-9]+)?\.(yml|yaml)$/.test(
-                                              d?.path ? d?.path : d?.location
-                                            ),
+                                        content: d.content,
+                                        disabled:
+                                          !/^([a-zA-Z0-9_-]+\/)*docker-compose(\.[a-zA-Z0-9]+)?\.(yml|yaml)$/.test(
+                                            d?.path ? d?.path : d?.location
+                                          ),
                                       };
                                     })}
                                     optionRender={(option) => (

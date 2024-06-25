@@ -98,8 +98,8 @@ export default function Standard() {
   ];
 
   return (
-    <>
-      <div className="flex justify-end m-6">
+    <div>
+      <div className="flex justify-end m-3">
         <Button
           className="flex items-center"
           onClick={() => {
@@ -112,7 +112,7 @@ export default function Standard() {
       </div>
       {isNew && (
         <div>
-          <div className="m-6">
+          <div className="m-3">
             <Form form={form} onFinish={onFinish} labelCol={{ span: 3 }} labelAlign="left">
               <Form.Item
                 name="name"
@@ -179,7 +179,7 @@ export default function Standard() {
           </div>
         </div>
       )}
-      <>
+      <div>
         <div className="mt-11 col-span-1 border rounded-lg h-full overflow-auto min-w-[500]">
           <Table
             pagination={false}
@@ -195,7 +195,7 @@ export default function Standard() {
             className=""
           />
         </div>
-      </>
-    </>
+      </div>
+    </div>
   );
 }

@@ -42,7 +42,7 @@ export default function BaseLayout(props) {
     <div className="flex flex-col min-h-[100vh] h-screen">
       <Header />
       <hr></hr>
-      {props.children}
+      <div>{props.children}</div>
 
       <Footer />
     </div>

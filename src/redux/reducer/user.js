@@ -1,6 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
+  rowKeys: [],
+  data: [],
   tour: {
     webApp: false,
     yourGit: false,
@@ -43,6 +45,39 @@ const initialState = {
       },
     },
   ],
+  dockerConfig: {
+    docker_file: [],
+    docker_compose: [],
+  },
+  deploy: {
+    type: "",
+    serivce_id: undefined,
+    service_name: undefined,
+    architecture: undefined,
+    repo: undefined,
+    branch: undefined,
+    language: undefined,
+    env_name: undefined,
+    vm: {
+      id: undefined,
+      host: undefined,
+    },
+    loading: true,
+    environment: {
+      name: "",
+      vm: {
+        id: undefined,
+        host: undefined,
+      },
+      branch: undefined,
+      docker_file: [],
+      docker_compose: [],
+      postman: {
+        collection: {},
+        environment: {},
+      },
+    },
+  },
 };
 
 export const user = createSlice({
@@ -114,6 +149,58 @@ export const user = createSlice({
     setTourStepYourGit: (state, action) => {
       state.tour.stepYourGit = action.payload;
     },
+    setData: (state, action) => {
+      state.data.push(action.payload);
+    },
+    setClearData: (state, action) => {
+      state.data = [];
+    },
+    setRowKeys: (state, action) => {
+      state.rowKeys = action.payload;
+    },
+    setDeploy: (state, action) => {
+      state.deploy = action.payload;
+    },
+    setDockerConfig: (state, action) => {
+      state.dockerConfig = action.payload;
+    },
+    setClearDockerConfig: (state, action) => {
+      state.dockerConfig = {
+        docker_file: [],
+        docker_compose: [],
+      };
+    },
+    setClearDeploy: (state, action) => {
+      state.deploy = {
+        type: "",
+        serivce_id: undefined,
+        service_name: undefined,
+        architecture: undefined,
+        repo: undefined,
+        branch: undefined,
+        language: undefined,
+        env_name: undefined,
+        vm: {
+          id: undefined,
+          host: undefined,
+        },
+        loading: true,
+        environment: {
+          name: "",
+          vm: {
+            id: undefined,
+            host: undefined,
+          },
+          branch: undefined,
+          docker_file: [],
+          docker_compose: [],
+          postman: {
+            collection: {},
+            environment: {},
+          },
+        },
+      };
+    },
   },
 });
 
@@ -133,7 +220,14 @@ export const {
   setTourConnectVM,
   setTourWebapp,
   setTourYourGit,
-  setTourStepYourGit
+  setTourStepYourGit,
+  setData,
+  setClearData,
+  setRowKeys,
+  setDeploy,
+  setDockerConfig,
+  setClearDockerConfig,
+  setClearDeploy,
 } = user.actions;
 
 export default user.reducer;

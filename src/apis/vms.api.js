@@ -28,6 +28,12 @@ const vmsApi = {
     );
     return response;
   },
+  getAllInfoForDashboard: (vms_ids) => async () => {
+    const response = await axiosServer.post(`vms/dashboard`, {
+      ids: vms_ids,
+    });
+    return response;
+  },
   findTemplate: (language, architecture, type) => async () => {
     const response = await axiosServer.get(
       `vms/templates?language=${language}&architecture=${architecture}&type=${type}`
@@ -46,20 +52,64 @@ const vmsApi = {
     const response = await axiosServer.put(`services/${id}`, { service });
     return response;
   },
-  getAllServiceByVMId: (vm) => async () => {
-    const response = await axiosServer.get(`services/vm/${vm}`);
+  updateEnvService: (environment, id) => async () => {
+    const response = await axiosServer.put(
+      `services/${id}/environment?name=${environment.name}`,
+      {
+        ...environment,
+      }
+    );
+    return response;
+  },
+  addEnvService: (environment, id) => async () => {
+    const response = await axiosServer.put(`services/${id}/add-environment`, {
+      environment,
+    });
+    return response;
+  },
+  getAllServiceByVMId: (vm, name) => async () => {
+    const response = await axiosServer.get(
+      `services/vm/${vm}?name=${name ? name : ""}`
+    );
     return response;
   },
   getServiceById: (service) => async () => {
     const response = await axiosServer.get(`services/${service}`);
     return response;
   },
+  getInfosRepo: (name) => async () => {
+    const response = await axiosServer.get(
+      `services/infos-repo?name=${name ? name : ""}`
+    );
+    return response;
+  },
+  getInfosRepoForDashboard: () => async () => {
+    const response = await axiosServer.get(`services/dashboard`);
+    return response;
+  },
   deleteServiceById: (service, vm) => async () => {
     const response = await axiosServer.delete(`services/${service}/vm/${vm}`);
     return response;
   },
+  deleteEnvService: (service, name) => async () => {
+    const response = await axiosServer.delete(
+      `services/${service}/environment?name=${name}`
+    );
+    return response;
+  },
+  deleteServiceInAllVm: (service) => async () => {
+    const response = await axiosServer.delete(`services/${service}`);
+    return response;
+  },
   getImagesOfServiceById: (service, env) => async () => {
     const response = await axiosServer.post(`services/images`, {
+      service: service,
+      env: env,
+    });
+    return response;
+  },
+  getContainersOfServiceById: (service, env) => async () => {
+    const response = await axiosServer.post(`services/containers`, {
       service: service,
       env: env,
     });
@@ -131,6 +181,11 @@ const vmsApi = {
   },
   installHadolint: (vms) => async () => {
     const uri = `vms/${vms}/install-hadolint`;
+    const response = await axiosServer.get(uri);
+    return response;
+  },
+  checkConnect: (vms) => async () => {
+    const uri = `vms/${vms}/check-connect`;
     const response = await axiosServer.get(uri);
     return response;
   },

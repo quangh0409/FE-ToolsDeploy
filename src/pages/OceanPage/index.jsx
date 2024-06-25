@@ -81,10 +81,24 @@ export default function OceanPage() {
 
   useEffect(() => {
     const fetch = async () => {
-      if (record.status === "SUCCESSFULLY") {
+      const env = service?.environment.find((env) => {
+        return env.name === env_name;
+      });
+      if (
+        record.status === "SUCCESSFULLY" &&
+        env?.postman?.collection?.content &&
+        env?.postman?.environment?.content &&
+        env?.branch &&
+        service?.name
+      ) {
         localStorage.setItem("build", true);
         setPostmanStatus(true);
         setisModal(true);
+      } else if (
+        record.status === "SUCCESSFULLY" &&
+        !env?.postman?.collection?.content
+      ) {
+        setPostmanNew({ ...postmanNew, isAddPostman: true });
       }
     };
     fetch();
@@ -371,8 +385,6 @@ export default function OceanPage() {
           });
           setPostman(res);
           setPostmanStatus(false);
-        } else {
-          setPostmanNew({ ...postmanNew, isAddPostman: true });
         }
       };
       setTimeout(() => {
@@ -406,12 +418,12 @@ export default function OceanPage() {
           if (!postmanStatus) {
             store.dispatch(setRecord(data));
           }
-          if (data.status === "SUCCESSFULLY") {
-            setPostmanStatus(true);
-            negative(
-              `/ocean?service=${service_id}&env=${env_name}&name=${service?.name}&record=${record.id}`
-            );
-          }
+          // if (data.status === "SUCCESSFULLY") {
+          //   setPostmanStatus(true);
+          //   negative(
+          //     `/ocean?service=${service_id}&env=${env_name}&name=${service?.name}&record=${record.id}`
+          //   );
+          // }
         }
       );
     };
@@ -427,9 +439,12 @@ export default function OceanPage() {
       const env = serviceR?.environment.find((env) => {
         return env.name === env_name;
       });
-      console.log("🚀 ~ env ~ env:", env);
       const fecthE = async () => {
-        if (env) {
+        if (
+          env &&
+          env?.postman?.collection?.content &&
+          env?.postman?.environment?.content
+        ) {
           const res = await apiCaller({
             request: vmsApi.runPostman(
               env?.postman?.collection?.content,
@@ -514,12 +529,8 @@ export default function OceanPage() {
               )}
               <div className="flex justify-end gap-3">
                 <Button
-                  disabled={localStorage.getItem("build") === "false"}
+                  disabled={record.status !== "SUCCESSFULLY"}
                   onClick={() => {
-                    // const vm = vms.find((vm) => {
-                    //   return vm.host === record.host;
-                    // });
-                    // navigate(`/dashboard/VM-connect?vm=${vm.id}`);
                     localStorage.setItem("build", true);
                     window.location.href = `/ocean?service=${service_id}&env=${env_name}&name=${service?.name}`;
                   }}

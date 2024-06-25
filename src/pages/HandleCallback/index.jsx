@@ -29,7 +29,7 @@ export default function HandleCallback() {
         setMess(res.errors[0].message);
       } else {
         socket.connect();
-        navigate("/dashboard");
+        navigate("/dashboard-home");
       }
       // socket.emit("register", localStorage.getItem("accessToken"));
     };

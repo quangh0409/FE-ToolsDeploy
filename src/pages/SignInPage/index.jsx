@@ -19,7 +19,7 @@ export default function SignInPage() {
   const navigate = useNavigate();
   useEffectOnce(() => {
     if (localStorage.getItem("accessToken")) {
-      navigate("/dashboard");
+      navigate("/dashboard-home");
     }
   });
 
@@ -37,7 +37,7 @@ export default function SignInPage() {
       if (res?.code) {
         message.error(res.errors[0].message || res.description);
       } else {
-        navigate("/dashboard");
+        navigate("/dashboard-home");
         socket.connect();
       }
     } else {
@@ -48,7 +48,7 @@ export default function SignInPage() {
         message.error("Error Sign up");
       } else {
         message.info("Sign up success!");
-        navigate("/dashboard");
+        navigate("/dashboard-home");
         socket.connect();
       }
     }

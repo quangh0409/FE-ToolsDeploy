@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
+  CaretLeftOutlined,
   CheckOutlined,
   ClockCircleOutlined,
   CopyOutlined,
@@ -9,6 +10,7 @@ import {
   GlobalOutlined,
   LinkOutlined,
   MergeOutlined,
+  RedoOutlined,
   SyncOutlined,
 } from "@ant-design/icons";
 import { Button, Modal, Table, Tabs, message } from "antd";
@@ -33,6 +35,7 @@ export default function ServicePageDetail(props) {
   const service_env = params.get("env");
   const [url, setUrl] = useState("quangh0409/Decision_help_system");
   const [images, setImages] = useState([]);
+  const [containers, setContainers] = useState([]);
   const [service, setService] = useState();
   const [host, setHost] = useState();
   const [vm, setVm] = useState();
@@ -90,7 +93,6 @@ export default function ServicePageDetail(props) {
                 });
 
                 if (res) {
-                  console.log(res);
                   dispatch(addloading(null));
                   setResultScan(res?.Results);
                   setIsModalOpen(true);
@@ -107,16 +109,12 @@ export default function ServicePageDetail(props) {
       title: "Actions",
       key: "actios",
       render: (record, index) => {
-
         return (
           <div>
             <DeleteOutlined
               onClick={async () => {
                 const res = await apiCaller({
-                  request: vmsApi.actionsImagesOfVmById(
-                    vm,
-                    record.ID
-                  ),
+                  request: vmsApi.actionsImagesOfVmById(vm, record.ID),
                 });
                 if (res?.code == 0) {
                   message.info(res.message);
@@ -133,12 +131,114 @@ export default function ServicePageDetail(props) {
     },
   ];
 
+  const handleActionContainer = async (vms, container, type) => {
+    const res = await apiCaller({
+      request: vmsApi.actionsContainerByByVmsIdAndContainerId(
+        vms,
+        container,
+        type
+      ),
+    });
+    if (res?.code) {
+      message.error("Error System");
+    } else {
+      setContainers(res);
+      message.info(`${type} successfully`);
+    }
+  };
+
+  const columns_containers = [
+    {
+      title: "CONTAINER ID",
+      key: "container_id",
+      render: (record, index) => <div>{record.container_id}</div>,
+    },
+    {
+      title: "NAME",
+      key: "name",
+      render: (record, index) => <div>{record.name}</div>,
+    },
+    {
+      title: "CPU %",
+      key: "CPUPerc",
+      render: (record, index) => <div>{record.CPUPerc}</div>,
+    },
+    {
+      title: "MEM USAGE / LIMIT",
+      key: "MemUsage",
+      width: 180,
+      render: (record, index) => <div>{record.MemUsage}</div>,
+    },
+    {
+      title: "MEM %",
+      key: "MemPerc",
+      render: (record, index) => <div>{record.MemPerc}</div>,
+    },
+    {
+      title: "NET I/O",
+      key: "NetIO",
+      render: (record, index) => <div>{record.NetIO}</div>,
+    },
+    {
+      title: "BLOCK I/O",
+      key: "BlockIO",
+      render: (record, index) => <div>{record.BlockIO}</div>,
+    },
+    {
+      title: "PIDS",
+      key: "PIDs",
+      render: (record, index) => <div>{record.PIDs}</div>,
+    },
+    {
+      title: "PORTS",
+      key: "Ports",
+      render: (record, index) => <div>{record.Ports}</div>,
+    },
+    {
+      title: "IMAGE",
+      key: "Image",
+      render: (record, index) => <div>{record.Image}</div>,
+    },
+    {
+      title: "STATUS",
+      key: "Status",
+      render: (record, index) => <div>{record.Status}</div>,
+    },
+    {
+      title: "ACTIONS",
+      // key: "PIDs",
+      render: (record, index) => (
+        <div className="flex gap-2">
+          <CaretLeftOutlined
+            onClick={() => {
+              handleActionContainer(vm, record.container_id, "stop");
+            }}
+          />
+          <RedoOutlined
+            onClick={() => {
+              handleActionContainer(vm, record.container_id, "restart");
+            }}
+          />
+          <DeleteOutlined
+            onClick={() => {
+              handleActionContainer(vm, record.container_id, "delete");
+            }}
+          />
+        </div>
+      ),
+    },
+  ];
+
   useEffectOnce(() => {
     const fetch = async () => {
       const res = await apiCaller({
         request: vmsApi.getImagesOfServiceById(service_id, service_env),
       });
       setImages(res.result);
+      const containers_ = await apiCaller({
+        request: vmsApi.getContainersOfServiceById(service_id, service_env),
+      });
+      setContainers(containers_.containers_);
       const records = await apiCaller({
         request: vmsApi.getRecordsOfService(service_id, service_env),
       });
@@ -186,7 +286,7 @@ export default function ServicePageDetail(props) {
     return minutes + "m " + seconds + "s";
   }
 
-  const title_iterms = ["Event", "Logs", "Images"];
+  const title_iterms = ["Event", "Logs", "Images", "Containers"];
   const content_iterms = [
     <div className="max-h-[500px] overflow-y-auto ">
       {records.map((record, idx) => {
@@ -241,9 +341,6 @@ export default function ServicePageDetail(props) {
         <Terminal
           name="docker-compose logs -f"
           colorMode={ColorMode.Light}
-          // onInput={(terminalInput) =>
-          //   console.log(`New terminal input received: '${terminalInput}'`)
-          // }
         >
           {logRealTimeBuild}
         </Terminal>
@@ -259,6 +356,21 @@ export default function ServicePageDetail(props) {
           };
         })}
         columns={columns}
+        scroll={{ y: 421 }}
+      />
+    </div>,
+    <div>
+      <Table
+        pagination={false}
+        dataSource={containers?.map((i, index) => {
+          return {
+            ...i,
+            container_id: i.ID,
+            name: i.Name,
+            key: index,
+          };
+        })}
+        columns={columns_containers}
         scroll={{ y: 421 }}
       />
     </div>,
@@ -319,7 +431,7 @@ export default function ServicePageDetail(props) {
             </div>
           </div>
           <div className="ml-24 mr-24 h-full grid grid-cols-6 gap-4 ">
-            <div className="col-span-6 " style={{ height: `${600}px` }}>
+            <div className="col-span-6 h-full">
               <Tabs
                 className="w-full h-full"
                 tabPosition={"left"}

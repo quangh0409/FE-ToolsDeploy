@@ -57,7 +57,6 @@ function Editor(props) {
       value={props?.contentfile?.content}
       editorProps={{ $blockScrolling: true }}
       onChange={(e) => {
-        console.log("🚀 ~ Editor ~ e:", e);
         props.setContentfile({
           name: props?.contentfile?.name,
           content: e,

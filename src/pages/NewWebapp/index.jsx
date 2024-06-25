@@ -138,7 +138,6 @@ export default function Newwebapp() {
   const [form] = Form.useForm();
 
   const environments = useSelector((state) => state.user.environments);
-  console.log("🚀 ~ Newwebapp ~ environments:", environments);
 
   const [dockerConfig, setDockerConfig] = useState([
     {
@@ -405,11 +404,6 @@ export default function Newwebapp() {
                   }
                 };
                 service_id ? fetchU() : fetchC();
-
-                console.log({
-                  ...service,
-                  environments: environments,
-                });
               }}
               initialValues={{
                 items: [{}],
@@ -734,12 +728,7 @@ export default function Newwebapp() {
                                       width: "100%",
                                     }}
                                     onChange={(value, ops) => {
-                                      console.log(
-                                        "🚀 ~ {fields.map ~ ops:",
-                                        ops
-                                      );
                                       const check = ops.filter((op) => {
-                                        console.log(op.label);
                                         if (
                                           /^([a-zA-Z0-9_-]+\/)*Dockerfile(\.[a-zA-Z0-9]+)?$/.test(
                                             op.label
@@ -791,10 +780,6 @@ export default function Newwebapp() {
                                     options={dockerConfig[
                                       index
                                     ]?.docker_file.map((d, i) => {
-                                      console.log(
-                                        "🚀 ~ ]?.docker_file.map ~ d:",
-                                        d
-                                      );
                                       return {
                                         key: i,
                                         label: d?.path ? d?.path : d?.location,
@@ -903,10 +888,6 @@ export default function Newwebapp() {
                                       </Button>
                                       <Button
                                         onClick={() => {
-                                          console.log(
-                                            "contentfile",
-                                            contentfile
-                                          );
                                           if (
                                             !contentfile?.name ||
                                             contentfile?.name === ""

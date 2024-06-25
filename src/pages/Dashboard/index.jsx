@@ -59,7 +59,6 @@ export default function Dashboard() {
         const res = await apiCaller({
           request: vmsApi.getVmsByIds(vms_ids, ""),
         });
-        console.log("🚀 ~ fetch ~ res:", res);
         setVms(res);
         if (res) {
           setLoading(false);
@@ -210,7 +209,6 @@ export default function Dashboard() {
       title: "SETTING",
       key: "setting",
       render: (record, index) => {
-        console.log("🚀 ~ Dashboard ~ record:", record);
         return (
           <div  ref={ref1}>
             <SettingOutlined
@@ -298,7 +296,6 @@ export default function Dashboard() {
             }}
             onKeyDown={async (e) => {
               setSearch(e.target.value);
-              console.log(e.target.value);
               if (e.key === "Enter") {
                 const res = await apiCaller({
                   request: vmsApi.getVmsByIds(vms_ids, e.target.value),
@@ -317,7 +314,6 @@ export default function Dashboard() {
                 className="text-gray-400 pointer-events-auto border-0 "
                 onClick={(e) => {
                   e.preventDefault();
-                  console.log(search);
                   setSearch("");
                 }}
               >

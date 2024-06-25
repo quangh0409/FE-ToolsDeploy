@@ -11,9 +11,6 @@ const axiosGithub = axios.create({
 });
 
 const githubApi = {
-  loginWithGithub: () => async () => {
-    return await axiosGithub.post("?client_id=66602684d99f3683ebe0");
-  },
   loginByGithub: (code) => async () => {
     const response = await axiosServer.get(`auth/login-github?code=${code}`);
     localStorage.setItem("accessToken", response.data.accessToken);

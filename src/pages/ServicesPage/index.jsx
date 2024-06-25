@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Button, Input, Table, message } from "antd";
 import {
   CheckCircleTwoTone,
@@ -9,6 +9,7 @@ import {
   DeleteOutlined,
   SyncOutlined,
   RedoOutlined,
+  ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import useEffectOnce from "../../hook/useEffectOnce";
@@ -28,41 +29,81 @@ export default function ServicePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const params = new URLSearchParams(location.search);
   const vm = params.get("vm");
-  const [services, setServices] = useState([]);
-  const [contaniners, setContaniners] = useState([]);
-  const [images, setImages] = useState([]);
+  const type_ = params.get("type");
+  const [services, setServices] = useState();
+  const [contaniners, setContaniners] = useState();
+  const [images, setImages] = useState();
   const [reload, setReload] = useState(false);
   const [vmInstance, setVmInstance] = useState();
-  const [search, setSearch] = useState();
-  const [type, setType] = useState("services");
+  const [type, setType] = useState(type_ ? type_ : "services");
   const user = useSelector((state) => state.user.user_git);
-  useEffectOnce(() => {
-    const fetch = async () => {
-      const vm_instance = await apiCaller({
-        request: vmsApi.getVmsById(vm),
-      });
-      setVmInstance(vm_instance);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+  const intervalRef = useRef(null);
 
-      const services = await apiCaller({
-        request: vmsApi.getAllServiceByVMId(vm),
-      });
-      setServices(services);
+  const fetch = async (search) => {
+    const vm_instance = await apiCaller({
+      request: vmsApi.getVmsById(vm),
+    });
+    setVmInstance(vm_instance);
 
-      const contaniners = await apiCaller({
-        request: vmsApi.findContaninersOfVmById(vm, undefined),
+    const services = await apiCaller({
+      request: vmsApi.getAllServiceByVMId(
+        vm,
+        type === "services" ? search : undefined
+      ),
+    });
+    setServices(services);
+
+    const contaniners = await apiCaller({
+      request: vmsApi.findContaninersOfVmById(
+        vm,
+        type === "containers" ? search : undefined
+      ),
+    });
+    setContaniners(contaniners);
+    setTimeout(async () => {
+      const images = await apiCaller({
+        request: vmsApi.findImagesOfVmById(
+          vm,
+          type === "images" ? search : undefined
+        ),
       });
-      setContaniners(contaniners);
-      setTimeout(async () => {
-        const images = await apiCaller({
-          request: vmsApi.findImagesOfVmById(vm, undefined),
-        });
-        setImages(images);
-      }, 6000);
+      setImages(images);
+    }, 6000);
+  };
+
+  // useEffect(() => {
+  //   fetch();
+  //   setReload(false);
+  // }, [vm, reload]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500); // Đợi 500ms sau khi người dùng ngừng nhập
+
+    return () => {
+      clearTimeout(handler);
     };
+  }, [search]);
 
-    fetch();
-    setReload(false);
-  }, [vm, reload]);
+  // //Effect để gọi API liên tục với giá trị debouncedSearch
+  useEffect(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+
+    intervalRef.current = setInterval(() => {
+      fetch(debouncedSearch);
+    }, 5000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [debouncedSearch]);
 
   const handleActionContainer = async (vms, container, type) => {
     const res = await apiCaller({
@@ -75,10 +116,34 @@ export default function ServicePage() {
     if (res?.code) {
       message.error("Error System");
     } else {
+      setReload(true);
       setContaniners(res);
       message.info(`${type} successfully`);
     }
   };
+
+  function timeDifference(time1, time2) {
+    let date1 = new Date(time1).getTime();
+    let date2 = new Date(time2).getTime();
+
+    let diffInMs = Math.abs(date2 - date1);
+    let diffInSecs = Math.floor(diffInMs / 1000);
+    let mins = Math.floor(diffInSecs / 60);
+    let secs = diffInSecs % 60;
+    let hours = Math.floor(mins / 60);
+    let days = Math.floor(hours / 24);
+    let months = Math.floor(days / 30);
+
+    if (months > 0) {
+      return `${months} month${months > 1 ? "s" : ""}`;
+    } else if (days > 0) {
+      return `${days} day${days > 1 ? "s" : ""}`;
+    } else if (hours > 0) {
+      return `${hours} hour${hours > 1 ? "s" : ""}`;
+    } else {
+      return `${mins}m ${secs}s`;
+    }
+  }
   const columns = {
     services: [
       {
@@ -87,12 +152,13 @@ export default function ServicePage() {
         render: (record, index) => (
           <div
             onClick={() => {
-              const env = record.environment.find((e) => e.vm === vm);
-              navigate(`/vm-instance/detail?id=${record.id}&env=${env.name}`);
+              navigate(
+                `/vm-instance/detail?id=${record.id}&env=${record?.environment_info[0]?.last?.env_name}`
+              );
             }}
           >
             <GlobalOutlined />
-            {record.service_name}
+            {record.name}
           </div>
         ),
       },
@@ -122,11 +188,77 @@ export default function ServicePage() {
         ),
       },
       {
-        title: "ENVIRONMENT",
+        title: "LAST DEPLOYED ENVIRONMENT",
         key: "environment",
         render: (record, index) => {
-          const env = record.environment?.find((e) => e.vm === vm);
-          return <div>{env.name}</div>;
+          return <div>{record?.environment_info[0]?.last?.env_name}</div>;
+        },
+      },
+      {
+        title: "LAST DEPLOYED BRANCH",
+        key: "branch",
+        render: (record, index) => {
+          return (
+            <a
+              className="flex gap-2 cursor-pointer hover:text-blue-500"
+              href={`${record?.source.slice(0, -4)}/tree/${
+                record?.environment_info[0]?.last?.branch
+              }`}
+            >
+              {record?.environment_info[0]?.last?.branch}
+            </a>
+          );
+        },
+      },
+      {
+        title: "LAST DEPLOYED COMMIT",
+        key: "commit",
+        render: (record, index) => {
+          return (
+            <a
+              href={record?.environment_info[0]?.last?.commit_html_url}
+              className="cursor-pointer hover:text-blue-500"
+            >
+              <div>
+                {record?.environment_info[0]?.last?.commit_id?.substring(0, 6)}
+              </div>
+              <div>{record?.environment_info[0]?.last?.commit_message}</div>
+            </a>
+          );
+        },
+      },
+      {
+        title: "LAST PIPELINE CI/CD",
+        key: "index",
+        render: (record) => {
+          if (record?.environment_info)
+            return (
+              <>
+                <div
+                  className="flex gap-2 cursor-pointer hover:text-blue-500"
+                  onClick={() => {
+                    navigate(
+                      `/ocean?service=${record.id}&env=${record?.environment_info[0]?.last?.env_name}&name=${record?.name}&record=${record?.environment_info[0]?.last?.id}`
+                    );
+                  }}
+                >
+                  <div>
+                    {record?.environment_info[0]?.last?.status ===
+                    "SUCCESSFULLY" ? (
+                      <CheckCircleTwoTone twoToneColor="#52c41a" />
+                    ) : (
+                      <ExclamationCircleOutlined style={{ color: "red" }} />
+                    )}
+                  </div>
+                  <div>{`#${
+                    record?.environment_info[0]?.last?.index
+                  } (${timeDifference(
+                    record?.environment_info[0]?.last?.created_time,
+                    new Date()
+                  )} ago)`}</div>
+                </div>
+              </>
+            );
         },
       },
       {
@@ -331,7 +463,7 @@ export default function ServicePage() {
                 } else {
                   message.error(res.message);
                 }
-
+                setReload(true);
                 setImages(res.images);
               }}
             />
@@ -339,6 +471,61 @@ export default function ServicePage() {
         ),
       },
     ],
+  };
+
+  const expandedRowRender = (ParentRecord) => {
+    const data = ParentRecord?.environment_info
+      ? ParentRecord?.environment_info[0]?.containers.containers_info.map(
+          (c, idx) => {
+            return {
+              key: idx.toString(),
+              container_id: c.ID,
+              name: c.Name,
+              CPUPerc: c.CPUPerc,
+              MemPerc: c.MemPerc,
+              MemUsage: c.MemUsage,
+              BlockIO: c.BlockIO,
+              NetIO: c.NetIO,
+              PIDs: c.PIDs,
+              Ports: c.Ports,
+              Image: c.Image,
+              Status: c.Status,
+            };
+          }
+        )
+      : [];
+
+    const dataImages = ParentRecord?.environment_info
+      ? ParentRecord?.environment_info[0]?.images.images_info.map((i, idx) => {
+          return {
+            ...i,
+            key: idx,
+          };
+        })
+      : [];
+
+    return (
+      <div>
+        <div>
+          <Table
+            columns={columns.containers}
+            dataSource={data}
+            scroll={{ y: 500 }}
+            size="small"
+            pagination={true}
+          />
+        </div>
+        <div>
+          <Table
+            columns={columns.images}
+            pagination={true}
+            dataSource={dataImages}
+            scroll={{ y: 400 }}
+            size="small"
+          />
+        </div>
+      </div>
+    );
   };
 
   const dataSource = {
@@ -355,6 +542,7 @@ export default function ServicePage() {
         source: s.source,
         user: s.user,
         environment: s.environment,
+        ...s,
       };
     }),
     containers: contaniners?.map((c, index) => {
@@ -382,10 +570,18 @@ export default function ServicePage() {
   const platform = () => {
     return (
       <div className="flex items-center justify-center">
-        {vmInstance?.kernel?.includes("gcp") ? (
-          <img className="w-12 bg-white" src="/images/logoGCP.png" />
-        ) : vmInstance?.kernel?.includes("generic") ? (
-          <img className="w-12 bg-white" src="/images/logoAzure.png" />
+        {vmInstance?.checkip?.name?.includes("Google") ? (
+          <img className="w-14 bg-white" src="/images/logoGCP.png" />
+        ) : vmInstance?.checkip?.name?.includes("CLOUDFLY") ? (
+          <img
+            className="w-14 bg-white"
+            src="https://cloudfly.vn/image/logo/favicon.ico"
+          />
+        ) : vmInstance?.checkip?.name?.includes("Viettel") ? (
+          <img
+            className="w-16 bg-white"
+            src="https://viettelidc.com.vn/Themes/itmetech/img/logo-IDC-2.png"
+          />
         ) : (
           "N/A"
         )}
@@ -402,7 +598,6 @@ export default function ServicePage() {
       </div>
     );
   };
-  console.log(`${type}`, dataSource[`${type}`].length);
   return (
     <>
       <div className="ml-24 mr-24 h-full">
@@ -427,43 +622,8 @@ export default function ServicePage() {
               setSearch(e.target.value);
             }}
             onKeyDown={async (e) => {
-              setSearch(e.target.value);
-              console.log(e.target.value);
-              if (e.key === "Enter") {
-                if (type === "services") {
-                  const res = await apiCaller({
-                    request: vmsApi.findServiceInVmsByName(vm, e.target.value),
-                  });
-                  setServices(res);
-                } else if (type === "containers") {
-                  const contaniners = await apiCaller({
-                    request: vmsApi.findContaninersOfVmById(vm, search),
-                  });
-                  setContaniners(contaniners);
-                } else if (type === "images") {
-                  const images = await apiCaller({
-                    request: vmsApi.findImagesOfVmById(vm, search),
-                  });
-                  setImages(images);
-                }
-              }
-              if (e.target.value === "") {
-                if (type === "services") {
-                  const res = await apiCaller({
-                    request: vmsApi.findServiceInVmsByName(vm, e.target.value),
-                  });
-                  setServices(res);
-                } else if (type === "containers") {
-                  const contaniners = await apiCaller({
-                    request: vmsApi.findContaninersOfVmById(vm, search),
-                  });
-                  setContaniners(contaniners);
-                } else if (type === "images") {
-                  const images = await apiCaller({
-                    request: vmsApi.findImagesOfVmById(vm, search),
-                  });
-                  setImages(images);
-                }
+              if (e.key === "Enter" || e.target.value === "") {
+                setSearch(e.target.value);
               }
             }}
             suffix={
@@ -471,7 +631,6 @@ export default function ServicePage() {
                 className="text-gray-400 pointer-events-auto border-0 "
                 onClick={(e) => {
                   e.preventDefault();
-                  console.log(search);
                   setSearch("");
                 }}
               >
@@ -488,7 +647,7 @@ export default function ServicePage() {
                 setType("services");
               }}
             >
-              services: <span>{services.length}</span>
+              services: <span>{services?.length}</span>
             </div>
             <div
               className="p-3 border-r cursor-pointer hover:text-blue-400"
@@ -497,7 +656,7 @@ export default function ServicePage() {
                 socket.emit("GetContainer", localStorage.getItem("userId"), vm);
               }}
             >
-              containers: <span>{contaniners.length}</span>
+              containers: <span>{contaniners?.length}</span>
             </div>
             <div
               className="p-3  cursor-pointer hover:text-blue-400"
@@ -505,18 +664,27 @@ export default function ServicePage() {
                 setType("images");
               }}
             >
-              images: <span>{images.length}</span>
+              images: <span>{images?.length}</span>
             </div>
           </div>
         </div>
         <div>
           <div className="mt-11 col-span-1 border rounded-lg h-full overflow-auto">
             <Table
-              pagination={false}
-              loading={dataSource[`${type}`].length === 0 ? true : false}
+              pagination={true}
+              loading={!dataSource[`${type}`] ? true : false}
               dataSource={dataSource[`${type}`]}
               columns={columns[`${type}`]}
-              scroll={{ y: 421 }}
+              scroll={{ y: 1000 }}
+              size="small"
+              expandable={
+                type === "services"
+                  ? {
+                      expandedRowRender,
+                      defaultExpandedRowKeys: ["0"],
+                    }
+                  : undefined
+              }
             />
           </div>
         </div>

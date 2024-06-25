@@ -160,52 +160,53 @@ export default function ConnectVM() {
     }
   };
   useEffect(() => {
-    setVmId(vm);
+    const fetch = async (vmi) => {
+      const res = await apiCaller({
+        request: vmsApi.getVmsById(vmi),
+      });
+      setInfoVms(res);
+      setUserVM(res.user);
+      setPassVM(res.pass);
+      setFields([
+        {
+          name: ["host"],
+          value: res.host,
+        },
+        {
+          name: ["username"],
+          value: res.user,
+        },
+        {
+          name: ["password"],
+          value: res.pass,
+        },
+        {
+          name: ["port"],
+          value: res.port,
+        },
+      ]);
+      const compare = await apiCaller({
+        request: vmsApi.compareStandard(res.standard, res.id),
+      });
+      if (compare?.code) {
+        message.error(compare.errors[0].message);
+      } else {
+        setStandardVM(res.standard);
+        setStandardCompoareVM(compare);
+      }
+    };
     if (vm) {
-      const fetch = async () => {
-        const res = await apiCaller({
-          request: vmsApi.getVmsById(vm),
-        });
-        setInfoVms(res);
-        setUserVM(res.user);
-        setPassVM(res.pass);
-        setFields([
-          {
-            name: ["host"],
-            value: res.host,
-          },
-          {
-            name: ["username"],
-            value: res.user,
-          },
-          {
-            name: ["password"],
-            value: res.pass,
-          },
-          {
-            name: ["port"],
-            value: res.port,
-          },
-        ]);
-        const compare = await apiCaller({
-          request: vmsApi.compareStandard(res.standard, res.id),
-        });
-        if (compare?.code) {
-          message.error(compare.errors[0].message);
-        } else {
-          setStandardVM(res.standard);
-          setStandardCompoareVM(compare);
-        }
-      };
       setVmId(vm);
 
-      fetch();
+      fetch(vm);
+    } else if (vmId) {
+      fetch(vmId);
     }
     setReload(false);
   }, [vm, reload]);
+
   const installDocker = async (e) => {
     setStatusDocker(true);
-    console.log(vmId);
     const res = await apiCaller({
       request: vmsApi.installDocker(vmId),
     });
@@ -260,9 +261,8 @@ export default function ConnectVM() {
           await apiCaller({
             request: ticketApi.getTicketDetail(),
           });
-          navigate("/dashboard");
+          navigate("/dashboard-vm");
         } else {
-          console.log("🚀 ~ fetchC ~ vmT.id:", vmT.id);
           setVmId(vmT.id);
           setInfoVms(vmT);
         }
@@ -277,7 +277,7 @@ export default function ConnectVM() {
         await apiCaller({
           request: ticketApi.getTicketDetail(),
         });
-        navigate("/dashboard");
+        navigate("/dashboard-vm");
       } else {
         setVmId(vmU.id);
         setInfoVms(vmU);

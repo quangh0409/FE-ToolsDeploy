@@ -65,9 +65,9 @@ export default function Header() {
     if (
       localStorage.getItem("accessToken") &&
       localStorage.getItem("accessToken") !== "undefined" &&
-      path === "/dashboard"
+      path === "/dashboard-home"
     ) {
-      setOpenTour(true);
+      // setOpenTour(true);
     }
   }, [path]);
 
@@ -247,10 +247,14 @@ export default function Header() {
           <p>Note:(End point) https://smee.io/NEsyf7sKQOTJ8tOk/</p>
           <div className="grid grid-cols-3">
             <div className="col-span-1">
-              <img  className="w-full h-80" src="/images/tourGit.png" />
+              <img className="w-full h-80" src="/images/tourGit.png" />
             </div>
             <div className="col-span-2">
-              <img  className="w-full h-80" src="/images/exConfigWebhook.png" alt="#" />
+              <img
+                className="w-full h-80"
+                src="/images/exConfigWebhook.png"
+                alt="#"
+              />
             </div>
           </div>
         </>
@@ -322,14 +326,20 @@ export default function Header() {
       store.dispatch(setTourHeader(false));
       setIsModaImagesOpen(true);
     }
+    if (e.key === "repos") {
+      navigate("/dashboardv2");
+    }
+    if (e.key === "vm-instance") {
+      navigate("/dashboard-vm");
+    }
   };
 
   const handle2 = (e) => {
-    if (path === "/dashboard") {
+    if (e.key === "vm-instance") {
       navigate("/dashboard/VM-connect");
       store.dispatch(setTourPipeline(false));
       store.dispatch(setTourConnectVM(true));
-    } else {
+    } else if(e.key === "webapp") {
       navigate(`/connectGithub?vm=${vm}`);
       store.dispatch(
         setEnvironments([
@@ -373,7 +383,7 @@ export default function Header() {
             ref={ref3}
             className="col-span-4 text-2xl ml-3 text-center border-black border-solid border-r"
             onClick={() => {
-              navigate("/dashboard");
+              navigate("/dashboard-home");
             }}
           >
             Dashboard
@@ -400,23 +410,19 @@ export default function Header() {
         getItem("Scan Image", "image", <FileImageOutlined />),
         getItem("New Standard", "standard", <FileDoneOutlined />),
         getItem("Your Github", "git", <GithubOutlined />),
+        getItem("Manager Repository", "repos", <GithubOutlined />),
+        getItem("Manager VM-instance", "vm-instance", <GlobalOutlined />),
         getItem("Logout", "logout", <LogoutOutlined />),
       ]
     ),
   ];
 
-  const NewItems =
-    path === "/dashboard"
-      ? [
-          getItem("New", "sub1", <PlusOutlined />, [
-            getItem("Add VM instance", "Webapp", <GlobalOutlined />),
-          ]),
-        ]
-      : [
-          getItem("New", "sub1", <PlusOutlined />, [
-            getItem("Add Webapp", "Webapp", <GlobalOutlined />),
-          ]),
-        ];
+  const NewItems = [
+    getItem("New", "sub1", <PlusOutlined />, [
+      // getItem("Add Webapp", "webapp", <GlobalOutlined />),
+      getItem("Add VM instance", "vm-instance", <GlobalOutlined />),
+    ]),
+  ];
 
   return (
     <>
@@ -432,7 +438,7 @@ export default function Header() {
               <div className="col-span-4"></div>
               <div
                 onClick={() => {
-                  navigate("/dashboard");
+                  navigate("/dashboard-home");
                 }}
               >
                 Dashboard
@@ -557,7 +563,6 @@ export default function Header() {
               const res = await apiCaller({
                 request: authApi["update-password"](oldPassword, newPassword),
               });
-              console.log(res);
               if (!res?.code) {
                 message.info("You have successfully changed your password");
               } else {
@@ -693,11 +698,9 @@ export default function Header() {
           <Form
             form={form}
             onFinish={async (e) => {
-              console.log("🚀 ~ onFinish={ ~ e:", e);
               const res = await apiCaller({
                 request: scanApi.scanImage(e.name_image),
               });
-              console.log(res);
               if (!res?.code) {
                 setResultScan(res?.Results);
                 message.info("Scan successfully");

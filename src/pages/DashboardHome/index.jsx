@@ -394,7 +394,7 @@ export default function DashboardHome() {
             <Tooltip content={<CustomTooltip />} />
             <Legend content={<CustomLegend />} />
             <Bar
-              dataKey={"total_failed"}
+              dataKey={"total_success"}
               fill="#FF0000"
               //   activeBar={<Rectangle fill="#F07C00" stroke="blue" />}
               className="cursor-pointer"
@@ -403,7 +403,7 @@ export default function DashboardHome() {
               <LabelList dataKey="count" position="top" />
             </Bar>
             <Bar
-              dataKey={"total_success"}
+              dataKey={"total_failed"}
               fill="#82ca9d"
               //   activeBar={<Rectangle fill="#F07C00" stroke="blue" />}
               className="cursor-pointer"

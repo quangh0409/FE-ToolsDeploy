@@ -286,7 +286,7 @@ export default function ServicePageDetail(props) {
     return minutes + "m " + seconds + "s";
   }
 
-  const title_iterms = ["Event", "Logs", "Images", "Containers"];
+  const title_iterms = ["Event", "Logs", "Images", "Containers",];
   const content_iterms = [
     <div className="max-h-[500px] overflow-y-auto ">
       {records.map((record, idx) => {
@@ -309,7 +309,7 @@ export default function ServicePageDetail(props) {
             </div>
             <div className="grid-row flex-grow">
               <a href={`${record.commit_html_url}`}>
-                {`#${record.index} Commit: ${record.commit_id.substring(0, 6)}`}{" "}
+                {`#${record.index} Commit: ${record.commit_id.substring(0, 6)}`}
               </a>
               <div className=" flex gap-3 justify-between content-between">
                 <div className="mr-4">{`${record.commit_message}`}</div>

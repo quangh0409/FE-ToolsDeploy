@@ -395,7 +395,7 @@ export default function DashboardHome() {
             <Legend content={<CustomLegend />} />
             <Bar
               dataKey={"total_success"}
-              fill="#FF0000"
+              fill="#82ca9d"
               //   activeBar={<Rectangle fill="#F07C00" stroke="blue" />}
               className="cursor-pointer"
               barSize={50}
@@ -404,7 +404,7 @@ export default function DashboardHome() {
             </Bar>
             <Bar
               dataKey={"total_failed"}
-              fill="#82ca9d"
+              fill="#EE4E4E"
               //   activeBar={<Rectangle fill="#F07C00" stroke="blue" />}
               className="cursor-pointer"
               barSize={50}
@@ -421,7 +421,7 @@ export default function DashboardHome() {
       <div className="grid grid-cols-2 gap-x-[10%] px-[10%] py-5 border border-solid ">
         <div>
           <div
-            className="bg-blue-200 relative border border-blue-500 cursor-pointer py-[5%] rounded-lg overflow-hidden mb-10"
+            className="bg-[#F8F4E1] relative border border-blue-500 cursor-pointer py-[5%] rounded-lg overflow-hidden mb-10 text-xl"
             onClick={() => {
               navigate("/dashboardv2");
             }}
@@ -466,8 +466,8 @@ export default function DashboardHome() {
             >
               <defs>
                 <linearGradient id="colorfailed" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#FF0000" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#FF0000" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#EE4E4E" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#EE4E4E" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="colorsuccess" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8} />
@@ -491,21 +491,21 @@ export default function DashboardHome() {
                 dataKey="total_success"
                 stroke="#82ca9d"
                 fillOpacity={1}
-                fill="url(#colorsuccess)"
+                fill="url(#)"
               />
               <Area
                 type="monotone"
                 dataKey="total_failed"
-                stroke="#FF0000"
+                stroke="#EE4E4E"
                 fillOpacity={1}
-                fill="url(#colorfailed)"
+                fill="url(#)"
               />
             </AreaChart>
           </div>
         </div>
         <div>
           <div
-            className="bg-blue-200 relative border border-blue-500 cursor-pointer  py-[5%] rounded-lg overflow-hidden mb-10"
+            className="bg-blue-50 relative border border-blue-500 cursor-pointer  py-[5%] rounded-lg overflow-hidden mb-10  text-xl"
             onClick={() => {
               navigate("/dashboard-vm");
             }}
@@ -543,8 +543,8 @@ export default function DashboardHome() {
             >
               <defs>
                 <linearGradient id="colorfailed" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#FF0000" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#FF0000" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#EE4E4E" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#EE4E4E" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="colorsuccess" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8} />
@@ -570,14 +570,14 @@ export default function DashboardHome() {
                 dataKey="total_success"
                 stroke="#82ca9d"
                 fillOpacity={1}
-                fill="url(#colorsuccess)"
+                fill="url(#)"
               />
               <Area
                 type="monotone"
                 dataKey="total_failed"
-                stroke="#FF0000"
+                stroke="#EE4E4E"
                 fillOpacity={1}
-                fill="url(#colorfailed)"
+                fill="url(#)"
               />
             </AreaChart>
           </div>
@@ -791,7 +791,7 @@ export default function DashboardHome() {
                       <Line
                         type="monotone"
                         dataKey="total_failed"
-                        stroke="#FF0000"
+                        stroke="#EE4E4E"
                         strokeWidth={3}
                         activeDot={{ r: 5 }}
                       />
@@ -945,7 +945,7 @@ export default function DashboardHome() {
                   >
                     <Label
                       value={
-                        "Statistic chart of deployed branches in the repository over time"
+                        "The chart shows the deployment status of VM-instance by repository and time"
                       }
                       offset={-10}
                       position="insideBottom"
@@ -968,7 +968,7 @@ export default function DashboardHome() {
                   <Line
                     type="monotone"
                     dataKey="total_failed"
-                    stroke="#FF0000"
+                    stroke="#EE4E4E"
                     strokeWidth={3}
                     activeDot={{ r: 5 }}
                   />

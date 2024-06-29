@@ -99,7 +99,7 @@ export default function Dashboardv2() {
         for (const branch of repo.branchs) {
           if (branch?.vm) {
             const res = await apiCaller({
-              request: vmsApi.checkConnect(repo?.last?.vm?.id),
+              request: vmsApi.checkConnect(branch?.last_record?.vm?.id),
             });
             if (!res?.code) {
               branchs.push({

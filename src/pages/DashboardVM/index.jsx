@@ -18,6 +18,7 @@ import { Badge, Dropdown, Space, Table } from "antd";
 import useEffectOnce from "../../hook/useEffectOnce";
 export default function DashboardVM() {
   const vms_ids = useSelector((state) => state.user.ticket.vms_ids);
+  const ticket_id = useSelector((state) => state.user.ticket.id);
   const location = useLocation();
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
@@ -561,7 +562,7 @@ export default function DashboardVM() {
             className="flex gap-0 cursor-pointer hover:text-blue-500"
             onClick={async () => {
               const res = await apiCaller({
-                request: vmsApi.deleteVmsById(record.id),
+                request: vmsApi.deleteVmsById(record.id,ticket_id),
               });
               if (res?.code) {
                 message.error(res?.errors[0].message);

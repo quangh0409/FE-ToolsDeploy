@@ -387,7 +387,7 @@ export default function Dashboardv2() {
                   className="flex gap-2 cursor-pointer hover:text-blue-500"
                   onClick={() => {
                     navigate(
-                      `/ocean?service=${record?.service_id}&env=${record?.last?.env_name}&name=${record?.last?.service_name}&record=${record?.last?.id}`
+                      `/ocean?service=${ParentRecord?.service_id}&env=${record?.last_record?.name}&name=${ParentRecord?.name}&record=${record?.last_record?.id}`
                     );
                   }}
                 >
